@@ -1,4 +1,9 @@
 AMOS_proj5
 ==========
 
-added some note to get diff between master and develop branch
+please add to gitignore-file the following two linew:
+
+target/**
+!target/ROOT.war
+
+otherwise the target dir will be synchronized..
