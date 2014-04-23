@@ -1,43 +1,52 @@
 package de.fau.amos;
 
-import java.io.IOException;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+public class Test {
 
-/**
- * Servlet implementation class Test
- */
-@WebServlet("/Test")
-public class Test extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-       
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public Test() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		RequestDispatcher dispatch = request.getRequestDispatcher("WEB-INF/hidden.jsp");  
-		dispatch.forward(request, response); 
+	public static Object[][] statArr={{new String("Jahr"),new String("Verkaeufe"),new String("Einnahmen")},
+		{new String("2000"),new Integer(50),new Integer(30)},{new String("2002"),new Integer(20),new Integer(40)}};
+	
+	
+	public static String convert2DArray(Object[][] a){
+		
+		String out="";
+		
+		out+="[";
+		for(int i=0;i<a.length;i++){
+			out+="[";
+			for(int j=0;j<a[i].length;j++){
+				
+				if(a[i][j] instanceof String){
+					out+="'"+a[i][j]+"'";
+				}else if(a[i][j] instanceof Integer){
+					Integer integ=(Integer)a[i][j];
+					out+=""+integ.intValue();
+				}else{
+					out+="'"+a[i][j]+"'";
+				}
+				
+				
+				if(j!=a[i].length-1){
+					out+=",";
+				}
+			}
+			out+="]";
+			if(i!=a.length-1){
+				out+=",";
+			}
+		}
+		out+="]";
+		
+		return out;
+		
 	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+	
+	
+	public static String getArray(){
+		return "[['Year', 'Sales', 'Expenses' , 'Some more'],['2004',  1000,      400, 1],['2005',  1170,      460,2],['2006',  660,       1120,3],['2007',  1030,      540,4]]";
+		        	
+	
 	}
+	
 
 }
