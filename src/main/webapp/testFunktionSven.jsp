@@ -11,8 +11,9 @@
         		<% 
         		
         		GoogleTable t=new GoogleTable("Jahr","Text1","testen","so toll....");
-        		t.addColumn("wie auch immer",3.4,5.8,2.9);
-        		t.addColumn("yeah",1.5,8.6,3.7);
+        		for(int i=0;i<10;i++){
+        			t.addColumn((i+1)+"",Math.random()*10,Math.random()*10,Math.random()*10);
+        		}
         		out.println(t);
         		
         		%>
@@ -22,10 +23,20 @@
 
         var options = {
           title: 'Company Performance',
+          //curveType: 'function', //for LineChart
+          //pieHole: 0.4, //for PieChart, doesn't work with is3D
+          is3D: true, //for PieChart
+
           hAxis: {title: 'Year', titleTextStyle: {color: 'red'}}
         };
 
-        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+        var chart = new google.visualization.<% 
+        		out.println("PieChart");
+        		//out.println("LineChart"); 
+        		//out.println("ColumnChart"); 
+				//out.println("AreaChart"); 
+				
+        		%>(document.getElementById('chart_div'));
         chart.draw(data, options);
       }
     </script>
