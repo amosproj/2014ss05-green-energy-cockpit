@@ -1,5 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
+ <%@ page import="de.fau.amos.*"%> 
+ <% User.init(getServletConfig()); %>
+
 <!DOCTYPE html>
 <html>
 
@@ -14,7 +17,14 @@
 		<h1>AMOS PROJECT</h1>
  		<h2>Green Energy Cockpit</h2>
 	</header>
-
+	<div id="loginStateBox">
+	Logged in as "
+	
+	<% 
+	out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME)); 
+	%>
+	"
+	</div>
 	    <nav id="menue">
         <ul>
             <a href="#"><li>Funktion #1</li></a>
@@ -25,8 +35,8 @@
         </ul>
     </nav>   
 
-	<div id="gesInhalt">
-		<div id="Inhalt">
+	<div id="completeContentBox">
+		<div id="content">
 			<br><br>
 			Hier wird später einmal der Inhalt stehen.
 			<br><br><br>		
