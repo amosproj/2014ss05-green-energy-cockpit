@@ -17,7 +17,7 @@
 		<h2>Green Energy Cockpit</h2>
 	</header>
 
-	<div id="gesInhalt">
+	<div id="completeContentBox">
 
 	<% 
 		System.out.println("regjsp");
@@ -28,76 +28,57 @@
 		String regState=(String)session.getAttribute(Const.SessionAttributs.RegistrationState.NAME);
 		System.out.println("got regstate "+regState);
 		if(regState==null){ %>
-			<div id="Begruessung">
+			<div id="welcomeMsgBox">
 				In order to get access to this site you need to be registred.
 			</div>
 	<%	}else if(regState.equals(""+Const.UserReturns.FAILED)){ %>
-			<div id="Fehlermeldung">
+			<div id="errorMsgBox">
 				Systemfailure! Contact Systemadministrator or try again		
 			</div>
 	<%	}else if(regState.equals(""+Const.UserReturns.USERNAME_EXISTS)){ %>
-			<div id="Fehlermeldung">
-				Username allready in use!		
+			<div id="errorMsgBox">
+				Username already in use!		
 			</div>
 	<%	}else if(regState.equals(""+Const.UserReturns.USERNAME_INVALID)){ %>
-			<div id="Fehlermeldung">
+			<div id="errorMsgBox">
 				Username invalid! You may only use letters and numbers [a-z,A-Z,0-9]		
 			</div>
 	<%	}else if(regState.equals(""+Const.SessionAttributs.RegistrationState.PASSWORD_MISSMATCH)){ 
 			username=(String)session.getAttribute(Const.SessionAttributs.RegistrationUsername.NAME); %>
-			<div id="Fehlermeldung">
+			<div id="errorMsgBox">
 				Passwords don't match!		
 			</div>
 	<%	}else if(regState.equals(""+Const.UserReturns.SUCCESS)){ %>
-			<div id="Fehlermeldung">
+			<div id="welcomeMsgBox">
 				Account successfully created! You can now go back and login		
 			</div>
 	<%	}else{ %>
-			<div id="Begruessung">
+			<div id="welcomeMsgBox">
 				In order to get access to this site you need to be registred.
 			</div>
 	<%	}
 		session.removeAttribute(Const.SessionAttributs.RegistrationUsername.NAME); %>
 
-		<div id="Anmeldung">
-			Create a new Account.
-			<table>
-				<tr>
-					<form method="post" action="regJsp">
-					<td>
-						<table>
-							<tr>
-								<td>Name:</td>
-								<td><input type="text"
-									name="<%= Const.RequestParameters.REGISTER_USERNAME %>"></td>
-							</tr>
-							<tr>
-								<td>Password:</td>
-								<td><input type="password"
-									name="<%= Const.RequestParameters.REGISTER_PASSWORD_1 %>"></td>
-							</tr>
-							<tr>
-								<td>Confirm password:</td>
-								<td><input type="password"
-									name="<%= Const.RequestParameters.REGISTER_PASSWORD_2 %>"></td>
-							</tr>
-						</table>
-					</td>
-					<td>
-						<input id="RegisterButton" type="submit" value="Register">
-					</td>
-					</form>
-				</tr>
-
-				<tr>
-					<td></td>
-					<td>
-						<form method="post" action="../">
-							<input id="BackButton" type="submit" value="Back">
-						</form>
-					</td>
-				</tr>
-			</table>
+		<div id="regBox">
+			Create a new Account. <br>
+			<form method="post" action="regJsp">
+				<fieldset>
+					<label for "regName">Name: </label>
+					<input type="text" name="<%= Const.RequestParameters.REGISTER_USERNAME %>" id="regName"><br>
+					<label for "regPassword">Password: </label>
+					<input type="password" name="<%= Const.RequestParameters.REGISTER_PASSWORD_1 %>" id="regPassword"><br>
+					<label for "regPassword2">Confirm Password: </label>
+					<input type="password" name="<%= Const.RequestParameters.REGISTER_PASSWORD_2 %>" id="regPassword2">
+				</fieldset>
+				<fieldset id= "RegisterButtonField">
+					<input id="RegisterButton" type="submit" value="Register">					
+				</fieldset>
+			</form>
+			<form method="post" action="../">
+				<fieldset id= "BackButtonField">
+					<input id="BackButton" type="submit" value="Back">
+				</fieldset>
+			</form>
 		</div>
 	</div>
 </body>
