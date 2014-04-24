@@ -49,9 +49,9 @@
 
 			<form method="post" action="login/login">
 				<fieldset title="loginInformation">
-					<label for "name">Name: </label>
+					<label for="name">Name: </label>
 					<input type="text" name="<%=Const.RequestParameters.LOGIN_USERNAME%>" id="name"><br>
-					<label for "password">Password: </label>
+					<label for="password">Password: </label>
 					<input type="password" name="<%=Const.RequestParameters.LOGIN_PASSWORD%>" id="password">
 				</fieldset>
 				<fieldset>
@@ -61,7 +61,7 @@
 						value="Login">
 				</fieldset>
 			</form>
-			<a href="login/reg"">Not registered yet?</a>
+			<a href="login/reg">Not registered yet?</a>
 		</div>
 
 
