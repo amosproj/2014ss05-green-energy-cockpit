@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2014 by Sven Huprich, Dimitry Abb, Jakob Hübler, Cindy Wiebe, Ferdinand Niedermayer, Dirk Riehle, http://dirkriehle.com
+ *
+ * This file is part of the Green Energy Cockpit for the AMOS Project.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
+
+
+
 package de.fau.amos;
 
 import java.io.BufferedReader;
@@ -194,26 +216,6 @@ public class SQL extends Energiedaten{
 				}
 
 				data.add(row);
-
-				//			String a = rs.getString(Anlage1.getColumns()[0]);
-				//			/* String b = rs.getString(Anlage1.getColumns()[1]);
-				//	            String c1 = rs.getString(Anlage1.getColumns()[2]);
-				//	            String d = rs.getString(Anlage1.getColumns()[3]);
-				//	            String e = rs.getString(Anlage1.getColumns()[4]);
-				//	            String f = rs.getString(Anlage1.getColumns()[5]);
-				//	            String g = rs.getString(Anlage1.getColumns()[6]);
-				//	            String h = rs.getString(Anlage1.getColumns()[7]);
-				//	            String i = rs.getString(Anlage1.getColumns()[8]); */
-				//			System.out.println(Anlage1.getColumns()[0] + " : " + a );
-				//			/*  out(Anlage1.getColumns()[1] + " : " + b );
-				//	            out(Anlage1.getColumns()[2] + " : " + c1 );
-				//	            out(Anlage1.getColumns()[3] + " : " + d );
-				//	            out(Anlage1.getColumns()[4] + " : " + e );
-				//	            out(Anlage1.getColumns()[5] + " : " + f );
-				//	            out(Anlage1.getColumns()[6] + " : " + g );
-				//	            out(Anlage1.getColumns()[7] + " : " + h );
-				//	            out(Anlage1.getColumns()[8] + " : " + i );		*/            
-				//			System.out.println("");
 			} 
 
 
@@ -221,10 +223,8 @@ public class SQL extends Energiedaten{
 			stmt.close();
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
