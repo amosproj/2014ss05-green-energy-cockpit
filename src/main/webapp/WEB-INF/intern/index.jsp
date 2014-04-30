@@ -21,6 +21,8 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
  <%@ page import="de.fau.amos.*"%> 
+ <%@ page import="java.util.ArrayList"%>
+
  <% User.init(getServletConfig()); %>
 
 <!DOCTYPE html>
@@ -57,9 +59,28 @@
 
 	<div id="completeContentBox">
 		<div id="content">
-			<br><br>
-			Hier wird später einmal der Inhalt stehen.
-			<br><br><br>		
+			
+			<%
+			
+			ArrayList<ArrayList<String>> data=SQL.querry(getServletConfig(),"SELECT * FROM Dresden;");
+			out.println("<table>");
+
+			for(int i=0;i<data.size();i++){
+				out.println("<tr>");
+				for(int j=0;j<data.get(j).size();j++){
+					out.println("<td>");
+					out.println(data.get(i).get(j));
+					out.println("</td>");
+					
+				}
+				out.println("</tr>");
+			}
+
+			out.println("</table>");
+			
+			%>
+			
+					
 		</div>
 	</div>
 </body>

@@ -1,3 +1,5 @@
+package de.fau.amos;
+
 import java.sql.*;
 
 
