@@ -63,12 +63,12 @@
 			<%
 			
 			ArrayList<ArrayList<String>> data=SQL.querry(getServletConfig(),"SELECT * FROM Dresden;");
-			out.println("<table>");
+			out.println("<table border rules=\"all\" id= \"dataTable\" >");
 
 			for(int i=0;i<data.size();i++){
 				out.println("<tr>");
 				for(int j=0;j<data.get(j).size();j++){
-					out.println("<td>");
+					out.println("<td style=\"word-break:break-all;word-wrap:break-word\" width=\"180\">");
 					out.println(data.get(i).get(j));
 					out.println("</td>");
 					
