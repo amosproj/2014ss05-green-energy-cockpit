@@ -9,10 +9,7 @@ package de.fau.amos;
 
 import java.io.*;
 import java.awt.*;
-import java.util.*;
 import java.awt.image.*;
-
-import org.jfree.data.*;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.chart.*;
 import org.jfree.chart.plot.*;
@@ -64,7 +61,7 @@ public class Pie3DDemo {
     plot.setNoDataMessage("No data available");
       
     // set drilldown capability...
-    plot.setURLGenerator(new StandardPieURLGenerator("Bar3DDemo.jsp","section"));
+    plot.setURLGenerator(new StandardPieURLGenerator("index.jsp","section"));
     plot.setLabelGenerator(null);
 
     // OPTIONAL CUSTOMISATION COMPLETED.
@@ -83,12 +80,12 @@ public class Pie3DDemo {
       session.setAttribute("chartImage", chartImage); 
 
       PrintWriter writer = new PrintWriter(response.getWriter()); 
-      ChartUtilities.writeImageMap(writer, "imageMap", info, true); 
+      ChartUtilities.writeImageMap(writer, "imageMap", info, false); 
       writer.flush();
      
     } 
     catch (Exception e) {
-       // handel your exception here
+       // handle your exception here
     }
    
     String pathInfo = "http://";
@@ -96,7 +93,9 @@ public class Pie3DDemo {
     int port = request.getServerPort();
     pathInfo += ":"+String.valueOf(port);
     pathInfo += request.getContextPath();
-    String chartViewer = pathInfo + "/servlet/ChartViewer";
+    pathInfo += "/intern";
+    System.out.println("PathInfo: " + pathInfo);
+    String chartViewer = pathInfo + "/ChartViewer";
     return chartViewer;
   } 
 }
