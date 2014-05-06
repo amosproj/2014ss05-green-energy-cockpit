@@ -83,7 +83,7 @@ public class Pie3DDemo {
       session.setAttribute("chartImage", chartImage); 
 
       PrintWriter writer = new PrintWriter(response.getWriter()); 
-      ChartUtilities.writeImageMap(writer, "imageMap", info, false); 
+      ChartUtilities.writeImageMap(writer, "imageMap", info, true); 
       writer.flush();
      
     } 

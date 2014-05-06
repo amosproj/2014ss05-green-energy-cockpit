@@ -36,11 +36,11 @@
 
   <servlet>
     <servlet-name>ChartViewer</servlet-name>
-    <servlet-class>myapp.webwork.servlets.ChartViewer</servlet-class>
+    <servlet-class>de.fau.amos.ChartViewer</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>ChartViewer</servlet-name>
-    <url-pattern>/servlet/ChartViewer</url-pattern>
+    <url-pattern>/ChartViewer</url-pattern>
   </servlet-mapping>
 
 	
