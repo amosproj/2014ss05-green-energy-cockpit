@@ -22,6 +22,9 @@
     pageEncoding="ISO-8859-1"%>
  <%@ page import="de.fau.amos.*"%> 
  <%@ page import="java.util.ArrayList"%>
+ <%@ page import="org.jfree.chart.*" %>
+ <%@ page import="java.io.*" %>
+ 
 
  <% User.init(getServletConfig()); %>
 
@@ -31,6 +34,7 @@
 <head>
 <title>AMOS-Cockpit</title>
 <link rel="stylesheet" href="../styles/style.css" type="text/css" />
+<jsp:useBean id="myChart" scope="session" class="de.fau.amos.Pie3DDemo" /> 
 </head>
 
 <body>
@@ -59,27 +63,30 @@
 
 	<div id="completeContentBox">
 		<div id="content">
+		
 			
-			<%
+	<%String chartViewer = myChart.getChartViewer(request, response);%>
+	<img src="<%=chartViewer%>" border=0 usemap="#imageMap">
 			
-			ArrayList<ArrayList<String>> data=SQL.querry(getServletConfig(),"SELECT * FROM Dresden;");
-			out.println("<table border rules=\"all\" id= \"dataTable\" >");
+<!--  			<%
+// 			ArrayList<ArrayList<String>> data=SQL.querry(getServletConfig(),"SELECT * FROM Dresden;");
+// 			out.println("<table border rules=\"all\" id= \"dataTable\" >");
 
-			for(int i=0;i<data.size();i++){
-				out.println("<tr>");
-				for(int j=0;j<data.get(j).size();j++){
-					out.println("<td style=\"word-break:break-all;word-wrap:break-word\" width=\"180\">");
-					out.println(data.get(i).get(j));
-					out.println("</td>");
+// 			for(int i=0;i<data.size();i++){
+// 				out.println("<tr>");
+// 				for(int j=0;j<data.get(j).size();j++){
+// 					out.println("<td style=\"word-break:break-all;word-wrap:break-word\" width=\"180\">");
+// 					out.println(data.get(i).get(j));
+// 					out.println("</td>");
 					
-				}
-				out.println("</tr>");
-			}
+// 				}
+// 				out.println("</tr>");
+// 			}
 
-			out.println("</table>");
+// 			out.println("</table>");
 			
-			%>
-			
+//			%>
+-->
 					
 		</div>
 	</div>
