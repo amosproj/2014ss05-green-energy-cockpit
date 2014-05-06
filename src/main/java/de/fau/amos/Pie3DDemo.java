@@ -8,8 +8,10 @@
 package de.fau.amos;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.awt.*;
 import java.awt.image.*;
+
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.chart.*;
 import org.jfree.chart.plot.*;
@@ -93,9 +95,9 @@ public class Pie3DDemo {
     int port = request.getServerPort();
     pathInfo += ":"+String.valueOf(port);
     pathInfo += request.getContextPath();
-    pathInfo += "/intern";
-    System.out.println("PathInfo: " + pathInfo);
+    pathInfo += "/de/fau/amos";
     String chartViewer = pathInfo + "/ChartViewer";
+//    System.out.println("Chartviewer Path: " + chartViewer);
     return chartViewer;
   } 
 }
