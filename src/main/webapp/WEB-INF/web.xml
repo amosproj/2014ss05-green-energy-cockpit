@@ -24,7 +24,7 @@
 		<servlet-name>internController</servlet-name>
 		<url-pattern>/intern/*</url-pattern>
 	</servlet-mapping>
-	
+
 
 	<resource-ref>
 		<description>postgreSQL</description>
@@ -32,5 +32,20 @@
 		<res-type>javax.sql.DataSource</res-type>
 		<res-auth>Container</res-auth>
 	</resource-ref>
+	
+
+  <servlet>
+  	<description>
+  	</description>
+  	<display-name>ChartSven</display-name>
+  	<servlet-name>ChartSven</servlet-name>
+  	<servlet-class>de.fau.amos.ChartSven</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>ChartSven</servlet-name>
+  	<url-pattern>/ChartSven</url-pattern>
+  </servlet-mapping>
+ 
+	
 
 </web-app>
