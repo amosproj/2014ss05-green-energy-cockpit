@@ -53,7 +53,19 @@ public class SQL extends Energiedaten{
 	public static void main(String args[]) {
 
 		//		out("hallo");
-		dosth(null);
+		//		dosth(null);
+		System.out.println("hi");
+		
+		ArrayList<ArrayList<String>> data=querry("SELECT name FROM plants,controlpoints GROUP BY plants.id;");
+		
+		for(int i=0;i<data.size();i++){
+			for(int j=0;j<data.get(i).size();j++){
+				System.out.print(data.get(i).get(j)+"; ");
+			}
+			System.out.println();
+		}
+		
+
 	}
 
 
@@ -127,7 +139,7 @@ public class SQL extends Energiedaten{
 				c = DriverManager
 						.getConnection("jdbc:postgresql://faui2o2j.informatik.uni-erlangen.de:5432/ss14-proj5",
 								"ss14-proj5", "quaeF4pigheNgahz");
-				System.out.println("Opened database successfully");
+				//				System.out.println("Opened database successfully");
 				stmt = c.createStatement();
 				ResultSet rs;
 
@@ -141,7 +153,7 @@ public class SQL extends Energiedaten{
 				String querryCommand="SELECT " + Anlage1.getColumns()[0] + " FROM " + Anlage1.getStandort() + ";";
 
 
-				data=querry(servletConfig,querryCommand);
+				data=querry(querryCommand);
 
 
 
@@ -149,10 +161,10 @@ public class SQL extends Energiedaten{
 				c.close();	         
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.err.println(e.getClass().getName()+": "+e.getMessage());
-				System.exit(0);
+				//				System.err.println(e.getClass().getName()+": "+e.getMessage());
+				//				System.exit(0);
 			}
-			System.out.println("Operation done successfully");
+			//			System.out.println("Operation done successfully");
 
 
 
@@ -177,8 +189,27 @@ public class SQL extends Energiedaten{
 
 	}
 
+	public static void execute(String command){
 
-	public static ArrayList<ArrayList<String>> querry(ServletConfig servletConfig,String command){
+		Connection c=null;
+		Statement stmt = null;
+		try {
+			Class.forName("org.postgresql.Driver");
+			c = DriverManager
+					.getConnection("jdbc:postgresql://faui2o2j.informatik.uni-erlangen.de:5432/ss14-proj5",
+							"ss14-proj5", "quaeF4pigheNgahz");
+			stmt = c.createStatement();
+			stmt.execute(command);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public static ArrayList<ArrayList<String>> querry(String command){
 		ArrayList<ArrayList<String>> data=new ArrayList<ArrayList<String>>();
 
 		Connection c=null;
@@ -188,26 +219,19 @@ public class SQL extends Energiedaten{
 			c = DriverManager
 					.getConnection("jdbc:postgresql://faui2o2j.informatik.uni-erlangen.de:5432/ss14-proj5",
 							"ss14-proj5", "quaeF4pigheNgahz");
-			System.out.println("Opened database successfully");
 			stmt = c.createStatement();
 
 			ResultSet rs = stmt.executeQuery(command);
 			ResultSetMetaData rsmd = rs.getMetaData();
 
 
-			System.out.println("colcount"+rsmd.getColumnCount());
-
-
 			ArrayList<String> row=new ArrayList<String>();
-			if(rs.next()){
-				System.out.println("entered");
-				for(int i=1;i<=rsmd.getColumnCount();i++){
-					System.out.println(rsmd.getColumnName(i));
-					row.add(rsmd.getColumnName(i));
-				}
+			for(int i=1;i<=rsmd.getColumnCount();i++){
+				row.add(rsmd.getColumnName(i));
+			}
 
-				data.add(row);
-			}		
+			data.add(row);
+			
 			while ( rs.next() ) {	
 
 				row=new ArrayList<String>();
@@ -224,12 +248,125 @@ public class SQL extends Energiedaten{
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+			//			ArrayList<ArrayList<String>>err=new ArrayList<ArrayList<String>>();
+			//			ArrayList<String> error=new ArrayList<String>();
+			//			error.add(e.getMessage());
+			//			err.add(error);
+			//			return err;
+			return null;
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 
 
 		return data;
+	}
+
+	public static void createTable(String tableName,String[] columns){
+		Connection c=null;
+		Statement stmt = null;
+		try {
+			Class.forName("org.postgresql.Driver");
+			c = DriverManager
+					.getConnection("jdbc:postgresql://faui2o2j.informatik.uni-erlangen.de:5432/ss14-proj5",
+							"ss14-proj5", "quaeF4pigheNgahz");
+			stmt = c.createStatement();
+
+			String commandPart = tableName+"_ID serial primary key";
+			//			String commandPart = "ID INT NOT NULL AUTO_INCREMENT";
+			for(int i=0; i < columns.length; i++){
+				commandPart += ", ";
+				commandPart += columns[i] + " TEXT NOT NULL";            
+				//				if(columns[i] != columns[columns.length - 1]){
+				//					commandPart += ", ";
+				//				}
+			}
+			String command="CREATE TABLE "+tableName.toUpperCase()+" ("+commandPart+");";                     
+			stmt.executeUpdate(command);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static ArrayList<String> getColumns(String tableName){
+		Connection c=null;
+		Statement stmt = null;
+		try {
+			Class.forName("org.postgresql.Driver");
+			c = DriverManager
+					.getConnection("jdbc:postgresql://faui2o2j.informatik.uni-erlangen.de:5432/ss14-proj5",
+							"ss14-proj5", "quaeF4pigheNgahz");
+			stmt = c.createStatement();
+
+			ResultSet rs = stmt.executeQuery("SELECT * FROM "+tableName+" WHERE "+tableName+"_ID=1");
+			ResultSetMetaData rsmd = rs.getMetaData();
+
+			ArrayList<String> row=new ArrayList<String>();
+
+			for(int i=1;i<=rsmd.getColumnCount();i++){
+				row.add(rsmd.getColumnName(i));
+			}
+
+
+			return row;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static void addColumn(String tableName,ArrayList<String> columns,ArrayList<String> values){
+		if(columns==null||values==null||columns.size()!=values.size()){
+			return;
+		}
+		Connection c=null;
+		Statement stmt = null;
+		try {
+			Class.forName("org.postgresql.Driver");
+			c = DriverManager
+					.getConnection("jdbc:postgresql://faui2o2j.informatik.uni-erlangen.de:5432/ss14-proj5",
+							"ss14-proj5", "quaeF4pigheNgahz");
+			stmt = c.createStatement();
+
+			String commandColumnPart = "";
+			for(int i=0; i < columns.size(); i++){
+				if(columns.get(i).equals(tableName+"_id")){
+					columns.remove(i);
+					values.remove(i);
+				}
+			}
+			for(int i=0; i < columns.size(); i++){
+				commandColumnPart += '"'+columns.get(i) + '"';            
+				if(i!=columns.size()-1){
+					commandColumnPart += ", ";
+				}
+			}
+			String commandValuePart = "";
+			for(int i=0; i < values.size(); i++){
+				commandValuePart += "'"+values.get(i) + "'";           
+				if(i != values.size()-1){
+					commandValuePart += ", ";
+				}
+			}
+
+			String command="INSERT INTO "+tableName.toUpperCase()+
+					" ("+commandColumnPart+")"+
+					" VALUES ("+commandValuePart+");";
+			System.out.println(command);
+			stmt.execute(command);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	public static ArrayList<String> dosth(ServletConfig servletConfig){
@@ -302,7 +439,7 @@ public class SQL extends Energiedaten{
 				c = DriverManager
 						.getConnection("jdbc:postgresql://faui2o2j.informatik.uni-erlangen.de:5432/ss14-proj5",
 								"ss14-proj5", "quaeF4pigheNgahz");
-				System.out.println("Opened database successfully");
+				//				System.out.println("Opened database successfully");
 				stmt = c.createStatement();
 				ResultSet rs;
 
@@ -323,7 +460,7 @@ public class SQL extends Energiedaten{
 			            String g = rs.getString(Anlage1.getColumns()[6]);
 			            String h = rs.getString(Anlage1.getColumns()[7]);
 			            String i = rs.getString(Anlage1.getColumns()[8]); */
-					System.out.println(Anlage1.getColumns()[0] + " : " + a );
+					//					System.out.println(Anlage1.getColumns()[0] + " : " + a );
 					/*  out(Anlage1.getColumns()[1] + " : " + b );
 			            out(Anlage1.getColumns()[2] + " : " + c1 );
 			            out(Anlage1.getColumns()[3] + " : " + d );
@@ -332,7 +469,7 @@ public class SQL extends Energiedaten{
 			            out(Anlage1.getColumns()[6] + " : " + g );
 			            out(Anlage1.getColumns()[7] + " : " + h );
 			            out(Anlage1.getColumns()[8] + " : " + i );		*/            
-					System.out.println("");
+					//					System.out.println("");
 				} 
 
 
@@ -342,10 +479,10 @@ public class SQL extends Energiedaten{
 				c.close();	         
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.err.println(e.getClass().getName()+": "+e.getMessage());
-				System.exit(0);
+				//				System.err.println(e.getClass().getName()+": "+e.getMessage());
+				//				System.exit(0);
 			}
-			System.out.println("Operation done successfully");
+			//			System.out.println("Operation done successfully");
 
 
 

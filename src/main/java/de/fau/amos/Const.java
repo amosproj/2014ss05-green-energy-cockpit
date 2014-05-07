@@ -123,6 +123,9 @@ public class Const {
 		public static final String REGISTER_USERNAME="registerUsername";
 		public static final String REGISTER_PASSWORD_1="registerPassword1";
 		public static final String REGISTER_PASSWORD_2="registerPassword2";
+		
+		public static final String SETUP_NEW_PLANT_NAME="newPlantName";
+		public static final String SETUP_NEW_CONTROL_POINT_NAME="newControlPointName";
 
 	}
 

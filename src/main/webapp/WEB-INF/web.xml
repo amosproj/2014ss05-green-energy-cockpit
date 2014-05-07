@@ -24,7 +24,7 @@
 		<servlet-name>internController</servlet-name>
 		<url-pattern>/intern/*</url-pattern>
 	</servlet-mapping>
-
+	
 
 	<resource-ref>
 		<description>postgreSQL</description>

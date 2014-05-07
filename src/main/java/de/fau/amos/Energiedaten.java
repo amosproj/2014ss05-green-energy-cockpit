@@ -71,7 +71,7 @@ public class Energiedaten {
 		values = line.split(";");
 	}
 		
-	public String createTable(String table, String[] columns){
+	public String createTableOld(String table, String[] columns){
   	  String column = "";
   	  for(int i=0; i < columns.length; i++){
      	   column += columns[i] + " TEXT NOT NULL";            
