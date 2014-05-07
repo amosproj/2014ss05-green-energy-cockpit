@@ -13,7 +13,7 @@ public class Header {
 		out+="<a href="+'"'+
 				"funktion2.jsp"
 				+'"'+"><li>"+
-				"Funktion #2"
+				"Charts"
 				+"</li></a>";
 		out+="<a href="+'"'+
 				"#"

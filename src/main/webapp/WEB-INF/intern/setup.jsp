@@ -140,7 +140,7 @@
 					nameOK=false;
 				}else{
 					for(int i=0;i<controlPoints.size();i++){
-						if(controlPoints.get(i).get(3).equals(controlPointName)){
+						if(controlPoints.get(i).get(1).equals(controlPointName)){
 							//TODO add label or sth to mark as error
 							%>
 			Control point name allready in use!

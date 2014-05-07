@@ -23,11 +23,22 @@ package de.fau.amos;
 	import org.jfree.ui.ApplicationFrame;
 
 	public class ChartJSPTest {
-		private JFreeChart chart;
-		public ChartJSPTest (String Database, String table, String User, String Password)throws SQLException, IOException{
-			XYSeries series1 = createSeries(Database, table, User, Password);
-			XYSeriesCollection collection1 = createCollection(series1);
-			chart = renderChart(collection1);	
+		
+		private JFreeChart chart=null;
+		
+		public ChartJSPTest (String Database, String table, String User, String Password){
+			try {
+//				series1 = createSeries(Database, table, User, Password);
+				XYSeries series1 = createSeriesQuickTest("Wertgruppe1",5);
+				XYSeries series2 = createSeriesQuickTest("Wertgruppe2",3);
+				XYSeries series3 = createSeriesQuickTest("Wertgruppe3",7);
+				XYSeriesCollection collection1 = createCollection(series1,series2,series3);
+				chart = renderChart(collection1);	
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		private XYSeries createSeries(String Database, String table, String User, String Password ) throws SQLException {
@@ -39,8 +50,8 @@ package de.fau.amos;
 			ResultSet rs = st
 					.executeQuery("SELECT mdata_id, mvalue FROM " + table);
 			while (rs.next()) {
-				System.out.print(rs.getString(1) + " ");
-				System.out.println(rs.getString(2));
+//				System.out.print(rs.getString(1) + " ");
+//				System.out.println(rs.getString(2));
 
 				series.add(rs.getDouble(1), rs.getDouble(2));
 			}
@@ -50,11 +61,38 @@ package de.fau.amos;
 			return series;
 		}
 		
-		private XYSeriesCollection createCollection (XYSeries series){
+		private XYSeries createSeriesQuickTest(String name,double startVal) throws SQLException {
+
+			XYSeries series = new XYSeries(name);
+//			Connection conn = DriverManager.getConnection(
+//					"jdbc:postgresql:"+Database, User, Password);
+//			Statement st = conn.createStatement();
+//			ResultSet rs = st
+//					.executeQuery("SELECT mdata_id, mvalue FROM " + table);
+//			while (rs.next()) {
+//				System.out.print(rs.getString(1) + " ");
+//				System.out.println(rs.getString(2));
+
+			double prev=startVal;
+			for(int i=0;i<10;i++){
+				series.add(i+1,prev=prev+((Math.random()>0.5)?-1:1)*Math.random()*1);
+			}
+//				series.add(rs.getDouble(1), rs.getDouble(2));
+//			}
+//			rs.close();
+//			st.close();
+
+			return series;
+		}
+		
+		private XYSeriesCollection createCollection (XYSeries...series){
 			XYSeriesCollection collection = new XYSeriesCollection();
-			collection.addSeries(series);
+			for(int i=0;i<series.length;i++){
+				collection.addSeries(series[i]);
+			}
 			return collection;
 		}
+		
 		private JFreeChart renderChart(XYSeriesCollection collection) throws IOException{
 			XYSplineRenderer spline = new XYSplineRenderer();
 			NumberAxis xax = new NumberAxis("x");
