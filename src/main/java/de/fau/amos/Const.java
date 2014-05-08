@@ -34,6 +34,7 @@ public class Const {
 		public static final String REGISTRTION_PAGE="/WEB-INF/login/reg.jsp";
 		public static final String CHANGE_PASSWORD_PAGE="/WEB-INF/login/change.jsp";
 		public static final String INTERN_HOME="/intern/index.jsp";
+		public static final String UPLOAD_JSP="/WEB-INF/file/upload.jsp";
 	}
 
 

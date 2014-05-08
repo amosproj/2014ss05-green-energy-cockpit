@@ -42,14 +42,14 @@ public class ChartSven extends HttpServlet {
 		ServletOutputStream os = response.getOutputStream();
 
 		DefaultCategoryDataset defaultDataset = new DefaultCategoryDataset();
-		defaultDataset.addValue(76, "Java", "Sandeep");
-		defaultDataset.addValue(30, "Java", "Sangeeta");
-		defaultDataset.addValue(50, "Java", "Surabhi");
-		defaultDataset.addValue(20, "Java", "Sumanta");
-		defaultDataset.addValue(10, "Oracle", "Sandeep");
-		defaultDataset.addValue(90, "Oracle", "Sangeeta");
-		defaultDataset.addValue(23, "Oracle", "Surabhi");
-		defaultDataset.addValue(87, "Oracle", "Sumanta");
+		defaultDataset.addValue(76, "Wert1", "Sandeep");
+		defaultDataset.addValue(30, "Wert1", "Sangeeta");
+		defaultDataset.addValue(50, "Wert1", "Surabhi");
+		defaultDataset.addValue(20, "Wert1", "Sumanta");
+		defaultDataset.addValue(10, "Wert2", "Sandeep");
+		defaultDataset.addValue(90, "Wert2", "Sangeeta");
+		defaultDataset.addValue(23, "Wert2", "Surabhi");
+		defaultDataset.addValue(87, "Wert2", "Sumanta");
 
 		 DefaultPieDataset pieDataset = new DefaultPieDataset();
 	        pieDataset.setValue("One", new Double(43.2));

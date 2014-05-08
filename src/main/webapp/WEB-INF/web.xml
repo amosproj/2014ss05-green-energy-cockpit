@@ -15,7 +15,11 @@
 		<servlet-name>internController</servlet-name>
 		<jsp-file>/intern.jsp</jsp-file>
 	</servlet>
-
+	<servlet>
+		<servlet-name>fileController</servlet-name>
+		<jsp-file>/file.jsp</jsp-file>
+	</servlet>
+	
 	<servlet-mapping>
 		<servlet-name>loginController</servlet-name>
 		<url-pattern>/login/*</url-pattern>
@@ -24,7 +28,11 @@
 		<servlet-name>internController</servlet-name>
 		<url-pattern>/intern/*</url-pattern>
 	</servlet-mapping>
-
+	<servlet-mapping>
+		<servlet-name>fileController</servlet-name>
+		<url-pattern>/file/*</url-pattern>
+	</servlet-mapping>
+	
 
 	<resource-ref>
 		<description>postgreSQL</description>
@@ -46,6 +54,7 @@
   	<url-pattern>/ChartSven</url-pattern>
   </servlet-mapping>
  
+  
 	
 
 </web-app>

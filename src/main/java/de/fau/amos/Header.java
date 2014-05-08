@@ -8,7 +8,7 @@ public class Header {
 		out+="<a href="+'"'+
 				"funktion1.jsp"
 				+'"'+"><li>"+
-				"Funktion #1"
+				"Tabelle"
 				+"</li></a>";
 		out+="<a href="+'"'+
 				"funktion2.jsp"
@@ -16,9 +16,9 @@ public class Header {
 				"Charts"
 				+"</li></a>";
 		out+="<a href="+'"'+
-				"#"
+				"funktion3.jsp"
 				+'"'+"><li>"+
-				"Funktion #3"
+				"Upload"
 				+"</li></a>";
 		out+="<a href="+'"'+
 				"setup.jsp"
