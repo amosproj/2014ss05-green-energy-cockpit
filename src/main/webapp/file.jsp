@@ -18,6 +18,9 @@ if(pathinfo==null){
 }else if(pathinfo.equals("/upload")){
 	System.out.println("forward to uploadgedöns");
 	request.getRequestDispatcher("/FileUpload").forward(request,response);
+}else if(pathinfo.equals("/download")){
+	System.out.println("want to download");
+	request.getRequestDispatcher("/FileDownload").forward(request,response);
 }
 
 

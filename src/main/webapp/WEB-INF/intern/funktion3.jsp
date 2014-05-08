@@ -57,6 +57,12 @@
                 <input type="file" name="File" />
                 <input type="submit" value="Upload" />
             </form>    
+
+            <form action="../file/download" method="post">
+                <input type="hidden" name="downloadFileName" value="plants.csv">
+                <input type="submit" value="Download"/>
+                 (For now, get a .csv representing the plants tabek in our database)
+            </form>    
             
             <%
             String errMsg=(String)request.getAttribute("errorMessage");	

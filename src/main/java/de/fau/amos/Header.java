@@ -18,7 +18,7 @@ public class Header {
 		out+="<a href="+'"'+
 				"funktion3.jsp"
 				+'"'+"><li>"+
-				"Upload"
+				"Up/Download"
 				+"</li></a>";
 		out+="<a href="+'"'+
 				"setup.jsp"
