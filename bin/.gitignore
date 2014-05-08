@@ -1,5 +1,0 @@
-target/**
-!target/ROOT.war
-.classpath
-.settings
-.project
