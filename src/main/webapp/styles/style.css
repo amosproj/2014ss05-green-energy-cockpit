@@ -50,7 +50,7 @@ header h2{
 	background-image:url(../images/background_image.fw.png);
     color: white;
     border-radius: 10px;
-    padding-left: 15px;
+    padding: 15px;
     text-shadow: black 0px 0px 5px;
 }
 
@@ -149,9 +149,21 @@ nav li {
     border-radius: 5px;
     font-weight: bold;
 	color:white;
-	background-image:url(../images/background_image.fw.png);
+	background-image:url(../images/background_image_large.png);
     cursor: pointer;
 }
 nav a{
 	text-decoration: none;
+}
+#dataTable{
+
+	font-size: 8pt;
+	border-color: black;
+
+
+
+}
+#dataTable tr:first-child {
+
+	font-style: bold;
 }

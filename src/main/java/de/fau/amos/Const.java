@@ -34,6 +34,7 @@ public class Const {
 		public static final String REGISTRTION_PAGE="/WEB-INF/login/reg.jsp";
 		public static final String CHANGE_PASSWORD_PAGE="/WEB-INF/login/change.jsp";
 		public static final String INTERN_HOME="/intern/index.jsp";
+		public static final String UPLOAD_JSP="/WEB-INF/file/upload.jsp";
 	}
 
 
@@ -123,6 +124,9 @@ public class Const {
 		public static final String REGISTER_USERNAME="registerUsername";
 		public static final String REGISTER_PASSWORD_1="registerPassword1";
 		public static final String REGISTER_PASSWORD_2="registerPassword2";
+		
+		public static final String SETUP_NEW_PLANT_NAME="newPlantName";
+		public static final String SETUP_NEW_CONTROL_POINT_NAME="newControlPointName";
 
 	}
 

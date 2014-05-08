@@ -49,7 +49,19 @@ public class User {
 			return;
 		}
 		config=servletConfig;
-		userData=new File(config.getServletContext().getRealPath("/WEB-INF"),userDataFileName);
+//		userData=new File(config.getServletContext().getRealPath("/WEB-INF"),userDataFileName);
+		File folder=new File(System.getProperty("userdir.location"));
+		if(!folder.exists()){
+			folder.mkdirs();
+		}
+		userData=new File(folder,userDataFileName);
+		if(!userData.exists()){
+			try {
+				userData.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**

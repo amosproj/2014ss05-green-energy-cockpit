@@ -40,16 +40,12 @@
  		<h2>Green Energy Cockpit</h2>
 	</header>
 	<div id="loginStateBox">
-	Logged in as "
+	Logged in as "<%out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME));%>"
 	
-	<% 
-	out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME)); 
-	%>
-	"
 	</div>
 	    <nav id="menue">
         <ul>
-			<%out.println(Header.getHeaderButtons()); %>
+    		<%out.println(Header.getHeaderButtons()); %>
         </ul>
     </nav>   
 
@@ -57,12 +53,36 @@
 		<div id="content">
 			
 			<%
-		
-			out.println("Startpage");
-			
-			
+			int selected=0;
+			try{
+				selected=Integer.parseInt(request.getParameter("selChart"));
+			}catch(NumberFormatException e){
+				selected=0;
+			}
 			%>
 			
+			<form method="post" action="">
+				<select name="selChart" onChange="this.form.submit()">
+					<option value="0"<% out.print(((selected==0)?" selected":"")+""); %>></option>
+					<option value="1"<% out.print(((selected==1)?" selected":"")+""); %>>Area Chart</option>
+					<option value="2"<% out.print(((selected==2)?" selected":"")+""); %>>Bar Chart</option>
+					<option value="3"<% out.print(((selected==3)?" selected":"")+""); %>>Bar Chart 3D</option>
+					<option value="4"<% out.print(((selected==4)?" selected":"")+""); %>>Line Chart</option>
+					<option value="5"<% out.print(((selected==5)?" selected":"")+""); %>>Pie Chart</option>
+					<option value="6"<% out.print(((selected==6)?" selected":"")+""); %>>Graph Chart</option>
+				</select>
+				<!-- input type="submit" value="Show chart"-->
+				More charts are comming soon!
+			</form>
+			
+			
+			
+			
+			<%if(selected!=0){ %>
+			<img src="../ChartSven?param1=<%=selected %>&param2=value2" />
+			<%}else{ %>
+			Selected a chart type.
+			<%} %>
 					
 		</div>
 	</div>

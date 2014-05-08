@@ -40,30 +40,44 @@
  		<h2>Green Energy Cockpit</h2>
 	</header>
 	<div id="loginStateBox">
-	Logged in as "
+	Logged in as "<%out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME));%>"
 	
-	<% 
-	out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME)); 
-	%>
-	"
 	</div>
 	    <nav id="menue">
         <ul>
-			<%out.println(Header.getHeaderButtons()); %>
+    		<%out.println(Header.getHeaderButtons()); %>
         </ul>
     </nav>   
 
 	<div id="completeContentBox">
 		<div id="content">
 			
-			<%
-		
-			out.println("Startpage");
-			
-			
-			%>
-			
-					
+			<h3> Choose File to Upload in Server </h3>
+            <form action="../file/upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="File" />
+                <input type="submit" value="Upload" />
+            </form>    
+
+            <form action="../file/download" method="post">
+                <input type="hidden" name="downloadFileName" value="plants.csv">
+                <input type="submit" value="Download"/>
+                 (For now, get a .csv representing the plants tabek in our database)
+            </form>    
+            
+            <%
+            String errMsg=(String)request.getAttribute("errorMessage");	
+            if(errMsg!=null){
+            	//TODO mark as error message
+            	out.println(" "+errMsg);
+            }
+            String msg=(String)request.getAttribute("message");	
+            if(msg!=null){
+            	//TODO mark as normal message
+            	out.println(" "+msg);
+            }
+            
+            %>
+            
 		</div>
 	</div>
 </body>

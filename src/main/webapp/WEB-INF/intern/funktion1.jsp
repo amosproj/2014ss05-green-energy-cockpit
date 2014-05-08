@@ -40,16 +40,12 @@
  		<h2>Green Energy Cockpit</h2>
 	</header>
 	<div id="loginStateBox">
-	Logged in as "
+	Logged in as "<%out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME));%>"
 	
-	<% 
-	out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME)); 
-	%>
-	"
 	</div>
 	    <nav id="menue">
         <ul>
-			<%out.println(Header.getHeaderButtons()); %>
+    		<%out.println(Header.getHeaderButtons()); %>
         </ul>
     </nav>   
 
@@ -57,9 +53,22 @@
 		<div id="content">
 			
 			<%
-		
-			out.println("Startpage");
 			
+			ArrayList<ArrayList<String>> data=SQL.querry("SELECT * FROM Dresden;");
+			out.println("<table border rules=\"all\" id= \"dataTable\" >");
+
+			for(int i=0;i<data.size();i++){
+				out.println("<tr>");
+				for(int j=0;j<data.get(i).size();j++){
+					out.println("<td style=\"word-break:break-all;word-wrap:break-word\" width=\"180\">");
+					out.println(data.get(i).get(j));
+					out.println("</td>");
+					
+				}
+				out.println("</tr>");
+			}
+
+			out.println("</table>");
 			
 			%>
 			
