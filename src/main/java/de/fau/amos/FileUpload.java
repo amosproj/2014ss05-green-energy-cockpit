@@ -15,7 +15,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-@WebServlet("/FileUpload")
+@WebServlet("/FileUpload/*")
 public class FileUpload extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
@@ -28,7 +28,6 @@ public class FileUpload extends HttpServlet {
 	 */
 	public FileUpload() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -44,6 +43,10 @@ public class FileUpload extends HttpServlet {
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 			
+		String pathInfo=request.getPathInfo();
+		System.out.println("called fileupload: "+pathInfo);
+		boolean isImport=pathInfo!=null&&pathInfo.startsWith("/import");
+	
 		if (ServletFileUpload.isMultipartContent(request)) {
 			try {
 				List<FileItem> list = new ServletFileUpload(
@@ -51,8 +54,28 @@ public class FileUpload extends HttpServlet {
 
 				for (FileItem fi : list) {
 					if (!fi.isFormField()) {
-						String name = new File(fi.getName()).getName();
-						fi.write(new File(System.getProperty("userdir.location"),name));
+						String rand="";
+						for(int i=0;i<6;i++){
+							rand+=(int)(Math.random()*10);
+						}
+						String plantId=request.getPathInfo().replace("/import","");
+						if(plantId==null||plantId.length()==0){
+							plantId="";
+//						}else{
+//							plantId="_"+plantId;
+						}
+						String name = new File(rand+"_"+fi.getName()).getName()+(isImport?"_imp"+plantId:"");
+						
+						File folder=null;
+						if(isImport){
+							folder=new File(System.getProperty("userdir.location"),"import");
+						}else{
+							folder=new File(System.getProperty("userdir.location"),"uploads");
+						}
+						if(!folder.exists()){
+							folder.mkdirs();
+						}
+						fi.write(new File(folder,name));
 					}
 				}
 
@@ -62,13 +85,18 @@ public class FileUpload extends HttpServlet {
 			}
 
 		} else {
-			request.setAttribute("message",
+			request.setAttribute("errorMessage",
 					"Something went wrong.");
 		}
-
 		
-		RequestDispatcher disp=request.getRequestDispatcher("/intern/funktion3.jsp");
-		disp.forward(request, response);
+
+		if(isImport){
+//			request.setAttribute("plant",request.getPathInfo().replace("/import",""));
+//			request.getRequestDispatcher("/intern/import.jsp").forward(request, response);
+			response.sendRedirect(request.getContextPath()+"/intern/import.jsp");			
+		}else{
+			response.sendRedirect(request.getContextPath()+"/intern/funktion3.jsp");
+		}
 		
 
 	}

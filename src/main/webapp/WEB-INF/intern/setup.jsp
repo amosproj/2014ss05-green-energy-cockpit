@@ -170,8 +170,9 @@
 					<%if(plants!=null){%>
 					<td>
 						<form method="post" action="">
-							<select name="selName">
+							<select name="selName" onChange="this.form.submit()">
 							<!-- select name="selName" id="selectPlant" onchange="changeSelectPlant()"-->
+								<option value="0" />
 								<%
 								
 								for(int i=1;i<plants.size();i++){
@@ -194,16 +195,34 @@
 						
 						
 					</td>
-					<%if(selected==0){out.println("<!--");} %>
+		
+				</tr>
+		
+		
+				<%if(selected==0){out.println("<!--");} %>
+				<tr>
 					<td>
 						<form method="post" action="">
 							Name : <input type="text"
 								name="<%=Const.RequestParameters.SETUP_NEW_CONTROL_POINT_NAME%>">
 							<input type="hidden" name="selName" value="<%=selected %>">
-							<input type="submit" value="Add control point<%out.println(((selected!=0&&plants.size()>selected&&selected>0)?" "+plants.get(selected).get(1):"")); %>">
+							<input type="submit" value="Add control point<%out.println(((selected!=0&&plants.size()>selected&&selected>0)?" to "+plants.get(selected).get(1):"")); %>">
 						</form>						
 					</td>
-					<%if(selected==0){out.println("-->");} %>
+					
+					<td>
+					<form action="../file/upload/import<%=selected %>" method="post" enctype="multipart/form-data">
+		                <input type="file" name="File" />
+		                <input type="submit" value="Upload" />
+	            	</form>    
+            	</td>
+					
+				</tr>	
+				<%if(selected==0){out.println("-->");} %>
+		
+		
+				<tr>
+				
 				</tr>
 
 				<tr>
@@ -242,15 +261,7 @@
 					
 			%>
 
-		<script>
-		function changeSelectPlant(){
-			document.getElementByName("hiddenInput").value=document.getElementById("selectPlant").value;	
-		}
-		
-		function test(){
-			document.getElementById("selectPlant2").value=document.getElementById("selectPlant").value;
-		}
-		</script>
+
 		</div>
 	</div>
 </body>

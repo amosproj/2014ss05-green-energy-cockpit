@@ -4,7 +4,8 @@ public class TimestampConversion {
 	public static String convertTimestamp(String Timestamp){
 		return Timestamp.substring(13,17) + "-" + getMonthInt(Timestamp.substring(8,11)) + "-" + Timestamp.substring(5,7) + " " + Timestamp.substring(18,20) + ":" + Timestamp.substring(21) + ":00";
 	}
-	public static String getMonthInt(String Month)throws IllegalArgumentException{
+	
+	private static String getMonthInt(String Month)throws IllegalArgumentException{
 		switch(Month.toLowerCase()){
 		case "jan":
 			return "01";
