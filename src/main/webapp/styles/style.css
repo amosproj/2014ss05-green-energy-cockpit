@@ -21,10 +21,12 @@
  /* Applied to all pages */
 *{
         font-family: Arial, Verdana, sans-serif;
+
 }
 body{
     width: 900px;
     margin: auto;
+
 }
 header {
     background-image:url(../images/background_image.fw.png);
@@ -47,11 +49,18 @@ header h2{
 }
 #completeContentBox{
 	line-height: 1.5;
-	background-image:url(../images/background_image.fw.png);
+	background-image:url(../images/background_image_large.png);
     color: white;
     border-radius: 10px;
     padding: 15px;
     text-shadow: black 0px 0px 5px;
+	max-height:700px;
+
+}
+#content{
+    position: relative;
+	overflow:auto;
+	height:100%;
 }
 
 
