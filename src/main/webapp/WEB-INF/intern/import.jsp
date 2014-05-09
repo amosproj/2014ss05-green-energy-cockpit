@@ -52,6 +52,13 @@ if(impFolder.exists()){
 					//create bufferedReader to read file(s) in import folder
 					BufferedReader br=new BufferedReader(new FileReader(list[f]));
 					
+					int lines=0;
+					while(br.readLine()!=null){
+						lines++;
+					}
+					br.close();
+					br=new BufferedReader(new FileReader(list[f]));
+					
 					//tmpVar to step through file line by line
 					String line=null;
 					
@@ -72,9 +79,23 @@ if(impFolder.exists()){
 					tableHeaders.add("controlpoint_id");
 					tableHeaders.add("value");
 					
+					
+					int lineCounter=0;
+					boolean printed=false;
 					//step through file
 					while((line=br.readLine())!=null){
 						//System.out.println("find:"+findHeaders+" mutlid:"+multilineHeader+" read line: "+line);
+						lineCounter++;
+						int prozent=(int)((lineCounter/(double)lines)*100);
+						
+						if(prozent%5==0){
+							if(!printed){
+								System.out.println("Fortschritt: "+prozent+"% ("+lineCounter+"/"+lines+")");
+								printed=true;
+							}
+						}else{
+							printed=false;
+						}
 						
 						//in "findHeaders"-mode headers are not read out completely
 						if(findHeaders){

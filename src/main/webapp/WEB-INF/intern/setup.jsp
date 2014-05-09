@@ -171,7 +171,7 @@
 					<td>
 						<form method="post" action="">
 							<select name="selName" onChange="this.form.submit()">
-							<!-- select name="selName" id="selectPlant" onchange="changeSelectPlant()"-->
+								<!-- select name="selName" id="selectPlant" onchange="changeSelectPlant()"-->
 								<option value="0" />
 								<%
 								
@@ -180,8 +180,7 @@
 								}
 								out.println("<option value="+'"'+-1+'"'+((selected==-1)?" selected":"")+">All</option>");
 								%>
-							</select>
-							<input type="submit" value="Show controlpoints">
+							</select> <input type="submit" value="Show controlpoints">
 						</form>
 					</td>
 					<% } %>
@@ -192,13 +191,13 @@
 								name="<%=Const.RequestParameters.SETUP_NEW_PLANT_NAME%>">
 							<input type="submit" value="Add plant">
 						</form>
-						
-						
+
+
 					</td>
-		
+
 				</tr>
-		
-		
+
+
 				<%if(selected==0){out.println("<!--");} %>
 				<tr>
 					<td>
@@ -206,24 +205,21 @@
 							Name : <input type="text"
 								name="<%=Const.RequestParameters.SETUP_NEW_CONTROL_POINT_NAME%>">
 							<input type="hidden" name="selName" value="<%=selected %>">
-							<input type="submit" value="Add control point<%out.println(((selected!=0&&plants.size()>selected&&selected>0)?" to "+plants.get(selected).get(1):"")); %>">
-						</form>						
+							<input type="submit"
+								value="Add control point<%out.println(((selected!=0&&plants.size()>selected&&selected>0)?" to "+plants.get(selected).get(1):"")); %>">
+						</form>
 					</td>
-					
+
 					<td>
-					<form action="../file/upload/import<%=selected %>" method="post" enctype="multipart/form-data">
-		                <input type="file" name="File" />
-		                <input type="submit" value="Upload" />
-	            	</form>    
-            	</td>
-					
-				</tr>	
-				<%if(selected==0){out.println("-->");} %>
-		
-		
-				<tr>
-				
+						<form action="../file/upload/import<%=selected %>" method="post"
+							enctype="multipart/form-data">
+							<input type="file" name="File" /> <input type="submit"
+								value="Upload" />
+						</form>
+					</td>
+
 				</tr>
+				<%if(selected==0){out.println("-->");} %>
 
 				<tr>
 					<%
@@ -233,8 +229,9 @@
 			
 					}
 					%>
-</table>
-				<%
+				
+			</table>
+			<%
 			if(controlPoints==null||controlPoints.size()==0){
 				if(selected==0){
 					out.println("Select a plant.");

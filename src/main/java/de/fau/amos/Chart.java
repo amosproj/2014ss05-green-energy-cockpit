@@ -14,6 +14,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 public class Chart {
+	
 	public JFreeChart chart;
 	public Chart (String Database, String table, String User, String Password)throws SQLException, IOException{
 		XYSeries series1 = createSeries(Database, table, User, Password);
@@ -67,6 +68,7 @@ public class Chart {
 //		punkteframe.pack();
 //		punkteframe.setVisible(true);
 	}
+	
 	public JFreeChart getChart(){
 		return chart;
 	}

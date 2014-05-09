@@ -2,6 +2,7 @@ package de.fau.amos;
 
 import java.awt.image.RenderedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -20,13 +21,13 @@ import org.jfree.data.general.DefaultPieDataset;
  * Servlet implementation class ChartSven
  */
 
-public class ChartSven extends HttpServlet {
+public class ChartRenderer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public ChartSven() {
+	public ChartRenderer() {
 		super();
 	}
 
@@ -41,15 +42,18 @@ public class ChartSven extends HttpServlet {
 
 		ServletOutputStream os = response.getOutputStream();
 
+		
+		
 		DefaultCategoryDataset defaultDataset = new DefaultCategoryDataset();
-		defaultDataset.addValue(76, "Wert1", "Sandeep");
-		defaultDataset.addValue(30, "Wert1", "Sangeeta");
-		defaultDataset.addValue(50, "Wert1", "Surabhi");
-		defaultDataset.addValue(20, "Wert1", "Sumanta");
-		defaultDataset.addValue(10, "Wert2", "Sandeep");
-		defaultDataset.addValue(90, "Wert2", "Sangeeta");
-		defaultDataset.addValue(23, "Wert2", "Surabhi");
-		defaultDataset.addValue(87, "Wert2", "Sumanta");
+		getAllData(defaultDataset);
+//		defaultDataset.addValue(76, "Wert1", "Sandeep");
+//		defaultDataset.addValue(30, "Wert1", "Sangeeta");
+//		defaultDataset.addValue(50, "Wert1", "Surabhi");
+//		defaultDataset.addValue(20, "Wert1", "Sumanta");
+//		defaultDataset.addValue(10, "Wert2", "Sandeep");
+//		defaultDataset.addValue(90, "Wert2", "Sangeeta");
+//		defaultDataset.addValue(23, "Wert2", "Surabhi");
+//		defaultDataset.addValue(87, "Wert2", "Sumanta");
 
 		 DefaultPieDataset pieDataset = new DefaultPieDataset();
 	        pieDataset.setValue("One", new Double(43.2));
@@ -109,5 +113,18 @@ public class ChartSven extends HttpServlet {
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
+	}
+	
+	private void getAllData(DefaultCategoryDataset data){
+		for(int i=0;i<4;i++){
+			ArrayList<ArrayList<String>> ret=SQL.querry(
+					//"select control_point_name,value from controlpoints,measures where controlpoint_id='"+(i+1)+"' and controlpoint_id=controlpoints_id;");
+					"select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('day',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
+			for(int j=1;j<ret.size();j++){
+				data.addValue(Double.parseDouble(ret.get(j).get(0)),
+						ret.get(j).get(1),
+						ret.get(j).get(2));
+			}
+		}
 	}
 }

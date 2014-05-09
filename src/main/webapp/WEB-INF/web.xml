@@ -45,13 +45,13 @@
   <servlet>
   	<description>
   	</description>
-  	<display-name>ChartSven</display-name>
-  	<servlet-name>ChartSven</servlet-name>
-  	<servlet-class>de.fau.amos.ChartSven</servlet-class>
+  	<display-name>ChartRenderer</display-name>
+  	<servlet-name>ChartRenderer</servlet-name>
+  	<servlet-class>de.fau.amos.ChartRenderer</servlet-class>
   </servlet>
   <servlet-mapping>
-  	<servlet-name>ChartSven</servlet-name>
-  	<url-pattern>/ChartSven</url-pattern>
+  	<servlet-name>ChartRenderer</servlet-name>
+  	<url-pattern>/ChartRenderer</url-pattern>
   </servlet-mapping>
  
   

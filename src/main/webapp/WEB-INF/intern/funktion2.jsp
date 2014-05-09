@@ -79,7 +79,7 @@
 			
 			
 			<%if(selected!=0){ %>
-			<img src="../ChartSven?param1=<%=selected %>&param2=value2" />
+			<img src="../ChartRenderer?param1=<%=selected %>&param2=value2" />
 			<%}else{ %>
 			Selected a chart type.
 			<%} %>
