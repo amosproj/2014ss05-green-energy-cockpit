@@ -129,6 +129,32 @@ public class SQL{
 		return data;
 	}
 
+	public static ResultSet querryToResultSet(String command){
+
+		Statement stmt = null;
+		try {
+			if(c==null||c.isClosed()){
+				initConnection();
+			}
+			synchronized(c){
+				stmt = c.createStatement();
+
+				ResultSet rs = stmt.executeQuery(command);
+				
+//				stmt.close();
+
+				return rs;
+
+//				rs.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+
+	}
+
 	public static void createTable(String tableName,String[] columns){
 		Statement stmt = null;
 		try {

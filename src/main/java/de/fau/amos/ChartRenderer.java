@@ -1,5 +1,8 @@
 package de.fau.amos;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,9 +16,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.StandardChartTheme;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.ui.RectangleInsets;
 
 /**
  * Servlet implementation class ChartSven
@@ -81,9 +88,41 @@ public class ChartRenderer extends HttpServlet {
 		case 2:
 			chart = ChartFactory.createBarChart("Bar Chart", "",
 				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
+			
+			String fontName = "Lucida Sans";
+			StandardChartTheme theme = (StandardChartTheme)org.jfree.chart.StandardChartTheme.createJFreeTheme();
+
+		    theme.setTitlePaint( Color.decode( "#4572a7" ) );
+		    theme.setExtraLargeFont( new Font(fontName,Font.PLAIN, 16) ); //title
+		    theme.setLargeFont( new Font(fontName,Font.BOLD, 15)); //axis-title
+		    theme.setRegularFont( new Font(fontName,Font.PLAIN, 11));
+		    theme.setRangeGridlinePaint( Color.decode("#C0C0C0"));
+		    theme.setPlotBackgroundPaint( Color.white );
+		    theme.setChartBackgroundPaint( Color.white );
+		    theme.setGridBandPaint( Color.red );
+		    theme.setAxisOffset( new RectangleInsets(0,0,0,0) );
+		    theme.setBarPainter(new StandardBarPainter());
+		    theme.setAxisLabelPaint( Color.decode("#666666")  );
+		    theme.apply( chart );
+		    chart.getCategoryPlot().setOutlineVisible( false );
+		    chart.getCategoryPlot().getRangeAxis().setAxisLineVisible( false );
+		    chart.getCategoryPlot().getRangeAxis().setTickMarksVisible( false );
+		    chart.getCategoryPlot().setRangeGridlineStroke( new BasicStroke() );
+		    chart.getCategoryPlot().getRangeAxis().setTickLabelPaint( Color.decode("#666666") );
+		    chart.getCategoryPlot().getDomainAxis().setTickLabelPaint( Color.decode("#666666") );
+		    chart.setTextAntiAlias( true );
+		    chart.setAntiAlias( true );
+		    chart.getCategoryPlot().getRenderer().setSeriesPaint( 0, Color.decode( "#4572a7" ));
+		    BarRenderer rend = (BarRenderer) chart.getCategoryPlot().getRenderer();
+		    rend.setShadowVisible( true );
+		    rend.setShadowXOffset( 2 );
+		    rend.setShadowYOffset( 0 );
+		    rend.setShadowPaint( Color.decode( "#C0C0C0"));
+		    rend.setMaximumBarWidth( 0.1);
+//		    rend.set
 			break;
 		case 3:
-			chart = ChartFactory.createBarChart3D("Bar Chart 3D", "",
+			chart = ChartFactory.createBarChart("Bar Chart 3D", "",
 				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
 			break;
 		case 4:
@@ -99,7 +138,7 @@ public class ChartRenderer extends HttpServlet {
 	
 		}
 		
-		RenderedImage chartImage = chart.createBufferedImage(500, 300);
+		RenderedImage chartImage = chart.createBufferedImage(870, 500);
 		ImageIO.write(chartImage, "png", os);
 		os.flush();
 		os.close();
