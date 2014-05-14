@@ -53,11 +53,13 @@
 		<div id="content">
 			
 			<h3> Choose File to Upload in Server </h3>
-            <form action="../file/upload" method="post" enctype="multipart/form-data">
+            <!-- 
+            <form action="../file/upload/import" method="post" enctype="multipart/form-data">
                 <input type="file" name="File" />
                 <input type="submit" value="Upload" />
             </form>    
-
+ 			-->
+            
             <form action="../file/download" method="post">
                 <input type="hidden" name="downloadFileName" value="plants.csv">
                 <input type="submit" value="Download"/>

@@ -41,7 +41,7 @@ public class FileDownload extends HttpServlet {
 		//TODO change this later
 		System.out.println("create file "+fileName+"");
 		ArrayList<ArrayList<String>>data=SQL.querry("select * from plants");
-		createCsvFile(data,fileName);
+		createCsvFile(data,fileName); 
 		
 		File file=new File(System.getProperty("userdir.location"),fileName);
 		
@@ -82,6 +82,7 @@ public class FileDownload extends HttpServlet {
 					bw.write(lines);
 				}
 				bw.newLine();
+				
 			}	
 			bw.flush();
 			bw.close();

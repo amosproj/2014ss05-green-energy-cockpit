@@ -15,9 +15,8 @@ System.out.println("called file "+request.getRequestURL());
 String pathinfo=request.getPathInfo();
 if(pathinfo==null){
 	response.sendRedirect(request.getContextPath());	
-}else if(pathinfo.equals("/upload")){
-	System.out.println("forward to uploadgedöns");
-	request.getRequestDispatcher("/FileUpload").forward(request,response);
+}else if(pathinfo.startsWith("/upload")){
+	request.getRequestDispatcher("/FileUpload"+pathinfo.replace("/upload","")).forward(request,response);
 }else if(pathinfo.equals("/download")){
 	System.out.println("want to download");
 	request.getRequestDispatcher("/FileDownload").forward(request,response);
