@@ -49,10 +49,30 @@ public class ChartRenderer extends HttpServlet {
 
 		ServletOutputStream os = response.getOutputStream();
 
+		//parameter from url
+		String val1=request.getParameter("param1");
+		String startDay=request.getParameter("startDay");
+		String startMonth=request.getParameter("startMonth");
+		String startYear=request.getParameter("startYear");
+		String endDay=request.getParameter("endDay");
+		String endMonth=request.getParameter("endMonth");
+		String endYear=request.getParameter("endYear");
+
 		
-		
+		//createDataset
 		DefaultCategoryDataset defaultDataset = new DefaultCategoryDataset();
+		
+		//get data for parameters
 		getAllData(defaultDataset);
+		
+		
+		
+		System.out.println("search for "+startDay+"."+startMonth+"."+startYear+" to "+endDay+"."+endMonth+"."+endYear);
+		
+		
+		
+		
+		
 //		defaultDataset.addValue(76, "Wert1", "Sandeep");
 //		defaultDataset.addValue(30, "Wert1", "Sangeeta");
 //		defaultDataset.addValue(50, "Wert1", "Surabhi");
@@ -70,7 +90,6 @@ public class ChartRenderer extends HttpServlet {
 	        pieDataset.setValue("Five", new Double(11.0));
 	        pieDataset.setValue("Six", new Double(19.4));
 		
-		String val1=request.getParameter("param1");
 		int type=0;
 		try{
 			type=Integer.parseInt(val1);

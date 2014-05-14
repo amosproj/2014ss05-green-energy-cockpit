@@ -28,12 +28,126 @@
 <!DOCTYPE html>
 <html>
 
+				
+
+
 <head>
 <title>AMOS-Cockpit</title>
 <link rel="stylesheet" href="../styles/style.css" type="text/css" />
 </head>
 
 <body>
+
+<script>
+					
+function changeStartDays(){
+	var day=document.getElementById("startDay").value;
+	var month=document.getElementById("startMonth").value;
+	var year=document.getElementById("startYear").value;
+	
+	var endDay=document.getElementById("endDay").value;
+	var endMonth=document.getElementById("endMonth").value;
+	var endYear=document.getElementById("endYear").value;
+	
+	var days;
+	
+	switch(month){
+	case "1":
+	case "3":
+	case "5":
+	case "7":
+	case "8":
+	case "10":
+	case "12":
+		days=31;
+		break;
+	case "2":
+		if((year%4==0&&year%100!=0)||year%400==0){
+			days=29;
+		}else{
+			days=28;
+		}
+		break;
+	default:
+		days=30;
+	}
+	
+	document.getElementById("startDay").options.length = days;
+
+	for(var i=1; i<=days; i++){
+		document.getElementById("startDay").options[i-1].innerHTML=i;
+		document.getElementById("startDay").options[i-1].value=i;
+	}
+	
+	/*
+	if(endYear<year){
+		document.getElementById("endYear").selectedIndex=document.getElementById("startYear").selectedIndex;
+		document.getElementById("endMonth").selectedIndex=document.getElementById("startMonth").selectedIndex;
+		document.getElementById("endDay").selectedIndex=document.getElementById("startDay").selectedIndex;
+	}else if(endYear==year&&endMonth<month){
+		document.getElementById("endMonth").selectedIndex=document.getElementById("startMonth").selectedIndex;
+		document.getElementById("endDay").selectedIndex=document.getElementById("startDay").selectedIndex;		
+	}else if(endYear==year&&endMonth==month&&endDay<day){
+		document.getElementById("endDay").selectedIndex=document.getElementById("startDay").selectedIndex;				
+	}
+	*/
+
+}
+
+function changeEndDays(){
+	var startDay=document.getElementById("startDay").value;
+	var startMonth=document.getElementById("startMonth").value;
+	var startYear=document.getElementById("startYear").value;
+
+	var day=document.getElementById("endDay").value;
+	var month=document.getElementById("endMonth").value;
+	var year=document.getElementById("endYear").value;
+
+	var days;
+	
+	switch(month){
+	case "1":
+	case "3":
+	case "5":
+	case "7":
+	case "8":
+	case "10":
+	case "12":
+		days=31;
+		break;
+	case "2":
+		if((year%4==0&&year%100!=0)||year%400==0){
+			days=29;
+		}else{
+			days=28;
+		}
+		break;
+	default:
+		days=30;
+	}
+	
+	document.getElementById("endDay").options.length = days;
+
+	for(var i=1; i<=days; i++){
+		document.getElementById("endDay").options[i-1].innerHTML=i;
+		document.getElementById("endDay").options[i-1].value=i;
+	}
+	
+	/*
+	if(startYear>year){
+		document.getElementById("startYear").selectedIndex=document.getElementById("endYear").selectedIndex;
+		document.getElementById("startMonth").selectedIndex=document.getElementById("endMonth").selectedIndex;
+		document.getElementById("startDay").selectedIndex=document.getElementById("endDay").selectedIndex;
+	}else if(startYear==year&&startMonth>month){
+		document.getElementById("startMonth").selectedIndex=document.getElementById("endMonth").selectedIndex;
+		document.getElementById("startDay").selectedIndex=document.getElementById("endDay").selectedIndex;		
+	}else if(startYear==year&&startMonth==month&&startDay>day){
+		document.getElementById("startDay").selectedIndex=document.getElementById("endDay").selectedIndex;				
+	}
+	*/
+}
+
+</script>
 
 	<header>
 		<h1>AMOS PROJECT</h1>
@@ -59,27 +173,108 @@
 			}catch(NumberFormatException e){
 				selected=0;
 			}
+			int startDay=0;
+			try{
+				startDay=Integer.parseInt(request.getParameter("startDay"));
+			}catch(NumberFormatException e){
+				startDay=0;
+			}
+			int startMonth=0;
+			try{
+				startMonth=Integer.parseInt(request.getParameter("startMonth"));
+			}catch(NumberFormatException e){
+				startMonth=0;
+			}
+			int startYear=0;
+			try{
+				startYear=Integer.parseInt(request.getParameter("startYear"));
+			}catch(NumberFormatException e){
+				startYear=0;
+			}
+			int endDay=0;
+			try{
+				endDay=Integer.parseInt(request.getParameter("endDay"));
+			}catch(NumberFormatException e){
+				endDay=0;
+			}
+			int endMonth=0;
+			try{
+				endMonth=Integer.parseInt(request.getParameter("endMonth"));
+			}catch(NumberFormatException e){
+				endMonth=0;
+			}
+			int endYear=0;
+			try{
+				endYear=Integer.parseInt(request.getParameter("endYear"));
+			}catch(NumberFormatException e){
+				endYear=0;
+			}
+			
 			%>
 			
-			<form method="post" action="">
-				<select name="selChart" onChange="this.form.submit()">
-					<option value="0"<% out.print(((selected==0)?" selected":"")+""); %>></option>
-					<option value="1"<% out.print(((selected==1)?" selected":"")+""); %>>Area Chart</option>
-					<option value="2"<% out.print(((selected==2)?" selected":"")+""); %>>Bar Chart</option>
-					<option value="3"<% out.print(((selected==3)?" selected":"")+""); %>>Bar Chart 3D</option>
-					<option value="4"<% out.print(((selected==4)?" selected":"")+""); %>>Line Chart</option>
-					<option value="5"<% out.print(((selected==5)?" selected":"")+""); %>>Pie Chart</option>
-					<option value="6"<% out.print(((selected==6)?" selected":"")+""); %>>Graph Chart</option>
-				</select>
-				<!-- input type="submit" value="Show chart"-->
-				More charts are comming soon!
-			</form>
+			<table>
+				<tr>
+					<td>
+						<form method="post" action="">
+							<select name="selChart">
+							
+								<option value="0"<% out.print(((selected==0)?" selected":"")+""); %>></option>
+								<option value="1"<% out.print(((selected==1)?" selected":"")+""); %>>Area Chart</option>
+								<option value="2"<% out.print(((selected==2)?" selected":"")+""); %>>Bar Chart</option>
+								<option value="3"<% out.print(((selected==3)?" selected":"")+""); %>>Bar Chart 3D</option>
+								<option value="4"<% out.print(((selected==4)?" selected":"")+""); %>>Line Chart</option>
+								<option value="5"<% out.print(((selected==5)?" selected":"")+""); %>>Pie Chart</option>
+								<option value="6"<% out.print(((selected==6)?" selected":"")+""); %>>Graph Chart</option>
+							</select>
+						<!--
+						von:
+						
+						<select name="startDay" id="startDay" onchange="changeStartDays();">
+							<%for(int i=1;i<=31;i++){ %>
+							<option value="<%=i %>"><%=i %></option>
+							<%} %>
+						</select>
+						<select name="startMonth" id="startMonth" onchange="changeStartDays();">
+							<%for(int i=1;i<=12;i++){ %>
+							<option value="<%=i %>"><%=i %></option>
+							<%} %>
+						</select>
+						<select name="startYear" id="startYear" onchange="changeStartDays();">
+							<%for(int i=2000;i<=2020;i++){ %>
+							<option value="<%=i %>"><%=i %></option>
+							<%} %>
+						</select>
+			
+						bis:
+						<select name="endDay" id="endDay" onchange="changeEndDays();">
+							<%for(int i=1;i<=31;i++){ %>
+							<option value="<%=i %>"><%=i %></option>
+							<%} %>
+						</select>
+						<select name="endMonth" id="endMonth" onchange="changeEndDays();">
+							<%for(int i=1;i<=12;i++){ %>
+							<option value="<%=i %>"><%=i %></option>
+							<%} %>
+						</select>
+						<select name="endYear" id="endYear" onchange="changeEndDays();">
+							<%for(int i=2000;i<=2020;i++){ %>
+							<option value="<%=i %>"><%=i %></option>
+							<%} %>
+						</select>
+						-->
+						<input type="submit" value="Show">
+						
+						</form>
+					</td>			
+					<td>	
+				</tr>
+				
+			</table>
 			
 			
+			<%if(selected!=0){%>
 			
-			
-			<%if(selected!=0){ %>
-			<img src="../ChartRenderer?param1=<%=selected %>&param2=value2" />
+			<img src="../ChartRenderer?param1=<%=selected %>&startDay=<%=startDay %>&startMonth=<%=startMonth %>&startYear=<%=startYear %>&endDay=<%=endDay %>&endMonth=<%=endMonth %>&endYear=<%=endYear %>"/>
 			<%}else{ %>
 			Selected a chart type.
 			<%} %>

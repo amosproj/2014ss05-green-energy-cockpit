@@ -84,15 +84,15 @@ import org.jfree.data.xy.XYSeriesCollection;
 		
 		private TimeSeries createSeriesQuickTestTime(String name,int id) throws SQLException {
 
-			TimeSeries series = new TimeSeries("Punkte1");
+			TimeSeries series = new TimeSeries(""+SQL.getValueOfFieldWithId("controlpoints","control_point_name",""+id));
 			//day
 //			ResultSet rs = SQL.querryToResultSet("select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('day',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where controlpoints.controlpoints_id='1' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
 			
 			//hour
-			//			ResultSet rs = SQL.querryToResultSet("select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('hour',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where controlpoints.controlpoints_id='1' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
+						ResultSet rs = SQL.querryToResultSet("select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('hour',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where controlpoints.controlpoints_id='1' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
 
 			//minute
-			ResultSet rs = SQL.querryToResultSet("select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,measure_time as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where controlpoints.controlpoints_id='"+id+"' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
+//			ResultSet rs = SQL.querryToResultSet("select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,measure_time as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where controlpoints.controlpoints_id='"+id+"' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
 
 			while (rs.next()) {
 
@@ -103,19 +103,19 @@ import org.jfree.data.xy.XYSeriesCollection;
 //						), rs.getDouble(1));
 				
 				//hour
-//				series.add(new Hour(Integer.parseInt(rs.getString(3).substring(11,13)),
-//						Integer.parseInt(rs.getString(3).substring(8,10)),
-//						Integer.parseInt(rs.getString(3).substring(5,7)),
-//						Integer.parseInt(rs.getString(3).substring(0,4))
-//						), rs.getDouble(1));
+				series.add(new Hour(Integer.parseInt(rs.getString(3).substring(11,13)),
+						Integer.parseInt(rs.getString(3).substring(8,10)),
+						Integer.parseInt(rs.getString(3).substring(5,7)),
+						Integer.parseInt(rs.getString(3).substring(0,4))
+						), rs.getDouble(1));
 				
 				//all
-				series.add(new Minute(Integer.parseInt(rs.getString(3).substring(14,15)),
-				Integer.parseInt(rs.getString(3).substring(11,13)),
-				Integer.parseInt(rs.getString(3).substring(8,10)),
-				Integer.parseInt(rs.getString(3).substring(5,7)),
-				Integer.parseInt(rs.getString(3).substring(0,4))
-				), rs.getDouble(1));
+//				series.add(new Minute(Integer.parseInt(rs.getString(3).substring(14,15)),
+//				Integer.parseInt(rs.getString(3).substring(11,13)),
+//				Integer.parseInt(rs.getString(3).substring(8,10)),
+//				Integer.parseInt(rs.getString(3).substring(5,7)),
+//				Integer.parseInt(rs.getString(3).substring(0,4))
+//				), rs.getDouble(1));
 				
 			}
 			rs.close();
