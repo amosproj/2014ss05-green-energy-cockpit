@@ -50,105 +50,66 @@ public class ChartRenderer extends HttpServlet {
 		ServletOutputStream os = response.getOutputStream();
 
 		//parameter from url
-		String val1=request.getParameter("param1");
+		String chartType=request.getParameter("param1");
 		String startDay=request.getParameter("startDay");
 		String startMonth=request.getParameter("startMonth");
 		String startYear=request.getParameter("startYear");
 		String endDay=request.getParameter("endDay");
 		String endMonth=request.getParameter("endMonth");
 		String endYear=request.getParameter("endYear");
-		String granularity = request.getParameter("granularity");
-		String countType = request.getParameter("countType");
+		String granularity = granularityToString(request.getParameter("granularity"));
+		String countType = countTypeToString(request.getParameter("countType"));
 		
 		//Create Timestamp for SQL-Query (Start- and End-Date)
 		String startTime = TimestampConversion.convertTimestamp(0, 0, Integer.parseInt(startDay), Integer.parseInt(startMonth), Integer.parseInt(startYear));
 		String endTime = TimestampConversion.convertTimestamp(0, 0, Integer.parseInt(endDay), Integer.parseInt(endMonth), Integer.parseInt(endYear));
-				
-	    
-		int intCountType=0;
-		try{
-			intCountType=Integer.parseInt(countType);
-		}catch(NumberFormatException e){
-			intCountType=0;
-		}
-		switch(intCountType){
-		case 0:
-			countType = "avg";
-			break;
-		case 1:
-			countType = "sum";
-			break;
-		}
-			
-			
-		int intGranularity=0;
-		try{
-			intGranularity=Integer.parseInt(granularity);
-		}catch(NumberFormatException e){
-			intGranularity=2;
-		}
-		switch(intGranularity){
-		case 0:
-			granularity = "hour";
-			break;
-		case 1:
-			granularity = "day";
-			break;
-		case 2:
-			granularity = "month";
-			break;
-		case 3:
-			granularity = "year";
-			break;
-		}
-		
+						
 		//createDataset
 		DefaultCategoryDataset defaultDataset = new DefaultCategoryDataset();
 		
 		//get data for parameters
-		getAllData(defaultDataset, granularity, startTime, endTime, countType);
+		getAllData(defaultDataset, granularity, startTime, endTime, countType);		
+				
+		System.out.println("--> search for "+startDay+"."+startMonth+"."+startYear+" to "+endDay+"."+endMonth+"."+endYear+ " Granularity: " + granularity + "CountType: " + countType);		
 		
-		
-		
-		System.out.println("search for "+startDay+"."+startMonth+"."+startYear+" to "+endDay+"."+endMonth+"."+endYear+ " Granularity: " + granularity);
-		
-		
-		
-		
-		
-//		defaultDataset.addValue(76, "Wert1", "Sandeep");
-//		defaultDataset.addValue(30, "Wert1", "Sangeeta");
-//		defaultDataset.addValue(50, "Wert1", "Surabhi");
-//		defaultDataset.addValue(20, "Wert1", "Sumanta");
-//		defaultDataset.addValue(10, "Wert2", "Sandeep");
-//		defaultDataset.addValue(90, "Wert2", "Sangeeta");
-//		defaultDataset.addValue(23, "Wert2", "Surabhi");
-//		defaultDataset.addValue(87, "Wert2", "Sumanta");
+		//create Chart
+		JFreeChart chart= createTypeChart(chartType, defaultDataset);
 
-		 DefaultPieDataset pieDataset = new DefaultPieDataset();
-	        pieDataset.setValue("One", new Double(43.2));
-	        pieDataset.setValue("Two", new Double(10.0));
-	        pieDataset.setValue("Three", new Double(27.5));
-	        pieDataset.setValue("Four", new Double(17.5));
-	        pieDataset.setValue("Five", new Double(11.0));
-	        pieDataset.setValue("Six", new Double(19.4));
-		
+		//create Image and clear output stream
+		RenderedImage chartImage = chart.createBufferedImage(870, 500);
+		ImageIO.write(chartImage, "png", os);
+		os.flush();
+		os.close();
+
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	@Override
+	protected void doPost(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+	}
+	
+	
+	private JFreeChart createTypeChart(String val1, DefaultCategoryDataset defaultDataset){
+		JFreeChart tempChart=null;
+		//select Type of chart
 		int type=0;
 		try{
 			type=Integer.parseInt(val1);
 		}catch(NumberFormatException e){
 			type=0;
 		}
-		
-		JFreeChart chart=null;
-		
 		switch(type){
 		case 1:
-			chart = ChartFactory.createAreaChart("Area Chart", "",
+			tempChart = ChartFactory.createAreaChart("Area Chart", "",
 					"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
-			break;
+			return tempChart;
 		case 2:
-			chart = ChartFactory.createBarChart("Bar Chart", "",
+			tempChart = ChartFactory.createBarChart("Bar Chart", "",
 				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
 			
 			String fontName = "Lucida Sans";
@@ -165,59 +126,50 @@ public class ChartRenderer extends HttpServlet {
 		    theme.setAxisOffset( new RectangleInsets(0,0,0,0) );
 		    theme.setBarPainter(new StandardBarPainter());
 		    theme.setAxisLabelPaint( Color.decode("#666666")  );
-		    theme.apply( chart );
-		    chart.getCategoryPlot().setOutlineVisible( false );
-		    chart.getCategoryPlot().getRangeAxis().setAxisLineVisible( false );
-		    chart.getCategoryPlot().getRangeAxis().setTickMarksVisible( false );
-		    chart.getCategoryPlot().setRangeGridlineStroke( new BasicStroke() );
-		    chart.getCategoryPlot().getRangeAxis().setTickLabelPaint( Color.decode("#666666") );
-		    chart.getCategoryPlot().getDomainAxis().setTickLabelPaint( Color.decode("#666666") );
-		    chart.setTextAntiAlias( true );
-		    chart.setAntiAlias( true );
-		    chart.getCategoryPlot().getRenderer().setSeriesPaint( 0, Color.decode( "#4572a7" ));
-		    BarRenderer rend = (BarRenderer) chart.getCategoryPlot().getRenderer();
+		    theme.apply( tempChart );
+		    tempChart.getCategoryPlot().setOutlineVisible( false );
+		    tempChart.getCategoryPlot().getRangeAxis().setAxisLineVisible( false );
+		    tempChart.getCategoryPlot().getRangeAxis().setTickMarksVisible( false );
+		    tempChart.getCategoryPlot().setRangeGridlineStroke( new BasicStroke() );
+		    tempChart.getCategoryPlot().getRangeAxis().setTickLabelPaint( Color.decode("#666666") );
+		    tempChart.getCategoryPlot().getDomainAxis().setTickLabelPaint( Color.decode("#666666") );
+		    tempChart.setTextAntiAlias( true );
+		    tempChart.setAntiAlias( true );
+		    tempChart.getCategoryPlot().getRenderer().setSeriesPaint( 0, Color.decode( "#4572a7" ));
+		    BarRenderer rend = (BarRenderer) tempChart.getCategoryPlot().getRenderer();
 		    rend.setShadowVisible( true );
 		    rend.setShadowXOffset( 2 );
 		    rend.setShadowYOffset( 0 );
 		    rend.setShadowPaint( Color.decode( "#C0C0C0"));
 		    rend.setMaximumBarWidth( 0.1);
 //		    rend.set
-			break;
+			return tempChart;
 		case 3:
-			chart = ChartFactory.createBarChart("Bar Chart 3D", "",
+			tempChart = ChartFactory.createBarChart("Bar Chart 3D", "",
 				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
-			break;
+			return tempChart;
 		case 4:
-			chart = ChartFactory.createLineChart("Line Chart", "",
+			tempChart = ChartFactory.createLineChart("Line Chart", "",
 					"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
-				break;
+				return tempChart;
 		case 5:
-			chart = ChartFactory.createPieChart("Pie Chart", pieDataset, true, true, false);
-			break;
+			 DefaultPieDataset pieDataset = new DefaultPieDataset();
+		        pieDataset.setValue("One", new Double(43.2));
+		        pieDataset.setValue("Two", new Double(10.0));
+		        pieDataset.setValue("Three", new Double(27.5));
+		        pieDataset.setValue("Four", new Double(17.5));
+		        pieDataset.setValue("Five", new Double(11.0));
+		        pieDataset.setValue("Six", new Double(19.4));
+			tempChart = ChartFactory.createPieChart("Pie Chart", pieDataset, true, true, false);
+			return tempChart;
 		case 6:
-			chart = new ChartJSPTest(null,null,null,null).getChart();
-			break;
-	
+			tempChart = new ChartJSPTest(null,null,null,null).getChart();
+			return tempChart;
+		default: throw new IllegalArgumentException("Error creating Chart. Chart type ('" + type + "') could not be resolved.");
 		}
 		
-		RenderedImage chartImage = chart.createBufferedImage(870, 500);
-		ImageIO.write(chartImage, "png", os);
-		os.flush();
-		os.close();
-	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
-	@Override
-	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
 
 	}
-	
-	
-	
 	private void getAllData(DefaultCategoryDataset data, String granularity, String startTime, String endTime, String countType){
 		System.out.println("--> send SQL Query: select * from (select round(avg(wert), 4),control_point_name,zeit from (select "+ countType +"(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
 		for(int i=0;i<4;i++){
@@ -229,6 +181,42 @@ public class ChartRenderer extends HttpServlet {
 						ret.get(j).get(1),
 						ret.get(j).get(2));
 			}
+		}
+	}
+	private String granularityToString(String granularity){
+		int intGranularity=0;
+		try{
+			intGranularity=Integer.parseInt(granularity);
+		}catch(NumberFormatException e){
+			intGranularity=1;
+		}
+		switch(intGranularity){
+		case 0:
+			return "hour";
+		case 1:
+			return "day";
+		case 2:
+			return "month";
+		case 3:
+			return "year";
+		default:
+			throw new IllegalArgumentException("Granularity '" + granularity +"' cannot be resolved to type hour(0), day(1), month(2), year(3).");
+		}
+	}
+	private String countTypeToString(String countType){
+		int intCountType=0;
+		try{
+			intCountType=Integer.parseInt(countType);
+		}catch(NumberFormatException e){
+			intCountType=0;
+		}
+		switch(intCountType){
+		case 0:
+			return "avg";
+		case 1:
+			return "sum";
+		default:
+			throw new IllegalArgumentException("Count Type '" + intCountType +"' cannot be resolved to type average(0) or sum(1).");
 		}
 	}
 }
