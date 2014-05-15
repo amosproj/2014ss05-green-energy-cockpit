@@ -58,30 +58,46 @@ public class ChartRenderer extends HttpServlet {
 		String endMonth=request.getParameter("endMonth");
 		String endYear=request.getParameter("endYear");
 		String granularity = request.getParameter("granularity");
+		String countType = request.getParameter("countType");
 		
+		//Create Timestamp for SQL-Query (Start- and End-Date)
 		String startTime = TimestampConversion.convertTimestamp(0, 0, Integer.parseInt(startDay), Integer.parseInt(startMonth), Integer.parseInt(startYear));
 		String endTime = TimestampConversion.convertTimestamp(0, 0, Integer.parseInt(endDay), Integer.parseInt(endMonth), Integer.parseInt(endYear));
 				
 	    
-		
-		
+		int intCountType=0;
+		try{
+			intCountType=Integer.parseInt(countType);
+		}catch(NumberFormatException e){
+			intCountType=0;
+		}
+		switch(intCountType){
+		case 0:
+			countType = "avg";
+			break;
+		case 1:
+			countType = "sum";
+			break;
+		}
+			
+			
 		int intGranularity=0;
 		try{
 			intGranularity=Integer.parseInt(granularity);
 		}catch(NumberFormatException e){
-			intGranularity=3;
+			intGranularity=2;
 		}
 		switch(intGranularity){
-		case 1:
+		case 0:
 			granularity = "hour";
 			break;
-		case 2:
+		case 1:
 			granularity = "day";
 			break;
-		case 3:
+		case 2:
 			granularity = "month";
 			break;
-		case 4:
+		case 3:
 			granularity = "year";
 			break;
 		}
@@ -90,7 +106,7 @@ public class ChartRenderer extends HttpServlet {
 		DefaultCategoryDataset defaultDataset = new DefaultCategoryDataset();
 		
 		//get data for parameters
-		getAllData(defaultDataset, granularity, startTime, endTime);
+		getAllData(defaultDataset, granularity, startTime, endTime, countType);
 		
 		
 		
@@ -202,11 +218,12 @@ public class ChartRenderer extends HttpServlet {
 	
 	
 	
-	private void getAllData(DefaultCategoryDataset data, String granularity, String startTime, String endTime){
+	private void getAllData(DefaultCategoryDataset data, String granularity, String startTime, String endTime, String countType){
+		System.out.println("--> send SQL Query: select * from (select round(avg(wert), 4),control_point_name,zeit from (select "+ countType +"(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
 		for(int i=0;i<4;i++){
 			ArrayList<ArrayList<String>> ret=SQL.querry(
 					//"select control_point_name,value from controlpoints,measures where controlpoint_id='"+(i+1)+"' and controlpoint_id=controlpoints_id;");
-					"select * from (select round(avg(wert), 4),control_point_name,zeit from (select avg(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
+					"select * from (select round("+ countType +"(wert), 4),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
 			for(int j=1;j<ret.size();j++){
 				data.addValue(Double.parseDouble(ret.get(j).get(0)),
 						ret.get(j).get(1),

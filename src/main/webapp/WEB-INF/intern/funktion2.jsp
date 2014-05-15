@@ -214,7 +214,13 @@ function changeEndDays(){
 				granularity=Integer.parseInt(request.getParameter("granularity"));
 			}catch(NumberFormatException e){
 				granularity=2;
-			}		
+			}
+			int countType=0;
+			try{
+				countType=Integer.parseInt(request.getParameter("countType"));
+			}catch(NumberFormatException e){
+				countType=0;
+			}	
 			%>
 			
 
@@ -267,12 +273,16 @@ function changeEndDays(){
 						</select>
 						Granularity:
 						<select name="granularity" id = "granularity">
-						    <option value="1"<% out.print(((granularity==1)?" selected":"")+""); %>>Hour</option>
-						    <option value="2"<% out.print(((granularity==2)?" selected":"")+""); %>>Day</option>
-						    <option value="3"<% out.print(((granularity==3)?" selected":"")+""); %>>Month</option>
-						    <option value="4"<% out.print(((granularity==4)?" selected":"")+""); %>>Year</option>
+						    <option value="0"<% out.print(((granularity==0)?" selected":"")+""); %>>Hour</option>
+						    <option value="1"<% out.print(((granularity==1)?" selected":"")+""); %>>Day</option>
+						    <option value="2"<% out.print(((granularity==2)?" selected":"")+""); %>>Month</option>
+						    <option value="3"<% out.print(((granularity==3)?" selected":"")+""); %>>Year</option>
 						</select>
-						
+						Count Type:
+						<select name="countType" id = "countType">
+						    <option value="0"<% out.print(((countType==0)?" selected":"")+""); %>>Average</option>
+						    <option value="1"<% out.print(((countType==1)?" selected":"")+""); %>>Sum</option>
+						</select>
 						
 										
 						<input type="submit" value="Show">
@@ -285,7 +295,7 @@ function changeEndDays(){
 			
 			
 			<%if(selected!=0){%>
-			<img src="../ChartRenderer?param1=<%=selected %>&startDay=<%=startDay %>&startMonth=<%=startMonth %>&startYear=<%=startYear %>&endDay=<%=endDay %>&endMonth=<%=endMonth %>&endYear=<%=endYear %>&granularity=<%=granularity %>"/>
+			<img src="../ChartRenderer?param1=<%=selected %>&startDay=<%=startDay %>&startMonth=<%=startMonth %>&startYear=<%=startYear %>&endDay=<%=endDay %>&endMonth=<%=endMonth %>&endYear=<%=endYear %>&granularity=<%=granularity %>&countType=<%=countType %>"/>
 			<%}else{ %>
 
 			<%} %>
