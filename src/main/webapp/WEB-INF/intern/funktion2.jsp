@@ -235,34 +235,34 @@ function changeEndDays(){
 						
 						<select name="startDay" id="startDay" onchange="changeStartDays();">
 							<%for(int i=1;i<=31;i++){ %>
-							<option value="<%=i %>"><%=i %></option>
+							<option value="<%=i %>"<% out.print(((startDay==i)?" selected":"")+""); %>><%=i %></option>
 							<%} %>
 						</select>
 						<select name="startMonth" id="startMonth" onchange="changeStartDays();">
 							<%for(int i=1;i<=12;i++){ %>
-							<option value="<%=i %>"><%=i %></option>
+							<option value="<%=i %>"<% out.print(((startMonth==i)?" selected":"")+""); %>><%=i %></option>
 							<%} %>
 						</select>
 						<select name="startYear" id="startYear" onchange="changeStartDays();">
 							<%for(int i=2000;i<=2020;i++){ %>
-							<option value="<%=i %>"><%=i %></option>
+							<option value="<%=i %>"<% out.print(((startYear==i)?" selected":"")+""); %>><%=i %></option>
 							<%} %>
 						</select>
 
 						End:
 						<select name="endDay" id="endDay" onchange="changeEndDays();">
 							<%for(int i=1;i<=31;i++){ %>
-							<option value="<%=i %>"><%=i %></option>
+							<option value="<%=i %>"<% out.print(((endDay==i)?" selected":"")+""); %>><%=i %></option>
 							<%} %>
 						</select>
 						<select name="endMonth" id="endMonth" onchange="changeEndDays();">
 							<%for(int i=1;i<=12;i++){ %>
-							<option value="<%=i %>"><%=i %></option>
+							<option value="<%=i %>"<% out.print(((endMonth==i)?" selected":"")+""); %>><%=i %></option>
 							<%} %>
 						</select>
 						<select name="endYear" id="endYear" onchange="changeEndDays();">
 							<%for(int i=2000;i<=2020;i++){ %>
-							<option value="<%=i %>"><%=i %></option>
+							<option value="<%=i %>"<% out.print(((endYear==i)?" selected":"")+""); %>><%=i %></option>
 							<%} %>
 						</select>
 						Granularity:
