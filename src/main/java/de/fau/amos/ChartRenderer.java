@@ -50,19 +50,13 @@ public class ChartRenderer extends HttpServlet {
 		ServletOutputStream os = response.getOutputStream();
 
 		//parameter from url
-		String chartType=request.getParameter("param1");
-		String startDay=request.getParameter("startDay");
-		String startMonth=request.getParameter("startMonth");
-		String startYear=request.getParameter("startYear");
-		String endDay=request.getParameter("endDay");
-		String endMonth=request.getParameter("endMonth");
-		String endYear=request.getParameter("endYear");
+		String chartType=request.getParameter("chartType");
+		String startTime = request.getParameter("startTime");
+		String endTime = request.getParameter("endTime");
 		String granularity = granularityToString(request.getParameter("granularity"));
 		String countType = countTypeToString(request.getParameter("countType"));
-		
-		//Create Timestamp for SQL-Query (Start- and End-Date)
-		String startTime = TimestampConversion.convertTimestamp(0, 0, Integer.parseInt(startDay), Integer.parseInt(startMonth), Integer.parseInt(startYear));
-		String endTime = TimestampConversion.convertTimestamp(0, 0, Integer.parseInt(endDay), Integer.parseInt(endMonth), Integer.parseInt(endYear));
+
+
 						
 		//createDataset
 		DefaultCategoryDataset defaultDataset = new DefaultCategoryDataset();
@@ -70,7 +64,7 @@ public class ChartRenderer extends HttpServlet {
 		//get data for parameters
 		getAllData(defaultDataset, granularity, startTime, endTime, countType);		
 				
-		System.out.println("--> search for "+startDay+"."+startMonth+"."+startYear+" to "+endDay+"."+endMonth+"."+endYear+ " Granularity: " + granularity + "CountType: " + countType);		
+		System.out.println("--> search for: start"+ startTime + "; end: " + endTime + ";  Granularity: " + granularity + "; CountType: " + countType);		
 		
 		//create Chart
 		JFreeChart chart= createTypeChart(chartType, defaultDataset);
@@ -90,7 +84,7 @@ public class ChartRenderer extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
+		doGet(request, response);
 	}
 	
 	
@@ -142,7 +136,6 @@ public class ChartRenderer extends HttpServlet {
 		    rend.setShadowYOffset( 0 );
 		    rend.setShadowPaint( Color.decode( "#C0C0C0"));
 		    rend.setMaximumBarWidth( 0.1);
-//		    rend.set
 			return tempChart;
 		case 3:
 			tempChart = ChartFactory.createBarChart("Bar Chart 3D", "",
@@ -165,7 +158,9 @@ public class ChartRenderer extends HttpServlet {
 		case 6:
 			tempChart = new ChartJSPTest(null,null,null,null).getChart();
 			return tempChart;
-		default: throw new IllegalArgumentException("Error creating Chart. Chart type ('" + type + "') could not be resolved.");
+		default: 
+			System.err.println("Error creating Chart. Chart type ('" + type + "') could not be resolved.");
+			return null;
 		}
 		
 
@@ -200,7 +195,8 @@ public class ChartRenderer extends HttpServlet {
 		case 3:
 			return "year";
 		default:
-			throw new IllegalArgumentException("Granularity '" + granularity +"' cannot be resolved to type hour(0), day(1), month(2), year(3).");
+			System.err.println("Granularity '" + granularity +"' cannot be resolved to type hour(0), day(1), month(2), year(3).");
+			return null;
 		}
 	}
 	private String countTypeToString(String countType){
@@ -216,7 +212,8 @@ public class ChartRenderer extends HttpServlet {
 		case 1:
 			return "sum";
 		default:
-			throw new IllegalArgumentException("Count Type '" + intCountType +"' cannot be resolved to type average(0) or sum(1).");
+			System.err.println("Count Type '" + intCountType +"' cannot be resolved to type average(0) or sum(1).");
+			return null;			
 		}
 	}
 }

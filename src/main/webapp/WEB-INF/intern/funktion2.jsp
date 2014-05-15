@@ -167,11 +167,11 @@ function changeEndDays(){
 		<div id="content">
 			
 			<%
-			int selected=0;
+			int chartType=0;
 			try{
-				selected=Integer.parseInt(request.getParameter("selChart"));
+				chartType=Integer.parseInt(request.getParameter("selChart"));
 			}catch(NumberFormatException e){
-				selected=0;
+				chartType=0;
 			}
 			int startDay=0;
 			try{
@@ -221,6 +221,9 @@ function changeEndDays(){
 			}catch(NumberFormatException e){
 				countType=0;
 			}	
+			//Create Timestamp for SQL-Query (Start- and End-Date)
+			String startTime = TimestampConversion.convertTimestamp(0, 0, startDay, startMonth, startYear);
+			String endTime = TimestampConversion.convertTimestamp(0, 0, endDay, endMonth, endYear);
 			%>
 			
 
@@ -228,13 +231,13 @@ function changeEndDays(){
 						Chart type:
 							<select name="selChart">
 
-								<option value="0"<% out.print(((selected==0)?" selected":"")+""); %>></option>
-								<option value="1"<% out.print(((selected==1)?" selected":"")+""); %>>Area Chart</option>
-								<option value="2"<% out.print(((selected==2)?" selected":"")+""); %>>Bar Chart</option>
-								<option value="3"<% out.print(((selected==3)?" selected":"")+""); %>>Bar Chart 3D</option>
-								<option value="4"<% out.print(((selected==4)?" selected":"")+""); %>>Line Chart</option>
-								<option value="5"<% out.print(((selected==5)?" selected":"")+""); %>>Pie Chart</option>
-								<option value="6"<% out.print(((selected==6)?" selected":"")+""); %>>Graph Chart</option>
+								<option value="0"<% out.print(((chartType==0)?" selected":"")+""); %>></option>
+								<option value="1"<% out.print(((chartType==1)?" selected":"")+""); %>>Area Chart</option>
+								<option value="2"<% out.print(((chartType==2)?" selected":"")+""); %>>Bar Chart</option>
+								<option value="3"<% out.print(((chartType==3)?" selected":"")+""); %>>Bar Chart 3D</option>
+								<option value="4"<% out.print(((chartType==4)?" selected":"")+""); %>>Line Chart</option>
+								<option value="5"<% out.print(((chartType==5)?" selected":"")+""); %>>Pie Chart</option>
+								<option value="6"<% out.print(((chartType==6)?" selected":"")+""); %>>Graph Chart</option>
 							</select>		
 							<br>			
 						Start:
@@ -294,8 +297,8 @@ function changeEndDays(){
 	
 			
 			
-			<%if(selected!=0){%>
-			<img src="../ChartRenderer?param1=<%=selected %>&startDay=<%=startDay %>&startMonth=<%=startMonth %>&startYear=<%=startYear %>&endDay=<%=endDay %>&endMonth=<%=endMonth %>&endYear=<%=endYear %>&granularity=<%=granularity %>&countType=<%=countType %>"/>
+			<%if(chartType!=0){%>
+			<img src="../ChartRenderer?chartType=<%=chartType %>&startTime=<%=startTime %>&endTime=<%=endTime %>&granularity=<%=granularity %>&countType=<%=countType %>"/>
 			<%}else{ %>
 
 			<%} %>
