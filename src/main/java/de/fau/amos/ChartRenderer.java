@@ -57,17 +57,40 @@ public class ChartRenderer extends HttpServlet {
 		String endDay=request.getParameter("endDay");
 		String endMonth=request.getParameter("endMonth");
 		String endYear=request.getParameter("endYear");
-
+		String granularity = request.getParameter("granularity");
+		
+		
+		//System.out.println("lalalala" + Integer.parseInt(granularity));
+		int intGranularity=0;
+		try{
+			intGranularity=Integer.parseInt(granularity);
+		}catch(NumberFormatException e){
+			intGranularity=3;
+		}
+		switch(intGranularity){
+		case 1:
+			granularity = "hour";
+			break;
+		case 2:
+			granularity = "day";
+			break;
+		case 3:
+			granularity = "month";
+			break;
+		case 4:
+			granularity = "year";
+			break;
+		}
 		
 		//createDataset
 		DefaultCategoryDataset defaultDataset = new DefaultCategoryDataset();
 		
 		//get data for parameters
-		getAllData(defaultDataset);
+		getAllData(defaultDataset, granularity);
 		
 		
 		
-		System.out.println("search for "+startDay+"."+startMonth+"."+startYear+" to "+endDay+"."+endMonth+"."+endYear);
+		System.out.println("search for "+startDay+"."+startMonth+"."+startYear+" to "+endDay+"."+endMonth+"."+endYear+ " Granularity: " + granularity);
 		
 		
 		
@@ -173,11 +196,11 @@ public class ChartRenderer extends HttpServlet {
 
 	}
 	
-	private void getAllData(DefaultCategoryDataset data){
+	private void getAllData(DefaultCategoryDataset data, String granularity){
 		for(int i=0;i<4;i++){
 			ArrayList<ArrayList<String>> ret=SQL.querry(
 					//"select control_point_name,value from controlpoints,measures where controlpoint_id='"+(i+1)+"' and controlpoint_id=controlpoints_id;");
-					"select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('day',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
+					"select * from (select round(avg(wert), 4),control_point_name,zeit from (select avg(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
 			for(int j=1;j<ret.size();j++){
 				data.addValue(Double.parseDouble(ret.get(j).get(0)),
 						ret.get(j).get(1),

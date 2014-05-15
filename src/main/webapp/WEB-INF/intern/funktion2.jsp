@@ -209,15 +209,19 @@ function changeEndDays(){
 			}catch(NumberFormatException e){
 				endYear=0;
 			}
-			
+			int granularity=0;
+			try{
+				granularity=Integer.parseInt(request.getParameter("granularity"));
+			}catch(NumberFormatException e){
+				granularity=2;
+			}		
 			%>
 			
-			<table>
-				<tr>
-					<td>
+
 						<form method="post" action="">
+						Chart type:
 							<select name="selChart">
-							
+
 								<option value="0"<% out.print(((selected==0)?" selected":"")+""); %>></option>
 								<option value="1"<% out.print(((selected==1)?" selected":"")+""); %>>Area Chart</option>
 								<option value="2"<% out.print(((selected==2)?" selected":"")+""); %>>Bar Chart</option>
@@ -225,9 +229,9 @@ function changeEndDays(){
 								<option value="4"<% out.print(((selected==4)?" selected":"")+""); %>>Line Chart</option>
 								<option value="5"<% out.print(((selected==5)?" selected":"")+""); %>>Pie Chart</option>
 								<option value="6"<% out.print(((selected==6)?" selected":"")+""); %>>Graph Chart</option>
-							</select>
-						<!--
-						von:
+							</select>		
+							<br>			
+						Start:
 						
 						<select name="startDay" id="startDay" onchange="changeStartDays();">
 							<%for(int i=1;i<=31;i++){ %>
@@ -244,8 +248,8 @@ function changeEndDays(){
 							<option value="<%=i %>"><%=i %></option>
 							<%} %>
 						</select>
-			
-						bis:
+
+						End:
 						<select name="endDay" id="endDay" onchange="changeEndDays();">
 							<%for(int i=1;i<=31;i++){ %>
 							<option value="<%=i %>"><%=i %></option>
@@ -261,22 +265,29 @@ function changeEndDays(){
 							<option value="<%=i %>"><%=i %></option>
 							<%} %>
 						</select>
-						-->
+						Granularity:
+						<select name="granularity" id = "granularity">
+						    <option value="1"<% out.print(((granularity==1)?" selected":"")+""); %>>Hour</option>
+						    <option value="2"<% out.print(((granularity==2)?" selected":"")+""); %>>Day</option>
+						    <option value="3"<% out.print(((granularity==3)?" selected":"")+""); %>>Month</option>
+						    <option value="4"<% out.print(((granularity==4)?" selected":"")+""); %>>Year</option>
+						</select>
+						
+						
+										
 						<input type="submit" value="Show">
 						
 						</form>
-					</td>			
-					<td>	
-				</tr>
+	
+
 				
-			</table>
+	
 			
 			
 			<%if(selected!=0){%>
-			
-			<img src="../ChartRenderer?param1=<%=selected %>&startDay=<%=startDay %>&startMonth=<%=startMonth %>&startYear=<%=startYear %>&endDay=<%=endDay %>&endMonth=<%=endMonth %>&endYear=<%=endYear %>"/>
+			<img src="../ChartRenderer?param1=<%=selected %>&startDay=<%=startDay %>&startMonth=<%=startMonth %>&startYear=<%=startYear %>&endDay=<%=endDay %>&endMonth=<%=endMonth %>&endYear=<%=endYear %>&granularity=<%=granularity %>"/>
 			<%}else{ %>
-			Selected a chart type.
+
 			<%} %>
 					
 		</div>
