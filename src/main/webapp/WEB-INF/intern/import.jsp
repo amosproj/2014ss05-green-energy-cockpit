@@ -82,15 +82,23 @@ if(impFolder.exists()){
 					
 					int lineCounter=0;
 					boolean printed=false;
+					long time=System.currentTimeMillis();
+					long duration=0;
 					//step through file
 					while((line=br.readLine())!=null){
 						//System.out.println("find:"+findHeaders+" mutlid:"+multilineHeader+" read line: "+line);
 						lineCounter++;
 						int prozent=(int)((lineCounter/(double)lines)*100);
+
 						
-						if(prozent%5==0){
+						if(prozent%2==0){
 							if(!printed){
-								System.out.println("Fortschritt: "+prozent+"% ("+lineCounter+"/"+lines+")");
+								duration=duration+(System.currentTimeMillis()-time);
+								time=System.currentTimeMillis();
+								long estimated=(prozent==0?0:(100-prozent)*(duration/prozent));
+								String durationS=(duration/1000/60/60)+"h "+((duration/1000/60)%60)+"min "+((duration/1000)%60)+"s";
+								String estimatedS=(prozent==0?"?":(estimated/1000/60/60)+"h "+((estimated/1000/60)%60)+"min "+((estimated/1000)%60)+"s");
+								System.out.println("Fortschritt: "+prozent+"% ("+lineCounter+"/"+lines+") benötigte Zeit bisher: "+durationS+" geschätzt: "+estimatedS);
 								printed=true;
 							}
 						}else{
