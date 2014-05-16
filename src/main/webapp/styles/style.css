@@ -26,7 +26,6 @@
 body{
     width: 900px;
     margin: auto;
-
 }
 header {
     background-image:url(../images/background_image.fw.png);
@@ -175,4 +174,11 @@ nav a{
 #dataTable tr:first-child {
 
 	font-style: bold;
+}
+
+
+/* Chart function */
+#chart_function{
+	width: 900px;
+	background-image:url(../images/background_image_large.png);
 }

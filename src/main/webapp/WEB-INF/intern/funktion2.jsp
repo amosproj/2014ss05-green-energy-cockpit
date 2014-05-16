@@ -34,9 +34,47 @@
 <head>
 <title>AMOS-Cockpit</title>
 <link rel="stylesheet" href="../styles/style.css" type="text/css" />
+<script src="jquery-2.0.0.min.js"></script>
+
+<script> 
+$(document).ready(function(){
+	
+  if($("#group").is(":visible")){
+  $("#group").click(function(){
+  	$("#measure_points").slideToggle("slow");
+	});
+  }
+  
+  if($("#measure_points").is(":hidden") && $("#group").is(":hidden")){
+	  $("#title").click(function(){
+	    	$("#group").slideToggle("slow");
+  		});
+  }else if($("#group").is(":visible") && $("#measure_points").is(":visible")){
+	  $("#title").click(function(){	    
+		    $("#measure_points").slideToggle("slow");
+	    	$("#group").slideToggle("slow");
+		});
+  }else if($("#group").is(":visible") && $("#measure_points").is(":hidden")){
+	  $("#title").click(function(){	    
+		    $("#measure_points").hide();
+	    	$("#group").slideUp("slow");
+		});
+  }else if($("#group").is(":hidden") && $("#measure_points").is(":visible")){
+	        $("#title").click(function(){	    
+	    	$("#group").slideToggle("slow");
+		});
+}
+
+ 
+  
+});
+</script>
+
+
 </head>
 
 <body>
+<div id="chart_function">
 
 <script>
 					
@@ -154,7 +192,7 @@ function changeEndDays(){
  		<h2>Green Energy Cockpit</h2>
 	</header>
 	<div id="loginStateBox">
-	Logged in as "<%out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME));%>"
+	Logged in as " <%out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME));%> "
 	
 	</div>
 	    <nav id="menue">
@@ -305,5 +343,21 @@ function changeEndDays(){
 					
 		</div>
 	</div>
+	
+	<div id="title">
+	Measure Points
+	</div>
+	
+	<div class="toggle" id="group" >
+		<input type="checkbox" name="group1" value="group1"> Group 1 
+		
+	</div>
+	
+	<div class="toggle" id="measure_points">
+		<input type="checkbox" name="test1" value="test1"> test1 <br>
+		<input type="checkbox" name="test2" value="test2"> test2 <br>
+	
+	</div>
+</div>	
 </body>
 </html>
