@@ -39,33 +39,18 @@
 <script> 
 $(document).ready(function(){
 	
-  if($("#group").is(":visible")){
-  $("#group").click(function(){
-  	$("#measure_points").slideToggle("slow");
-	});
-  }
-  
-  if($("#measure_points").is(":hidden") && $("#group").is(":hidden")){
-	  $("#title").click(function(){
-	    	$("#group").slideToggle("slow");
-  		});
-  }else if($("#group").is(":visible") && $("#measure_points").is(":visible")){
-	  $("#title").click(function(){	    
-		    $("#measure_points").slideToggle("slow");
-	    	$("#group").slideToggle("slow");
+	$(".group").click(function(){
+	  	$(".measure_points").slideToggle("slow");
 		});
-  }else if($("#group").is(":visible") && $("#measure_points").is(":hidden")){
-	  $("#title").click(function(){	    
-		    $("#measure_points").hide();
-	    	$("#group").slideUp("slow");
-		});
-  }else if($("#group").is(":hidden") && $("#measure_points").is(":visible")){
-	        $("#title").click(function(){	    
-	    	$("#group").slideToggle("slow");
-		});
-}
+	$("#title").click(function(){
+		if($(".group").is(":visible") && $(".measure_points").is(":visible")){   
+				    $(".measure_points").slideToggle("fast");   
+			    	$(".group").slideUp("slow");
+		  }else{
+		    	    $(".group").slideToggle("slow");
+		  }
 
- 
+		});
   
 });
 </script>
@@ -74,7 +59,7 @@ $(document).ready(function(){
 </head>
 
 <body>
-<div id="chart_function">
+
 
 <script>
 					
@@ -331,33 +316,36 @@ function changeEndDays(){
 						</form>
 	
 
-				
+			<div id="title">
+			Measure Points
+			</div>
 	
+			<!--
+			  <div class="group">
+			<input type="checkbox" name="group1" value="group1"> Group 1 	
+			</div>
+	
+			<div class="measure_points">
+				<input type="checkbox" name="Measure_Point_1" value="Measure_Point_1"> Measure_Point_1 <br>
+				<input type="checkbox" name="Measure_Point_2" value="Measure_Point_2"> Measure_Point_2 <br>	
+			</div>	
+			-->
+			<% System.out.println(ChartPreset.createPreset()); %>
+			<% out.println(ChartPreset.createPreset()); %>
 			
-			
+			<div id="chart">
 			<%if(chartType!=0){%>
 			<img src="../ChartRenderer?chartType=<%=chartType %>&startTime=<%=startTime %>&endTime=<%=endTime %>&granularity=<%=granularity %>&countType=<%=countType %>"/>
 			<%}else{ %>
 
 			<%} %>
+			</div>
+
 					
 		</div>
 	</div>
 	
-	<div id="title">
-	Measure Points
-	</div>
+
 	
-	<div class="toggle" id="group" >
-		<input type="checkbox" name="group1" value="group1"> Group 1 
-		
-	</div>
-	
-	<div class="toggle" id="measure_points">
-		<input type="checkbox" name="test1" value="test1"> test1 <br>
-		<input type="checkbox" name="test2" value="test2"> test2 <br>
-	
-	</div>
-</div>	
 </body>
 </html>

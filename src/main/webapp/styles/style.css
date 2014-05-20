@@ -176,9 +176,12 @@ nav a{
 	font-style: bold;
 }
 
-
-/* Chart function */
-#chart_function{
-	width: 900px;
-	background-image:url(../images/background_image_large.png);
+.group{
+	margin-left: 10px;
+}
+.measure_points{
+	margin-left: 20px;
+}
+#chart{
+	float:right;
 }
