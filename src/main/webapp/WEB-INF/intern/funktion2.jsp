@@ -170,6 +170,14 @@ function changeEndDays(){
 	*/
 }
 
+function showMoreGroups(){
+	var groups=document.getElementById("numberOfGroups");
+	groups=groups+1;
+	document.getElementById("numberOfGroups").value=groups;
+	
+	location.reload(false);
+}
+
 </script>
 
 	<header>
@@ -330,16 +338,38 @@ function changeEndDays(){
 				<input type="checkbox" name="Measure_Point_2" value="Measure_Point_2"> Measure_Point_2 <br>	
 			</div>	
 			-->
-			<% System.out.println(ChartPreset.createPreset()); %>
-			<% out.println(ChartPreset.createPreset()); %>
+			<%  
+			int numberOfGroups=1;
+				try{
+					numberOfGroups=Integer.parseInt(request.getParameter("numberOfGroups"));
+				}catch(NumberFormatException e){
+					e.printStackTrace();
+				}
+				
+				System.out.println("numer: "+numberOfGroups);
+			for(int i=0;i<numberOfGroups;i++){
+				
+				out.println(ChartPreset.createPreset(i+1)); 				
+			}
+				System.out.println(ChartPreset.createPreset(2));
+			%>
+		 <input type="hidden" name="numberOfGroups" id="numberOfGroups" value="<%=numberOfGroups%>">
+			<form method="post" >
+			    
+			    <%//out.println(ChartPreset.addGroup()); %>
+			    
+			   <input type="submit" value="Add Group" onClick="showMoreGroups();">	
+			</form>
 			
 			<div id="chart">
 			<%if(chartType!=0){%>
 			<img src="../ChartRenderer?chartType=<%=chartType %>&startTime=<%=startTime %>&endTime=<%=endTime %>&granularity=<%=granularity %>&countType=<%=countType %>"/>
-			<%}else{ %>
+			<%}%>
 
-			<%} %>
+			
 			</div>
+			
+			
 
 					
 		</div>

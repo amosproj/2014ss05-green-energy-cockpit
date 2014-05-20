@@ -70,7 +70,7 @@ public class ChartRenderer extends HttpServlet {
 		JFreeChart chart= createTypeChart(chartType, defaultDataset);
 
 		//create Image and clear output stream
-		RenderedImage chartImage = chart.createBufferedImage(800, 500);
+		RenderedImage chartImage = chart.createBufferedImage(770, 500);
 		ImageIO.write(chartImage, "png", os);
 		os.flush();
 		os.close();

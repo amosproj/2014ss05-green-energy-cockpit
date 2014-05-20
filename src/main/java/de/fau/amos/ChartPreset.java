@@ -25,15 +25,15 @@ import java.util.ArrayList;
 public class ChartPreset {
 	
 
-	private static int g;
+	private static int g = 1;
 
 		
 	
-	public static String createPreset(){
-		g = 1;
+	public static String createPreset(int groupId){
+//		g = 1; und wie kann man den verbessern ? 
 		
 		String preset = " <div class=\"group\">"
-				+ "<input type=\"checkbox\" name=\"group" + g + "\" value=\"group" + g + "\"> Group " + g + " 	"
+				+ "<input type=\"checkbox\" name=\"group" + groupId + "\" value=\"group" + groupId + "\"> Group " + groupId + " 	"
 				+ "</div>";
 		
 		ArrayList<ArrayList<String>> id = SQL.querry("select controlpoints_id from controlpoints;");
@@ -41,12 +41,12 @@ public class ChartPreset {
 		
 		preset += "<div class=\"measure_points\">";
 		
-		for(int i=0; i < id.size(); i++ ){
+		for(int i=1; i < id.size(); i++ ){
 			preset += "<input type=\"checkbox\" name=\"" + name.get(i) + "\" value=" + id.get(i) + "> " + name.get(i) + " <br>";
 		}
 		preset += "</div>";
 		
-		g++;
+//		g++;
 		
 		return preset;
 	}
@@ -63,12 +63,14 @@ public class ChartPreset {
 		
 		add += "<div class=\"measure_points\">";
 		
-		for(int i=0; i < id.size(); i++ ){
+		for(int i=1; i < id.size(); i++ ){
 			add += "<input type=\"checkbox\" name=\"" + name.get(i) + "\" value=" + id.get(i) + "> " + name.get(i) + " <br>";
 		}
 		add += "</div>";
 		
-		g++;
+		//g++;
+		
+		return add;
 	}
 
 }
