@@ -26,7 +26,6 @@
 body{
     width: 900px;
     margin: auto;
-
 }
 header {
     background-image:url(../images/background_image.fw.png);
@@ -54,16 +53,19 @@ header h2{
     border-radius: 10px;
     padding: 15px;
     text-shadow: black 0px 0px 5px;
-	max-height:700px;
+	max-height:900px;
 
 }
 #content{
     position: relative;
-	overflow:auto;
 	height:100%;
 }
-
-
+#timeSelection{
+	margin-bottom: 15px;
+}
+#groupSelection{
+	padding-top: 0px;
+}
 
 
 /* Login Page, Registration Page */
@@ -175,4 +177,17 @@ nav a{
 #dataTable tr:first-child {
 
 	font-style: bold;
+}
+
+.plants{
+	margin-left: 10px;
+}
+.controlpoints{
+	margin-left: 20px;
+}
+#chart{
+
+	position: absolute;
+	margin: -500px 0px 0px 200px;
+	
 }

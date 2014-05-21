@@ -45,7 +45,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 			} catch (SQLException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
-				e.printStackTrace();
+				e.printStackTrace(); 
 			}
 		}
 		

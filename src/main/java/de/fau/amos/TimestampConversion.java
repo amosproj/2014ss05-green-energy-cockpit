@@ -3,12 +3,45 @@ package de.fau.amos;
 public class TimestampConversion {
 	
 	public static String convertTimestamp(int minute,int hour,int day,int month,int year){
-		//TODO finish
-		String out="";
-		if(year<1000){
-			out+="0";
+		String strYear;
+		String strMonth;
+		String strDay;
+		String strHour;
+		String strMinute;
+		if(year <1000){
+			if(year<10){
+				strYear = "200" + year;
+			}else if(year >80){
+				strYear = "19" + year;
+			}else{							
+				strYear = "20" + year;
+			}
+		}else{
+			strYear = "" + year;
 		}
-		return out;
+		
+		if(month<10){
+			strMonth = "0" + month;
+		}else{
+			strMonth = "" + month;
+		}
+		if(day<10){
+			strDay = "0" + day;
+		}else{
+			strDay = "" + day;
+		}
+		if(hour<10){
+			strHour = "0" + hour;
+		}else{
+			strHour = "" + hour;
+		}
+		if(minute<10){
+			strMinute = "0" + minute;
+		}else{
+			strMinute = "" + minute;
+		}
+		
+		return strYear + "-" + strMonth + "-" + strDay + " " + strHour + ":" + strMinute + ":" + "00";
 	}
 	
 	public static String convertTimestamp(String Timestamp){
@@ -38,11 +71,13 @@ public class TimestampConversion {
 			return "08";
 		case "sep":
 			return "09";
-		case "okt": case "oct":
+		case "okt": 
+		case "oct":
 			return "10";
 		case "nov":
 			return "11";
-		case "dez": case "dec":
+		case "dez": 
+		case "dec":
 			return "12";
 		default:
 			throw new IllegalArgumentException("Cannot convert Month ('" + Month + "') from String to Int. Unknown Argument.");

@@ -1,4 +1,24 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+<!-- 
+ - Copyright (c) 2014 by Sven Huprich, Dimitry Abb, Jakob Hübler, Cindy Wiebe, Ferdinand Niedermayer, Dirk Riehle, http://dirkriehle.com
+ -
+ - This file is part of the Green Energy Cockpit for the AMOS Project.
+ -
+ - This program is free software: you can redistribute it and/or modify
+ - it under the terms of the GNU Affero General Public License as
+ - published by the Free Software Foundation, either version 3 of the
+ - License, or (at your option) any later version.
+ -
+ - This program is distributed in the hope that it will be useful, 
+ - but WITHOUT ANY WARRANTY; without even the implied warranty of
+ - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ - GNU Affero General Public License for more details.
+ -
+ - You should have received a copy of the GNU Affero General Public
+ - License along with this program. If not, see
+ - <http://www.gnu.org/licenses/>.
+ -->
+ 
+ <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
     
 <%@ page import="de.fau.amos.*"%> 
@@ -82,15 +102,23 @@ if(impFolder.exists()){
 					
 					int lineCounter=0;
 					boolean printed=false;
+					long time=System.currentTimeMillis();
+					long duration=0;
 					//step through file
 					while((line=br.readLine())!=null){
 						//System.out.println("find:"+findHeaders+" mutlid:"+multilineHeader+" read line: "+line);
 						lineCounter++;
 						int prozent=(int)((lineCounter/(double)lines)*100);
+
 						
-						if(prozent%5==0){
+						if(prozent%2==0){
 							if(!printed){
-								System.out.println("Fortschritt: "+prozent+"% ("+lineCounter+"/"+lines+")");
+								duration=duration+(System.currentTimeMillis()-time);
+								time=System.currentTimeMillis();
+								long estimated=(prozent==0?0:(100-prozent)*(duration/prozent));
+								String durationS=(duration/1000/60/60)+"h "+((duration/1000/60)%60)+"min "+((duration/1000)%60)+"s";
+								String estimatedS=(prozent==0?"?":(estimated/1000/60/60)+"h "+((estimated/1000/60)%60)+"min "+((estimated/1000)%60)+"s");
+								System.out.println("Fortschritt: "+prozent+"% ("+lineCounter+"/"+lines+") benötigte Zeit bisher: "+durationS+" geschätzt: "+estimatedS);
 								printed=true;
 							}
 						}else{

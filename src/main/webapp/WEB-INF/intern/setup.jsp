@@ -214,7 +214,7 @@
 						<form action="../file/upload/import<%=selected %>" method="post"
 							enctype="multipart/form-data">
 							<input type="file" name="File" /> <input type="submit"
-								value="Upload" />
+								value="Import" />
 						</form>
 					</td>
 

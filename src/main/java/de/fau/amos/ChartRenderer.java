@@ -50,62 +50,60 @@ public class ChartRenderer extends HttpServlet {
 		ServletOutputStream os = response.getOutputStream();
 
 		//parameter from url
-		String val1=request.getParameter("param1");
-		String startDay=request.getParameter("startDay");
-		String startMonth=request.getParameter("startMonth");
-		String startYear=request.getParameter("startYear");
-		String endDay=request.getParameter("endDay");
-		String endMonth=request.getParameter("endMonth");
-		String endYear=request.getParameter("endYear");
+		String chartType=request.getParameter("chartType");
+		String startTime = request.getParameter("startTime");
+		String endTime = request.getParameter("endTime");
+		String granularity = granularityToString(request.getParameter("granularity"));
+		String countType = countTypeToString(request.getParameter("countType"));
+		String groupParameters=encodeGroupParameters(request.getParameter("groupParameters"));
 
-		
+						
 		//createDataset
 		DefaultCategoryDataset defaultDataset = new DefaultCategoryDataset();
 		
 		//get data for parameters
-		getAllData(defaultDataset);
+		getAllData(defaultDataset, granularity, startTime, endTime, countType, groupParameters);		
+				
+		System.out.println("--> search for: start"+ startTime + "; end: " + endTime + ";  Granularity: " + granularity + "; CountType: " + countType);		
 		
-		
-		
-		System.out.println("search for "+startDay+"."+startMonth+"."+startYear+" to "+endDay+"."+endMonth+"."+endYear);
-		
-		
-		
-		
-		
-//		defaultDataset.addValue(76, "Wert1", "Sandeep");
-//		defaultDataset.addValue(30, "Wert1", "Sangeeta");
-//		defaultDataset.addValue(50, "Wert1", "Surabhi");
-//		defaultDataset.addValue(20, "Wert1", "Sumanta");
-//		defaultDataset.addValue(10, "Wert2", "Sandeep");
-//		defaultDataset.addValue(90, "Wert2", "Sangeeta");
-//		defaultDataset.addValue(23, "Wert2", "Surabhi");
-//		defaultDataset.addValue(87, "Wert2", "Sumanta");
+		//create Chart
+		JFreeChart chart= createTypeChart(chartType, defaultDataset);
 
-		 DefaultPieDataset pieDataset = new DefaultPieDataset();
-	        pieDataset.setValue("One", new Double(43.2));
-	        pieDataset.setValue("Two", new Double(10.0));
-	        pieDataset.setValue("Three", new Double(27.5));
-	        pieDataset.setValue("Four", new Double(17.5));
-	        pieDataset.setValue("Five", new Double(11.0));
-	        pieDataset.setValue("Six", new Double(19.4));
-		
+		//create Image and clear output stream
+		RenderedImage chartImage = chart.createBufferedImage(870-201, 500);
+		ImageIO.write(chartImage, "png", os);
+		os.flush();
+		os.close();
+
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	@Override
+	protected void doPost(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		doGet(request, response);
+	}
+	
+	
+	private JFreeChart createTypeChart(String val1, DefaultCategoryDataset defaultDataset){
+		JFreeChart tempChart=null;
+		//select Type of chart
 		int type=0;
 		try{
 			type=Integer.parseInt(val1);
 		}catch(NumberFormatException e){
 			type=0;
 		}
-		
-		JFreeChart chart=null;
-		
 		switch(type){
 		case 1:
-			chart = ChartFactory.createAreaChart("Area Chart", "",
+			tempChart = ChartFactory.createAreaChart("Area Chart", "",
 					"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
-			break;
+			return tempChart;
 		case 2:
-			chart = ChartFactory.createBarChart("Bar Chart", "",
+			tempChart = ChartFactory.createBarChart("Bar Chart", "",
 				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
 			
 			String fontName = "Lucida Sans";
@@ -122,67 +120,133 @@ public class ChartRenderer extends HttpServlet {
 		    theme.setAxisOffset( new RectangleInsets(0,0,0,0) );
 		    theme.setBarPainter(new StandardBarPainter());
 		    theme.setAxisLabelPaint( Color.decode("#666666")  );
-		    theme.apply( chart );
-		    chart.getCategoryPlot().setOutlineVisible( false );
-		    chart.getCategoryPlot().getRangeAxis().setAxisLineVisible( false );
-		    chart.getCategoryPlot().getRangeAxis().setTickMarksVisible( false );
-		    chart.getCategoryPlot().setRangeGridlineStroke( new BasicStroke() );
-		    chart.getCategoryPlot().getRangeAxis().setTickLabelPaint( Color.decode("#666666") );
-		    chart.getCategoryPlot().getDomainAxis().setTickLabelPaint( Color.decode("#666666") );
-		    chart.setTextAntiAlias( true );
-		    chart.setAntiAlias( true );
-		    chart.getCategoryPlot().getRenderer().setSeriesPaint( 0, Color.decode( "#4572a7" ));
-		    BarRenderer rend = (BarRenderer) chart.getCategoryPlot().getRenderer();
+		    theme.apply( tempChart );
+		    tempChart.getCategoryPlot().setOutlineVisible( false );
+		    tempChart.getCategoryPlot().getRangeAxis().setAxisLineVisible( false );
+		    tempChart.getCategoryPlot().getRangeAxis().setTickMarksVisible( false );
+		    tempChart.getCategoryPlot().setRangeGridlineStroke( new BasicStroke() );
+		    tempChart.getCategoryPlot().getRangeAxis().setTickLabelPaint( Color.decode("#666666") );
+		    tempChart.getCategoryPlot().getDomainAxis().setTickLabelPaint( Color.decode("#666666") );
+		    tempChart.setTextAntiAlias( true );
+		    tempChart.setAntiAlias( true );
+		    tempChart.getCategoryPlot().getRenderer().setSeriesPaint( 0, Color.decode( "#4572a7" ));
+		    BarRenderer rend = (BarRenderer) tempChart.getCategoryPlot().getRenderer();
 		    rend.setShadowVisible( true );
 		    rend.setShadowXOffset( 2 );
 		    rend.setShadowYOffset( 0 );
 		    rend.setShadowPaint( Color.decode( "#C0C0C0"));
 		    rend.setMaximumBarWidth( 0.1);
-//		    rend.set
-			break;
+			return tempChart;
 		case 3:
-			chart = ChartFactory.createBarChart("Bar Chart 3D", "",
+			tempChart = ChartFactory.createBarChart("Bar Chart 3D", "",
 				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
-			break;
+			return tempChart;
 		case 4:
-			chart = ChartFactory.createLineChart("Line Chart", "",
+			tempChart = ChartFactory.createLineChart("Line Chart", "",
 					"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
-				break;
+				return tempChart;
 		case 5:
-			chart = ChartFactory.createPieChart("Pie Chart", pieDataset, true, true, false);
-			break;
+			 DefaultPieDataset pieDataset = new DefaultPieDataset();
+		        pieDataset.setValue("One", new Double(43.2));
+		        pieDataset.setValue("Two", new Double(10.0));
+		        pieDataset.setValue("Three", new Double(27.5));
+		        pieDataset.setValue("Four", new Double(17.5));
+		        pieDataset.setValue("Five", new Double(11.0));
+		        pieDataset.setValue("Six", new Double(19.4));
+			tempChart = ChartFactory.createPieChart("Pie Chart", pieDataset, true, true, false);
+			return tempChart;
 		case 6:
-			chart = new ChartJSPTest(null,null,null,null).getChart();
-			break;
-	
+			tempChart = new ChartJSPTest(null,null,null,null).getChart();
+			return tempChart;
+		default: 
+			System.err.println("Error creating Chart. Chart type ('" + type + "') could not be resolved.");
+			return null;
 		}
 		
-		RenderedImage chartImage = chart.createBufferedImage(870, 500);
-		ImageIO.write(chartImage, "png", os);
-		os.flush();
-		os.close();
-	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
-	@Override
-	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
 
 	}
-	
-	private void getAllData(DefaultCategoryDataset data){
-		for(int i=0;i<4;i++){
+	private void getAllData(DefaultCategoryDataset data, String granularity, String startTime, String endTime, String countType, String groupParameters){
+//		System.out.println("--> send SQL Query: select * from (select round(avg(wert), 4),control_point_name,zeit from (select "+ countType +"(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
+		String[] groups=groupParameters.split("s");
+		for(int i=0;i<groups.length;i++){
+			String groupNumber=groups[i].contains("'")?groups[i].substring(0, groups[i].indexOf("'")):groups[i];
+			groups[i]=groups[i].contains("'")?groups[i].substring(groupNumber.length()):"";
+
 			ArrayList<ArrayList<String>> ret=SQL.querry(
-					//"select control_point_name,value from controlpoints,measures where controlpoint_id='"+(i+1)+"' and controlpoint_id=controlpoints_id;");
-					"select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('day',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
-			for(int j=1;j<ret.size();j++){
-				data.addValue(Double.parseDouble(ret.get(j).get(0)),
-						ret.get(j).get(1),
-						ret.get(j).get(2));
+					//"select control_point_name,value from controlpoints,measures where controlpoint_id='"+(i+1)+"' and controlpoint_id=controlpoints_id;"
+					//"select * from (select round("+ countType +"(wert), 4),control_point_name,zeit from (select "+ countType +"(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;"
+					"select * from (select round("
+					+countType
+					+"(gruppenWert),4), gruppenZeit from(select "
+					+countType
+					+"(wert) as gruppenWert,control_point_name, zeit1 as gruppenZeit from (select "
+					+countType
+					+"(value)as wert,control_point_name,date_trunc('"
+					+granularity
+					+"',measure_time)as zeit1 from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"
+					+startTime
+					+"' AND measure_time < '"
+					+endTime
+					+"' AND controlpoints_id in("
+					+groups[i]
+					+") group by measure_time,control_point_name)as data group by zeit1,control_point_name)as groupedByTime group by gruppenZeit)as result order by gruppenZeit;"
+					);
+			if(ret!=null){
+				for(int j=1;j<ret.size();j++){
+					data.addValue(Double.parseDouble(ret.get(j).get(0)),
+							"Group"+groupNumber,
+							ret.get(j).get(1));
+				}
 			}
 		}
+	}
+	
+	private String granularityToString(String granularity){
+		int intGranularity=0;
+		try{
+			intGranularity=Integer.parseInt(granularity);
+		}catch(NumberFormatException e){
+			intGranularity=1;
+		}
+		switch(intGranularity){
+		case 0:
+			return "hour";
+		case 1:
+			return "day";
+		case 2:
+			return "month";
+		case 3:
+			return "year";
+		default:
+			System.err.println("Granularity '" + granularity +"' cannot be resolved to type hour(0), day(1), month(2), year(3).");
+			return null;
+		}
+	}
+	
+	private String countTypeToString(String countType){
+		int intCountType=0;
+		try{
+			intCountType=Integer.parseInt(countType);
+		}catch(NumberFormatException e){
+			intCountType=0;
+		}
+		switch(intCountType){
+		case 0:
+			return "avg";
+		case 1:
+			return "sum";
+		default:
+			System.err.println("Count Type '" + intCountType +"' cannot be resolved to type average(0) or sum(1).");
+			return null;			
+		}
+	}
+	
+	private String encodeGroupParameters(String in){
+		if(in==null){
+			return "";
+		}
+		in=in.replace("%2C",",");
+		in=in.replace("%27","'");
+		return in;
 	}
 }
