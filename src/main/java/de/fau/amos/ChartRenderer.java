@@ -55,14 +55,14 @@ public class ChartRenderer extends HttpServlet {
 		String endTime = request.getParameter("endTime");
 		String granularity = granularityToString(request.getParameter("granularity"));
 		String countType = countTypeToString(request.getParameter("countType"));
-
+		String groupParameters=encodeGroupParameters(request.getParameter("groupParameters"));
 
 						
 		//createDataset
 		DefaultCategoryDataset defaultDataset = new DefaultCategoryDataset();
 		
 		//get data for parameters
-		getAllData(defaultDataset, granularity, startTime, endTime, countType);		
+		getAllData(defaultDataset, granularity, startTime, endTime, countType, groupParameters);		
 				
 		System.out.println("--> search for: start"+ startTime + "; end: " + endTime + ";  Granularity: " + granularity + "; CountType: " + countType);		
 		
@@ -70,7 +70,7 @@ public class ChartRenderer extends HttpServlet {
 		JFreeChart chart= createTypeChart(chartType, defaultDataset);
 
 		//create Image and clear output stream
-		RenderedImage chartImage = chart.createBufferedImage(770, 500);
+		RenderedImage chartImage = chart.createBufferedImage(870-200, 500);
 		ImageIO.write(chartImage, "png", os);
 		os.flush();
 		os.close();
@@ -165,19 +165,42 @@ public class ChartRenderer extends HttpServlet {
 		
 
 	}
-	private void getAllData(DefaultCategoryDataset data, String granularity, String startTime, String endTime, String countType){
-		System.out.println("--> send SQL Query: select * from (select round(avg(wert), 4),control_point_name,zeit from (select "+ countType +"(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
-		for(int i=0;i<4;i++){
+	private void getAllData(DefaultCategoryDataset data, String granularity, String startTime, String endTime, String countType, String groupParameters){
+//		System.out.println("--> send SQL Query: select * from (select round(avg(wert), 4),control_point_name,zeit from (select "+ countType +"(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
+		String[] groups=groupParameters.split("s");
+		for(int i=0;i<groups.length;i++){
+			String groupNumber=groups[i].contains("'")?groups[i].substring(0, groups[i].indexOf("'")):groups[i];
+			groups[i]=groups[i].contains("'")?groups[i].substring(groupNumber.length()):"";
+
 			ArrayList<ArrayList<String>> ret=SQL.querry(
-					//"select control_point_name,value from controlpoints,measures where controlpoint_id='"+(i+1)+"' and controlpoint_id=controlpoints_id;");
-					"select * from (select round("+ countType +"(wert), 4),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
-			for(int j=1;j<ret.size();j++){
-				data.addValue(Double.parseDouble(ret.get(j).get(0)),
-						ret.get(j).get(1),
-						ret.get(j).get(2));
+					//"select control_point_name,value from controlpoints,measures where controlpoint_id='"+(i+1)+"' and controlpoint_id=controlpoints_id;"
+					//"select * from (select round("+ countType +"(wert), 4),control_point_name,zeit from (select "+ countType +"(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;"
+					"select * from (select round("
+					+countType
+					+"(gruppenWert),4), gruppenZeit from(select "
+					+countType
+					+"(wert) as gruppenWert,control_point_name, zeit1 as gruppenZeit from (select "
+					+countType
+					+"(value)as wert,control_point_name,date_trunc('"
+					+granularity
+					+"',measure_time)as zeit1 from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"
+					+startTime
+					+"' AND measure_time < '"
+					+endTime
+					+"' AND controlpoints_id in("
+					+groups[i]
+					+") group by measure_time,control_point_name)as data group by zeit1,control_point_name)as groupedByTime group by gruppenZeit)as result order by gruppenZeit;"
+					);
+			if(ret!=null){
+				for(int j=1;j<ret.size();j++){
+					data.addValue(Double.parseDouble(ret.get(j).get(0)),
+							"Group"+groupNumber,
+							ret.get(j).get(1));
+				}
 			}
 		}
 	}
+	
 	private String granularityToString(String granularity){
 		int intGranularity=0;
 		try{
@@ -199,6 +222,7 @@ public class ChartRenderer extends HttpServlet {
 			return null;
 		}
 	}
+	
 	private String countTypeToString(String countType){
 		int intCountType=0;
 		try{
@@ -215,5 +239,14 @@ public class ChartRenderer extends HttpServlet {
 			System.err.println("Count Type '" + intCountType +"' cannot be resolved to type average(0) or sum(1).");
 			return null;			
 		}
+	}
+	
+	private String encodeGroupParameters(String in){
+		if(in==null){
+			return "";
+		}
+		in=in.replace("%2C",",");
+		in=in.replace("%27","'");
+		return in;
 	}
 }
