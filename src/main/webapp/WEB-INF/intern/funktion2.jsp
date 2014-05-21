@@ -291,6 +291,7 @@
 
 
 			<form id="selectionForm" method="post" action="">
+			<div id="timeSelection">
 				Chart type: <select name="selChart">
 
 					<option value="0"
@@ -386,12 +387,11 @@
 						<%out.print(((countType == 1) ? " selected" : "") + "");%>>Sum</option>
 				</select> 
 				<input type="submit" id="showChart" value="Show"> 
+				</div>
 				<input type="hidden" name="numberOfGroups" id="numberOfGroups" value="<%=numberOfGroups%>">
-				<input type="button" value="Add Group" onClick="showMoreGroups();">
 
-
-				<div style="width: 200px; height: 500px; overflow: auto; border: 1px solid #840; ">
-					<div id="groupSelect">
+				<div style="width: 200px; height: 500px; overflow: auto; ">
+					<div id="groupSelection">
 				<%
 					for (int i = 0; i < numberOfGroups; i++) {
 
