@@ -26,6 +26,8 @@ package de.fau.amos;
  */
 public class Const {
 
+	public static boolean debug=false;
+	
 	public class URL{
 		public static final String LOGIN_JSP="/WEB-INF/login/loginjsp.jsp";
 		public static final String REGISTRATION_JSP="/WEB-INF/login/regjsp.jsp";

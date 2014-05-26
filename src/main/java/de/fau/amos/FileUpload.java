@@ -45,8 +45,9 @@ public class FileUpload extends HttpServlet {
 			
 		String pathInfo=request.getPathInfo();
 		System.out.println("called fileupload: "+pathInfo);
-		boolean isImport=pathInfo!=null&&pathInfo.startsWith("/import");
-	
+		boolean isImportProductionData=pathInfo!=null&&pathInfo.startsWith("/importProductionData");
+		boolean isImportEnergyData=pathInfo!=null&&pathInfo.startsWith("/importEnergyData");
+		
 		if (ServletFileUpload.isMultipartContent(request)) {
 			try {
 				List<FileItem> list = new ServletFileUpload(
@@ -58,16 +59,19 @@ public class FileUpload extends HttpServlet {
 						for(int i=0;i<6;i++){
 							rand+=(int)(Math.random()*10);
 						}
-						String plantId=request.getPathInfo().replace("/import","");
+						String plantId="";
+						if(isImportEnergyData||isImportProductionData){
+							plantId=request.getPathInfo().replace((isImportEnergyData?"/importEnergyData":(isImportProductionData?"/importProductionData":"")),"");
+						}
 						if(plantId==null||plantId.length()==0){
 							plantId="";
 //						}else{
 //							plantId="_"+plantId;
 						}
-						String name = new File(rand+"_"+fi.getName()).getName()+(isImport?"_imp"+plantId:"");
+						String name = new File(rand+"_"+fi.getName()).getName()+(isImportEnergyData?"_impED"+plantId:(isImportProductionData?"_impPD"+plantId:""));
 						
 						File folder=null;
-						if(isImport){
+						if(isImportEnergyData||isImportProductionData){
 							folder=new File(System.getProperty("userdir.location"),"import");
 						}else{
 							folder=new File(System.getProperty("userdir.location"),"uploads");
@@ -90,7 +94,7 @@ public class FileUpload extends HttpServlet {
 		}
 		
 
-		if(isImport){
+		if(isImportEnergyData||isImportProductionData){
 //			request.setAttribute("plant",request.getPathInfo().replace("/import",""));
 //			request.getRequestDispatcher("/intern/import.jsp").forward(request, response);
 			response.sendRedirect(request.getContextPath()+"/intern/import.jsp");			

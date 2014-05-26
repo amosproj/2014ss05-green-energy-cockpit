@@ -40,10 +40,14 @@ public class SQL{
 	
 	public static void execute(String command){
 
+		System.out.println("execute "+command);
 		Statement stmt = null;
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				if(c==null){
+					return;
+				}
 			}
 			synchronized(c){
 				stmt = c.createStatement();
@@ -62,6 +66,7 @@ public class SQL{
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				return "";
 			}
 			synchronized(c){
 				stmt = c.createStatement();
@@ -91,6 +96,9 @@ public class SQL{
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				if(c==null){
+					return new ArrayList<ArrayList<String>>();
+				}
 			}
 			synchronized(c){
 				stmt = c.createStatement();
@@ -135,6 +143,9 @@ public class SQL{
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				if(c==null){
+					return null;
+				}
 			}
 			synchronized(c){
 				stmt = c.createStatement();
@@ -160,6 +171,7 @@ public class SQL{
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				return;
 			}
 			synchronized(c){
 
@@ -188,6 +200,9 @@ public class SQL{
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				if(c==null){
+					return new ArrayList<String>();
+				}
 			}
 			synchronized(c){
 
@@ -218,6 +233,9 @@ public class SQL{
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				if(c==null){
+					return;
+				}
 			}
 			synchronized(c){
 				stmt = c.createStatement();
@@ -265,7 +283,9 @@ public class SQL{
 		}catch(ClassNotFoundException e){
 			e.printStackTrace();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			if(Const.debug){
+				e.printStackTrace();
+			}
 		}
 
 	}
