@@ -413,6 +413,24 @@
 						document.getElementById("numberOfGroups").value=numberOfGroups.value;
 					};
 			</script>
+			
+			<script>
+			
+
+			$(document).ready(function() {
+				$('#plantCheckBox_1_1').click(function() {
+					//alert($(this)+" "+$(this).attr('checked')+" "+$(this).attr("checked")+" "+$(this).is(":checked"));
+					if($("#plantCheckBox_1_1").is(':checked')){
+						$(".controlpoints1_1 input[type='checkbox']").prop("checked",true);						
+					}else{
+						$(".controlpoints1_1 input[type='checkbox']").prop("checked",false);						
+					}
+				});
+			});
+			
+			
+			</script>
+			
 		
 			<!-- div id="title">Measure Points</div> -->
 
