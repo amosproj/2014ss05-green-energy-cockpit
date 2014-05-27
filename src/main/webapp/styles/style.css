@@ -60,6 +60,9 @@ header h2{
     position: relative;
 	height:100%;
 }
+#timeSelectionBar{
+	display: inline;
+}
 #timeSelection{
 	margin-bottom: 15px;
 }
@@ -188,6 +191,6 @@ nav a{
 #chart{
 
 	position: absolute;
-	margin: -500px 0px 0px 200px;
+	margin: -512px 0px 0px 215px;
 	
 }

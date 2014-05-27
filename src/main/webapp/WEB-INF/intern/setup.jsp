@@ -41,12 +41,7 @@
 		<h2>Green Energy Cockpit</h2>
 	</header>
 	<div id="loginStateBox">
-		Logged in as "
-
-		<% 
-	out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME)); 
-	%>
-		"
+		Logged in as "<%out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME));%>"
 	</div>
 	<nav id="menue">
 		<ul>
@@ -127,7 +122,7 @@
 				}
 				
 				//query products
-				ArrayList<ArrayList<String>> products=SQL.querry("SELECT * FROM products;");
+				ArrayList<ArrayList<String>> products=SQL.query("SELECT * FROM products;");
 
 				//no plants found, create tabel
 				if(products==null){
@@ -137,7 +132,7 @@
 						")";			
 					SQL.execute(command);			
 	
-					products=SQL.querry("SELECT * FROM products;");
+					products=SQL.query("SELECT * FROM products;");
 				}
 					
 				//parameters for new product are ok, check for existing product
@@ -208,12 +203,12 @@
 		
 			<%
 			
-			ArrayList<ArrayList<String>> plants=SQL.querry("SELECT * FROM plants;");
+			ArrayList<ArrayList<String>> plants=SQL.query("SELECT * FROM plants;");
 
 			if(plants==null){
 				//no plants found, create tabel and reload
 				SQL.createTable("plants",new String[]{"plant_name"});
-				plants=SQL.querry("SELECT * FROM plants;");
+				plants=SQL.query("SELECT * FROM plants;");
 				response.sendRedirect("");
 			}
 			
@@ -235,9 +230,9 @@
 					getControlPoints+=" where plant_id=plants_id;";
 				}
 				//String getControlPoints="Select * from plants,controlpoints where plant_id="+selected+";";
-				//controlPoints=SQL.querry("SELECT * FROM controlpoints;");
+				//controlPoints=SQL.query("SELECT * FROM controlpoints;");
 				System.out.println("get from db: "+getControlPoints);
-				controlPoints=SQL.querry(getControlPoints);
+				controlPoints=SQL.query(getControlPoints);
 				if(controlPoints==null){
 					String command=
 						"CREATE TABLE controlpoints (controlpoints_ID serial primary key, plant_id integer NOT NULL, "+ 
@@ -245,8 +240,8 @@
 					  	"CONSTRAINT controlpoint_plant_id_fkey FOREIGN KEY (plant_id) "+
 					    "REFERENCES plants (plants_id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION)";					
 					SQL.execute(command);			
-					//controlPoints=SQL.querry("SELECT * FROM controlpoints;");
-					controlPoints=SQL.querry(getControlPoints);
+					//controlPoints=SQL.query("SELECT * FROM controlpoints;");
+					controlPoints=SQL.query(getControlPoints);
 				}
 			}
 			

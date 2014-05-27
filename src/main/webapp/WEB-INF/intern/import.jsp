@@ -178,7 +178,7 @@ if(impFolder.exists()){
 									
 									//get ids for controlpoints
 									for(int i=1;i<headers.size();i++){
-										ArrayList<ArrayList<String>>output=SQL.querry("SELECT controlpoints_id from controlpoints where plant_id='"+plantId+"' and control_point_name='"+headers.get(i)+"';");
+										ArrayList<ArrayList<String>>output=SQL.query("SELECT controlpoints_id from controlpoints where plant_id='"+plantId+"' and control_point_name='"+headers.get(i)+"';");
 										if(output==null||output.size()<2){
 											//no controlpoint found matching the name
 											controlPointIds.add("0");
@@ -198,7 +198,7 @@ if(impFolder.exists()){
 									valuesArr.add(controlPointIds.get(i));	//controlPointId
 									valuesArr.add(values[i].replace(",",".")); //value
 									if(!controlPointIds.get(i).equals("0")){
-										ArrayList<ArrayList<String>> knownData=SQL.querry(
+										ArrayList<ArrayList<String>> knownData=SQL.query(
 											"Select measures_id from measures where measure_time='"+valuesArr.get(0)+"' and controlpoint_id='"+valuesArr.get(1)+"';");
 										if(knownData!=null&&knownData.size()>1){
 											//allready exists! skip it
@@ -339,7 +339,7 @@ if(impFolder.exists()){
 									//get ids for controlpoints
 									for(int i=1;i<headers.size();i+=2){
 										//search for controlpoint_id with plant_id given from filename and controlpointname given from header
-										ArrayList<ArrayList<String>>output=SQL.querry("SELECT controlpoints_id from controlpoints where plant_id='"+plantId+"' and control_point_name='"+headers.get(i)+"';");
+										ArrayList<ArrayList<String>>output=SQL.query("SELECT controlpoints_id from controlpoints where plant_id='"+plantId+"' and control_point_name='"+headers.get(i)+"';");
 										if(output==null||output.size()<2){
 											//no controlpoint found matching the name
 											//set controlpointIds for this column to 0 to skip it when steping through file
@@ -353,7 +353,7 @@ if(impFolder.exists()){
 									}
 	
 									//get ProductIds to for faster import
-									productIds=SQL.querry("SELECT product_short_name, products_id from products");
+									productIds=SQL.query("SELECT product_short_name, products_id from products");
 								}
 							}else{
 
@@ -373,7 +373,7 @@ if(impFolder.exists()){
 											valuesArr.add(values[i+1].replace(",",".")); //value
 																						
 											if(!controlPointIds.get(i).equals("0")){
-												ArrayList<ArrayList<String>> knownData=SQL.querry(
+												ArrayList<ArrayList<String>> knownData=SQL.query(
 													"Select productiondatas_id from productiondata where measure_time='"+valuesArr.get(1)+"' and controlpoint_id='"+valuesArr.get(0)+"' and product_id='"+valuesArr.get(2)+"';");
 												if(knownData!=null&&knownData.size()>1){
 													//allready exists! skip it
