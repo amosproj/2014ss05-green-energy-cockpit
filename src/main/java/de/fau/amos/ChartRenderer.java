@@ -118,39 +118,38 @@ public class ChartRenderer extends HttpServlet {
 		}catch(NumberFormatException e){
 			type=0;
 		}
+		
+		//Graphic options for all types of charts
+		String fontName = "Lucida Sans";
+		StandardChartTheme theme = (StandardChartTheme)org.jfree.chart.StandardChartTheme.createJFreeTheme();
+	    theme.setTitlePaint( Color.decode( "#555555" ) );
+	    theme.setExtraLargeFont( new Font(fontName,Font.PLAIN, 22) ); //title
+	    theme.setLargeFont( new Font(fontName,Font.BOLD, 15)); //axis-title
+	    theme.setRegularFont( new Font(fontName,Font.PLAIN, 11));
+	    theme.setRangeGridlinePaint( Color.decode("#C0C0C0"));
+	    theme.setPlotBackgroundPaint( Color.white );
+	    theme.setChartBackgroundPaint( Color.white );
+	    theme.setGridBandPaint( Color.red );
+	    theme.setAxisOffset( new RectangleInsets(0,0,0,0) );
+	    theme.setBarPainter(new StandardBarPainter());
+	    theme.setAxisLabelPaint( Color.decode("#666666")  );
+		
+		
+		
 		switch(type){
-		case 1:
-			tempChart = ChartFactory.createAreaChart("Area Chart", "",
-					"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
-			return tempChart;
+//		case 1:
+//			tempChart = ChartFactory.createAreaChart("Area Chart", "",
+//					"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
+//			return tempChart;
+			
+			//Bar Chart
 		case 2:
-			tempChart = ChartFactory.createBarChart("Bar Chart", "",
+			tempChart = ChartFactory.createBarChart("Energy Consumption", "",
 				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
 			
-			String fontName = "Lucida Sans";
-			StandardChartTheme theme = (StandardChartTheme)org.jfree.chart.StandardChartTheme.createJFreeTheme();
 
-		    theme.setTitlePaint( Color.decode( "#4572a7" ) );
-		    theme.setExtraLargeFont( new Font(fontName,Font.PLAIN, 16) ); //title
-		    theme.setLargeFont( new Font(fontName,Font.BOLD, 15)); //axis-title
-		    theme.setRegularFont( new Font(fontName,Font.PLAIN, 11));
-		    theme.setRangeGridlinePaint( Color.decode("#C0C0C0"));
-		    theme.setPlotBackgroundPaint( Color.white );
-		    theme.setChartBackgroundPaint( Color.white );
-		    theme.setGridBandPaint( Color.red );
-		    theme.setAxisOffset( new RectangleInsets(0,0,0,0) );
-		    theme.setBarPainter(new StandardBarPainter());
-		    theme.setAxisLabelPaint( Color.decode("#666666")  );
 		    theme.apply( tempChart );
-		    tempChart.getCategoryPlot().setOutlineVisible( false );
-		    tempChart.getCategoryPlot().getRangeAxis().setAxisLineVisible( false );
-		    tempChart.getCategoryPlot().getRangeAxis().setTickMarksVisible( false );
-		    tempChart.getCategoryPlot().setRangeGridlineStroke( new BasicStroke() );
-		    tempChart.getCategoryPlot().getRangeAxis().setTickLabelPaint( Color.decode("#666666") );
-		    tempChart.getCategoryPlot().getDomainAxis().setTickLabelPaint( Color.decode("#666666") );
-		    tempChart.setTextAntiAlias( true );
-		    tempChart.setAntiAlias( true );
-		    tempChart.getCategoryPlot().getRenderer().setSeriesPaint( 0, Color.decode( "#4572a7" ));
+		    generalChartModification(tempChart);
 		    BarRenderer rend = (BarRenderer) tempChart.getCategoryPlot().getRenderer();
 		    rend.setShadowVisible( true );
 		    rend.setShadowXOffset( 2 );
@@ -158,27 +157,31 @@ public class ChartRenderer extends HttpServlet {
 		    rend.setShadowPaint( Color.decode( "#C0C0C0"));
 		    rend.setMaximumBarWidth( 0.1);
 			return tempChart;
-		case 3:
-			tempChart = ChartFactory.createBarChart("Bar Chart 3D", "",
-				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
-			return tempChart;
+//		case 3:
+//			tempChart = ChartFactory.createBarChart("Bar Chart 3D", "",
+//				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
+//			return tempChart;
+//			
+			//Line Chart
 		case 4:
-			tempChart = ChartFactory.createLineChart("Line Chart", "",
+			tempChart = ChartFactory.createLineChart("Energy Consumption", "",
 					"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
+		    theme.apply( tempChart );
+		    generalChartModification(tempChart);
 				return tempChart;
-		case 5:
-			 DefaultPieDataset pieDataset = new DefaultPieDataset();
-		        pieDataset.setValue("One", new Double(43.2));
-		        pieDataset.setValue("Two", new Double(10.0));
-		        pieDataset.setValue("Three", new Double(27.5));
-		        pieDataset.setValue("Four", new Double(17.5));
-		        pieDataset.setValue("Five", new Double(11.0));
-		        pieDataset.setValue("Six", new Double(19.4));
-			tempChart = ChartFactory.createPieChart("Pie Chart", pieDataset, true, true, false);
-			return tempChart;
-		case 6:
-			tempChart = new ChartJSPTest(null,null,null,null).getChart();
-			return tempChart;
+//		case 5:
+//			 DefaultPieDataset pieDataset = new DefaultPieDataset();
+//		        pieDataset.setValue("One", new Double(43.2));
+//		        pieDataset.setValue("Two", new Double(10.0));
+//		        pieDataset.setValue("Three", new Double(27.5));
+//		        pieDataset.setValue("Four", new Double(17.5));
+//		        pieDataset.setValue("Five", new Double(11.0));
+//		        pieDataset.setValue("Six", new Double(19.4));
+//			tempChart = ChartFactory.createPieChart("Pie Chart", pieDataset, true, true, false);
+//			return tempChart;
+//		case 6:
+//			tempChart = new ChartJSPTest(null,null,null,null).getChart();
+//			return tempChart;
 		default: 
 //			System.err.println("Error creating Chart. Chart type ('" + type + "') could not be resolved.");
 			return null;
@@ -187,6 +190,18 @@ public class ChartRenderer extends HttpServlet {
 
 	}
 	
+	
+	private void generalChartModification (JFreeChart tempChart){
+	    tempChart.getCategoryPlot().setOutlineVisible( false );
+	    tempChart.getCategoryPlot().getRangeAxis().setAxisLineVisible( false );
+	    tempChart.getCategoryPlot().getRangeAxis().setTickMarksVisible( false );
+	    tempChart.getCategoryPlot().setRangeGridlineStroke( new BasicStroke() );
+	    tempChart.getCategoryPlot().getRangeAxis().setTickLabelPaint( Color.decode("#555555") );
+	    tempChart.getCategoryPlot().getDomainAxis().setTickLabelPaint( Color.decode("#555555") );
+	    tempChart.setTextAntiAlias( true );
+	    tempChart.setAntiAlias( true );
+	    tempChart.getCategoryPlot().getRenderer().setSeriesPaint( 0, Color.decode( "#4572a7" ));
+	}
 	
 	private void fetchData(DefaultCategoryDataset data, String granularity, String startTime, String endTime, String sumOrAvg, String groupParameters){
 
