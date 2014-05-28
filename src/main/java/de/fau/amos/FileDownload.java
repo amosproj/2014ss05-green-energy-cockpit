@@ -40,7 +40,7 @@ public class FileDownload extends HttpServlet {
 		
 		//TODO change this later
 		System.out.println("create file "+fileName+"");
-		ArrayList<ArrayList<String>>data=SQL.querry("select * from plants");
+		ArrayList<ArrayList<String>>data=SQL.query("select * from plants");
 		createCsvFile(data,fileName); 
 		
 		File file=new File(System.getProperty("userdir.location"),fileName);

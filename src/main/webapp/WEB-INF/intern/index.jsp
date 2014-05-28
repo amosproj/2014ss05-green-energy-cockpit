@@ -40,12 +40,7 @@
  		<h2>Green Energy Cockpit</h2>
 	</header>
 	<div id="loginStateBox">
-	Logged in as "
-	
-	<% 
-	out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME)); 
-	%>
-	"
+		Logged in as "<%out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME));%>"
 	</div>
 	    <nav id="menue">
         <ul>

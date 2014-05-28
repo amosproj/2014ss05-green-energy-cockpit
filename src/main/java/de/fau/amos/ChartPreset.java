@@ -30,55 +30,55 @@ import javax.servlet.http.HttpServletRequest;
 public class ChartPreset {
 	
 
-	private static int g = 1;	
-	
-	public static String createPreset(int groupId){
-		
-		String preset = " <div class=\"group\">"
-				+ "<input type=\"checkbox\" name=\"group" + groupId + "\" value=\"group" + groupId + "\"> Group " + groupId + "<br>"
-				+ "</div><br>";
-		
-		ArrayList<ArrayList<String>> id = SQL.querry("select controlpoints_id from controlpoints;");
-		ArrayList<ArrayList<String>> name = SQL.querry("select control_point_name from controlpoints;");
-		
-		preset += "<div class=\"measure_points\"><br>";
-		
-		for(int i=1; i < id.size(); i++ ){
-			preset += "<input type=\"checkbox\" name=\"" + name.get(i) + "\" value=" + id.get(i) + "> " + name.get(i) + " \n";
-		}
-		preset += "</div><br>";
-		
-//		g++;
-		
-		return preset;
-	}
-	
-	public static String addGroup(){
-		
-		String add = "<br>" + 
-				" <div class=\"group\">"
-				+ "<input type=\"checkbox\" name=\"group" + g + "\" value=\"group" + g + "\"> Group " + g + " 	"
-				+ "</div>";
-		
-		ArrayList<ArrayList<String>> id = SQL.querry("select controlpoints_id from controlpoints;");
-		ArrayList<ArrayList<String>> name = SQL.querry("select control_point_name from controlpoints;");
-		
-		add += "<div class=\"measure_points\">";
-		
-		for(int i=1; i < id.size(); i++ ){
-			add += "<input type=\"checkbox\" name=\"" + name.get(i) + "\" value=" + id.get(i) + "> " + name.get(i) + " <br>";
-		}
-		add += "</div>";
-		
-		//g++;
-		
-		return add;
-	}
+//	private static int g = 1;	
+//	
+//	public static String createPreset(int groupId){
+//		
+//		String preset = " <div class=\"group\">"
+//				+ "<input type=\"checkbox\" name=\"group" + groupId + "\" value=\"group" + groupId + "\"> Group " + groupId + "<br>"
+//				+ "</div><br>";
+//		
+//		ArrayList<ArrayList<String>> id = SQL.querry("select controlpoints_id from controlpoints;");
+//		ArrayList<ArrayList<String>> name = SQL.querry("select control_point_name from controlpoints;");
+//		
+//		preset += "<div class=\"measure_points\"><br>";
+//		
+//		for(int i=1; i < id.size(); i++ ){
+//			preset += "<input type=\"checkbox\" name=\"" + name.get(i) + "\" value=" + id.get(i) + "> " + name.get(i) + " \n";
+//		}
+//		preset += "</div><br>";
+//		
+////		g++;
+//		
+//		return preset;
+//	}
+//	
+//	public static String addGroup(){
+//		
+//		String add = "<br>" + 
+//				" <div class=\"group\">"
+//				+ "<input type=\"checkbox\" name=\"group" + g + "\" value=\"group" + g + "\"> Group " + g + " 	"
+//				+ "</div>";
+//		
+//		ArrayList<ArrayList<String>> id = SQL.querry("select controlpoints_id from controlpoints;");
+//		ArrayList<ArrayList<String>> name = SQL.querry("select control_point_name from controlpoints;");
+//		
+//		add += "<div class=\"measure_points\">";
+//		
+//		for(int i=1; i < id.size(); i++ ){
+//			add += "<input type=\"checkbox\" name=\"" + name.get(i) + "\" value=" + id.get(i) + "> " + name.get(i) + " <br>";
+//		}
+//		add += "</div>";
+//		
+//		//g++;
+//		
+//		return add;
+//	}
 
 
 	public static String createGroup(int groupId){
 		
-		System.out.println("called group with "+groupId);
+//		System.out.println("called group with "+groupId);
 		String out = "";		
 
 		out+="<script type=\"text/javascript\">\n"
@@ -91,13 +91,14 @@ public class ChartPreset {
 				+"</script>\n";
 		
 		out+=" <div class=\"group"+groupId+"\">\n"
-				+ "<input type=\"checkbox\" name=\"group_" + groupId + "\" value=\"group_" + groupId + "\" onclick=\"javascript:showHide"+groupId+"()\" checked>Group " + groupId +"<br>\n"
+				//+ "<input type=\"checkbox\" name=\"group_" + groupId + "\" value=\"group_" + groupId + "\" onclick=\"javascript:showHide"+groupId+"()\" checked>Group " + groupId +"<br>\n"
+				+"Group "+groupId
 				+ "</div>\n";
 		
 		out+="<div class=\"groupContent"+groupId+"\">\n";
 				
-		ArrayList<ArrayList<String>> plants=SQL.querry("select plant_id,plant_name, count(controlpoints_id) from controlpoints inner join plants on plants.plants_id=controlpoints.plant_id group by plant_name,plant_id;");
-		ArrayList<ArrayList<String>> data = SQL.querry("select plant_id,plant_name,controlpoints_id, control_point_name from controlpoints inner join plants on plants.plants_id=controlpoints.plant_id order by plant_name, control_point_name;");
+		ArrayList<ArrayList<String>> plants=SQL.query("select plant_id,plant_name, count(controlpoints_id) from controlpoints inner join plants on plants.plants_id=controlpoints.plant_id group by plant_name,plant_id;");
+		ArrayList<ArrayList<String>> data = SQL.query("select plant_id,plant_name,controlpoints_id, control_point_name from controlpoints inner join plants on plants.plants_id=controlpoints.plant_id order by plant_name, control_point_name;");
 		//number of plants
 		int j=1;
 		for(int i=1; i < plants.size(); i++ ){
@@ -105,18 +106,28 @@ public class ChartPreset {
 			out += "<div class=\"plants"+groupId+"_"+plants.get(i).get(0)+"\">\n";
 				//for each plant
 //			out+="<p style=\"margin-left: 10px;\">\n";
-			out +="<input type=\"checkbox\" name=\"plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"\" value=\"plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"\">"+plants.get(i).get(1)+"<br>\n";
-//			out += "</p>";
+			out +="<input type=\"checkbox\" name=\"plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"\" id=\"plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"\" value=\"plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"\">";//+plants.get(i).get(1)+"<br>\n";
+			out +="<div class=\"label_plant_"+groupId+"_"+plants.get(i).get(0)+"\" style=\"display:inline\">"+plants.get(i).get(1)+"</div><br>\n";
+			//			out += "</p>";
 			out+="</div>\n";
 			out+="</div>\n";
 			
 			out+="<script type=\"text/javascript\">\n"
 					+"$(document).ready(function() {\n"
 //					+"alert(\"code ok"+groupId+"\");\n"
-					+"$(\".plants"+groupId+"_"+plants.get(i).get(0)+"\").click(function() {\n"			
+					+"$(\".label_plant_"+groupId+"_"+plants.get(i).get(0)+"\").click(function() {\n"		
 					+"$(\".controlpoints"+groupId+"_"+plants.get(i).get(0)+"\").slideToggle(\"fast\");\n"
 					+"});\n"
+					
+					+"$('#plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"').click(function() {\n"
+					+"if($(\"#plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"\").is(':checked')){\n"
+					+"$(\".controlpoints"+groupId+"_"+plants.get(i).get(0)+" input[type='checkbox']\").prop(\"checked\",true);\n"						
+					+"}else{\n"
+					+"$(\".controlpoints"+groupId+"_"+plants.get(i).get(0)+" input[type='checkbox']\").prop(\"checked\",false);\n"						
+					+"}\n"
 					+"});\n"
+
+					+"});\n"		
 					+"</script>\n";
 
 			
@@ -125,7 +136,7 @@ public class ChartPreset {
 			out+="<div class=\"controlpoints"+groupId+"_"+plants.get(i).get(0)+"\">\n";
 //			out+="<p style=\"margin-left: 20px;\">\n";
 			for(; j < max;j++){
-				out += "<input type=\"checkbox\" name=\"controlPointCheckBox_"+groupId+"_"+plants.get(i).get(0)+"_"+data.get(j).get(2) + "\" value=\"controlPointCheckBox_"+groupId+"_"+plants.get(i).get(0)+"_"+data.get(j).get(2) + "\">" + data.get(j).get(3) +"<br>\n";				
+				out += "<input type=\"checkbox\" name=\"controlPointCheckBox_"+groupId+"_"+plants.get(i).get(0)+"_"+data.get(j).get(2) + "\" id=\"controlPointCheckBox_"+groupId+"_"+plants.get(i).get(0)+"_"+data.get(j).get(2) + "\" value=\"controlPointCheckBox_"+groupId+"_"+plants.get(i).get(0)+"_"+data.get(j).get(2) + "\">" + data.get(j).get(3) +"<br>\n";				
 			}
 //			out+="</p>\n";
 			out+="</div>\n";
@@ -156,8 +167,9 @@ public class ChartPreset {
 		Enumeration<String> en=request.getParameterNames();
 		while(en.hasMoreElements()){
 			String key=en.nextElement();
+//			System.out.println("found key ["+key+"]["+request.getParameter(key)+"]");
 			if(key.startsWith("group_")){
-				groups.add(request.getParameter(key));
+//				groups.add(request.getParameter(key));
 			}else if(key.startsWith("plantCheckBox_")){
 				plants.add(request.getParameter(key));
 			}else if(key.startsWith("controlPointCheckBox_")){
@@ -168,29 +180,53 @@ public class ChartPreset {
 				}catch(NumberFormatException e){}
 			}
 		}
-
-		for(int i=0;i<groups.size();i++){
-			System.out.println("group "+groups.get(i));
-			out+=groups.get(i).substring("group_".length());
-			boolean added=false;
-			for(int j=0;j<points.size();j++){
-				if(points.get(j).startsWith("controlPointCheckBox_"+ groups.get(i).substring("group_".length()) )){
-					System.out.println("points "+points.get(j));
-					String last=points.get(j);
-					points.remove(j);
-					j--;
-					last=last.substring(last.lastIndexOf("_")+1);
-					if(added){
-						out+=",";
-					}
-					out+="'"+last+"'";
-					added=true;
-				}
+		
+		for(int i=0;i<points.size();i++){
+//			System.out.println("work with "+points.get(i));
+			String point=points.get(i);
+			point=point.substring("controlPointCheckBox_".length());
+			int group=0;
+			try{
+				group=Integer.parseInt(point.substring(0,point.indexOf("_")));
+			}catch(NumberFormatException e){
+				continue;
 			}
+			while(groups.size()<group+1){
+				groups.add(""+(groups.size()));
+			}
+			String last=point.substring(point.lastIndexOf("_")+1);
+			groups.set(group,groups.get(group)+"'"+last+"',");			
+		}
+		
+		for(int i=1;i<groups.size();i++){
+			out+=groups.get(i);
+			if(groups.get(i).contains("'")){
+				out=out.substring(0,out.length()-1);
+			}else{
+				out+="'0'";
+			}
+//			System.out.println(out);
+//			out+=groups.get(i).substring("group_".length());
+//			boolean added=false;
+//			for(int j=0;j<points.size();j++){
+//				if(points.get(j).startsWith("controlPointCheckBox_"+ groups.get(i).substring("group_".length()) )){
+//					System.out.println("points "+points.get(j));
+//					String last=points.get(j);
+//					points.remove(j);
+//					j--;
+//					last=last.substring(last.lastIndexOf("_")+1);
+//					if(added){
+//						out+=",";
+//					}
+//					out+="'"+last+"'";
+//					added=true;
+//				}
+//			}
 			
 			out+="s";
+//			System.out.println(out);
 		}
-		System.out.println("generated "+out);
+//		System.out.println("generated "+out);
 		out=out.replace("'", "%27");
 		out=out.replace(",", "%2C");
 		return out;

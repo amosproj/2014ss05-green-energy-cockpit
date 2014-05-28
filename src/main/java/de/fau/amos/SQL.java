@@ -34,16 +34,20 @@ public class SQL{
 
 	private static Connection c;
 
-	public static void main(String[] args){
-		System.out.println(getValueOfFieldWithId("controlpoints","control_point_name","2"));
-	}
+//	public static void main(String[] args){
+//		System.out.println(getValueOfFieldWithId("controlpoints","control_point_name","2"));
+//	}
 	
 	public static void execute(String command){
 
+		System.out.println("execute "+command);
 		Statement stmt = null;
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				if(c==null){
+					return;
+				}
 			}
 			synchronized(c){
 				stmt = c.createStatement();
@@ -62,6 +66,7 @@ public class SQL{
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				return "";
 			}
 			synchronized(c){
 				stmt = c.createStatement();
@@ -84,13 +89,23 @@ public class SQL{
 		return out;
 	}
 	
-	public static ArrayList<ArrayList<String>> querry(String command){
+	public static ArrayList<ArrayList<String>> query(String command){
 		ArrayList<ArrayList<String>> data=new ArrayList<ArrayList<String>>();
 
+		System.out.println("querycommand: "+command);
+//		select * from 
+//			(select round
+//					(sum(gruppenWert),4), gruppenZeit from
+//						(select sum(wert) as gruppenWert,control_point_name, zeit1 as gruppenZeit from 
+//								(select sum(value)as wert,control_point_name,date_trunc('month',measure_time)as zeit1 from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '2012-01-01 00:00:00' AND measure_time < '2013-01-01 00:00:00' AND controlpoints_id in() group by measure_time,control_point_name)as data group by zeit1,control_point_name)as groupedByTime group by gruppenZeit)as result order by gruppenZeit;
+		
 		Statement stmt = null;
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				if(c==null){
+					return new ArrayList<ArrayList<String>>();
+				}
 			}
 			synchronized(c){
 				stmt = c.createStatement();
@@ -129,12 +144,15 @@ public class SQL{
 		return data;
 	}
 
-	public static ResultSet querryToResultSet(String command){
+	public static ResultSet queryToResultSet(String command){
 
 		Statement stmt = null;
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				if(c==null){
+					return null;
+				}
 			}
 			synchronized(c){
 				stmt = c.createStatement();
@@ -160,6 +178,7 @@ public class SQL{
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				return;
 			}
 			synchronized(c){
 
@@ -188,6 +207,9 @@ public class SQL{
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				if(c==null){
+					return new ArrayList<String>();
+				}
 			}
 			synchronized(c){
 
@@ -218,6 +240,9 @@ public class SQL{
 		try {
 			if(c==null||c.isClosed()){
 				initConnection();
+				if(c==null){
+					return;
+				}
 			}
 			synchronized(c){
 				stmt = c.createStatement();
@@ -246,7 +271,7 @@ public class SQL{
 				String command="INSERT INTO "+tableName.toUpperCase()+
 						" ("+commandColumnPart+")"+
 						" VALUES ("+commandValuePart+");";
-//				System.out.println(command);
+//				out.println(command);
 				stmt.execute(command);
 			}
 		} catch (SQLException e) {
@@ -265,7 +290,9 @@ public class SQL{
 		}catch(ClassNotFoundException e){
 			e.printStackTrace();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			if(Const.debug){
+				e.printStackTrace();
+			}
 		}
 
 	}

@@ -49,28 +49,49 @@ public class ChartRenderer extends HttpServlet {
 
 		ServletOutputStream os = response.getOutputStream();
 
+		
+		//<img src="../ChartRenderer?selectedChartType=<%=chartType%>&time=<%out.println(time+(timeGranularity==3?"&endTime="+endTime:""));%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupParameters=<%out.println(ChartPreset.createParameterString(request));%>" />
+		
 		//parameter from url
-		String chartType=request.getParameter("chartType");
-		String startTime = request.getParameter("startTime");
-		String endTime = request.getParameter("endTime");
-		String granularity = granularityToString(request.getParameter("granularity"));
+		String selectedChartType=request.getParameter("selectedChartType");
+		String time=request.getParameter("time");
+		String endTime=request.getParameter("endTime");
+		String timeGranularity=request.getParameter("timeGranularity");
+		String stringTimeGranularity=timeGranularityToString(timeGranularity);
 		String countType = countTypeToString(request.getParameter("countType"));
 		String groupParameters=encodeGroupParameters(request.getParameter("groupParameters"));
+		
+		String chartType="1";
+		
+		if(stringTimeGranularity.equals("minute")){
+			//show as line chart
+			chartType="4";
+		}else{
+			//show as bar chart
+			chartType="2";
+		}
+				
+		//old
+//		String chartType=request.getParameter("chartType");
+		String startTime = request.getParameter("startTime");
+//		String endTime = request.getParameter("endTime");
+		String granularity = timeGranularityToString(request.getParameter("granularity"));
+//		String countType = countTypeToString(request.getParameter("countType"));
+//		String groupParameters=encodeGroupParameters(request.getParameter("groupParameters"));
 
-						
+//		System.out.println(time+" "+endTime+" ["+groupParameters+"]");
+		
 		//createDataset
 		DefaultCategoryDataset defaultDataset = new DefaultCategoryDataset();
 		
 		//get data for parameters
-		getAllData(defaultDataset, granularity, startTime, endTime, countType, groupParameters);		
-				
-		System.out.println("--> search for: start"+ startTime + "; end: " + endTime + ";  Granularity: " + granularity + "; CountType: " + countType);		
-		
+		fetchData(defaultDataset, stringTimeGranularity, time, endTime, countType, groupParameters);		
+					
 		//create Chart
 		JFreeChart chart= createTypeChart(chartType, defaultDataset);
 
 		//create Image and clear output stream
-		RenderedImage chartImage = chart.createBufferedImage(870-201, 500);
+		RenderedImage chartImage = chart.createBufferedImage(870-201-15, 512);
 		ImageIO.write(chartImage, "png", os);
 		os.flush();
 		os.close();
@@ -97,39 +118,38 @@ public class ChartRenderer extends HttpServlet {
 		}catch(NumberFormatException e){
 			type=0;
 		}
+		
+		//Graphic options for all types of charts
+		String fontName = "Lucida Sans";
+		StandardChartTheme theme = (StandardChartTheme)org.jfree.chart.StandardChartTheme.createJFreeTheme();
+	    theme.setTitlePaint( Color.decode( "#555555" ) );
+	    theme.setExtraLargeFont( new Font(fontName,Font.PLAIN, 22) ); //title
+	    theme.setLargeFont( new Font(fontName,Font.BOLD, 15)); //axis-title
+	    theme.setRegularFont( new Font(fontName,Font.PLAIN, 11));
+	    theme.setRangeGridlinePaint( Color.decode("#C0C0C0"));
+	    theme.setPlotBackgroundPaint( Color.white );
+	    theme.setChartBackgroundPaint( Color.white );
+	    theme.setGridBandPaint( Color.red );
+	    theme.setAxisOffset( new RectangleInsets(0,0,0,0) );
+	    theme.setBarPainter(new StandardBarPainter());
+	    theme.setAxisLabelPaint( Color.decode("#666666")  );
+		
+		
+		
 		switch(type){
-		case 1:
-			tempChart = ChartFactory.createAreaChart("Area Chart", "",
-					"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
-			return tempChart;
+//		case 1:
+//			tempChart = ChartFactory.createAreaChart("Area Chart", "",
+//					"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
+//			return tempChart;
+			
+			//Bar Chart
 		case 2:
-			tempChart = ChartFactory.createBarChart("Bar Chart", "",
+			tempChart = ChartFactory.createBarChart("Energy Consumption", "",
 				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
 			
-			String fontName = "Lucida Sans";
-			StandardChartTheme theme = (StandardChartTheme)org.jfree.chart.StandardChartTheme.createJFreeTheme();
 
-		    theme.setTitlePaint( Color.decode( "#4572a7" ) );
-		    theme.setExtraLargeFont( new Font(fontName,Font.PLAIN, 16) ); //title
-		    theme.setLargeFont( new Font(fontName,Font.BOLD, 15)); //axis-title
-		    theme.setRegularFont( new Font(fontName,Font.PLAIN, 11));
-		    theme.setRangeGridlinePaint( Color.decode("#C0C0C0"));
-		    theme.setPlotBackgroundPaint( Color.white );
-		    theme.setChartBackgroundPaint( Color.white );
-		    theme.setGridBandPaint( Color.red );
-		    theme.setAxisOffset( new RectangleInsets(0,0,0,0) );
-		    theme.setBarPainter(new StandardBarPainter());
-		    theme.setAxisLabelPaint( Color.decode("#666666")  );
 		    theme.apply( tempChart );
-		    tempChart.getCategoryPlot().setOutlineVisible( false );
-		    tempChart.getCategoryPlot().getRangeAxis().setAxisLineVisible( false );
-		    tempChart.getCategoryPlot().getRangeAxis().setTickMarksVisible( false );
-		    tempChart.getCategoryPlot().setRangeGridlineStroke( new BasicStroke() );
-		    tempChart.getCategoryPlot().getRangeAxis().setTickLabelPaint( Color.decode("#666666") );
-		    tempChart.getCategoryPlot().getDomainAxis().setTickLabelPaint( Color.decode("#666666") );
-		    tempChart.setTextAntiAlias( true );
-		    tempChart.setAntiAlias( true );
-		    tempChart.getCategoryPlot().getRenderer().setSeriesPaint( 0, Color.decode( "#4572a7" ));
+		    generalChartModification(tempChart);
 		    BarRenderer rend = (BarRenderer) tempChart.getCategoryPlot().getRenderer();
 		    rend.setShadowVisible( true );
 		    rend.setShadowXOffset( 2 );
@@ -137,50 +157,70 @@ public class ChartRenderer extends HttpServlet {
 		    rend.setShadowPaint( Color.decode( "#C0C0C0"));
 		    rend.setMaximumBarWidth( 0.1);
 			return tempChart;
-		case 3:
-			tempChart = ChartFactory.createBarChart("Bar Chart 3D", "",
-				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
-			return tempChart;
+//		case 3:
+//			tempChart = ChartFactory.createBarChart("Bar Chart 3D", "",
+//				"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
+//			return tempChart;
+//			
+			//Line Chart
 		case 4:
-			tempChart = ChartFactory.createLineChart("Line Chart", "",
+			tempChart = ChartFactory.createLineChart("Energy Consumption", "",
 					"Value", defaultDataset, PlotOrientation.VERTICAL, true, true, false);
+		    theme.apply( tempChart );
+		    generalChartModification(tempChart);
 				return tempChart;
-		case 5:
-			 DefaultPieDataset pieDataset = new DefaultPieDataset();
-		        pieDataset.setValue("One", new Double(43.2));
-		        pieDataset.setValue("Two", new Double(10.0));
-		        pieDataset.setValue("Three", new Double(27.5));
-		        pieDataset.setValue("Four", new Double(17.5));
-		        pieDataset.setValue("Five", new Double(11.0));
-		        pieDataset.setValue("Six", new Double(19.4));
-			tempChart = ChartFactory.createPieChart("Pie Chart", pieDataset, true, true, false);
-			return tempChart;
-		case 6:
-			tempChart = new ChartJSPTest(null,null,null,null).getChart();
-			return tempChart;
+//		case 5:
+//			 DefaultPieDataset pieDataset = new DefaultPieDataset();
+//		        pieDataset.setValue("One", new Double(43.2));
+//		        pieDataset.setValue("Two", new Double(10.0));
+//		        pieDataset.setValue("Three", new Double(27.5));
+//		        pieDataset.setValue("Four", new Double(17.5));
+//		        pieDataset.setValue("Five", new Double(11.0));
+//		        pieDataset.setValue("Six", new Double(19.4));
+//			tempChart = ChartFactory.createPieChart("Pie Chart", pieDataset, true, true, false);
+//			return tempChart;
+//		case 6:
+//			tempChart = new ChartJSPTest(null,null,null,null).getChart();
+//			return tempChart;
 		default: 
-			System.err.println("Error creating Chart. Chart type ('" + type + "') could not be resolved.");
+//			System.err.println("Error creating Chart. Chart type ('" + type + "') could not be resolved.");
 			return null;
 		}
 		
 
 	}
-	private void getAllData(DefaultCategoryDataset data, String granularity, String startTime, String endTime, String countType, String groupParameters){
-//		System.out.println("--> send SQL Query: select * from (select round(avg(wert), 4),control_point_name,zeit from (select "+ countType +"(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
+	
+	
+	private void generalChartModification (JFreeChart tempChart){
+	    tempChart.getCategoryPlot().setOutlineVisible( false );
+	    tempChart.getCategoryPlot().getRangeAxis().setAxisLineVisible( false );
+	    tempChart.getCategoryPlot().getRangeAxis().setTickMarksVisible( false );
+	    tempChart.getCategoryPlot().setRangeGridlineStroke( new BasicStroke() );
+	    tempChart.getCategoryPlot().getRangeAxis().setTickLabelPaint( Color.decode("#555555") );
+	    tempChart.getCategoryPlot().getDomainAxis().setTickLabelPaint( Color.decode("#555555") );
+	    tempChart.setTextAntiAlias( true );
+	    tempChart.setAntiAlias( true );
+	    tempChart.getCategoryPlot().getRenderer().setSeriesPaint( 0, Color.decode( "#4572a7" ));
+	}
+	
+	private void fetchData(DefaultCategoryDataset data, String granularity, String startTime, String endTime, String sumOrAvg, String groupParameters){
+
+//		System.out.println("fetch groups "+groupParameters);
+		
 		String[] groups=groupParameters.split("s");
 		for(int i=0;i<groups.length;i++){
 			String groupNumber=groups[i].contains("'")?groups[i].substring(0, groups[i].indexOf("'")):groups[i];
 			groups[i]=groups[i].contains("'")?groups[i].substring(groupNumber.length()):"";
 
-			ArrayList<ArrayList<String>> ret=SQL.querry(
+			ArrayList<ArrayList<String>> ret=SQL.query(
 					//"select control_point_name,value from controlpoints,measures where controlpoint_id='"+(i+1)+"' and controlpoint_id=controlpoints_id;"
 					//"select * from (select round("+ countType +"(wert), 4),control_point_name,zeit from (select "+ countType +"(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;"
 					"select * from (select round("
-					+countType
+					+sumOrAvg
 					+"(gruppenWert),4), gruppenZeit from(select "
-					+countType
+					+sumOrAvg
 					+"(wert) as gruppenWert,control_point_name, zeit1 as gruppenZeit from (select "
-					+countType
+					+sumOrAvg
 					+"(value)as wert,control_point_name,date_trunc('"
 					+granularity
 					+"',measure_time)as zeit1 from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"
@@ -201,25 +241,26 @@ public class ChartRenderer extends HttpServlet {
 		}
 	}
 	
-	private String granularityToString(String granularity){
-		int intGranularity=0;
-		try{
-			intGranularity=Integer.parseInt(granularity);
-		}catch(NumberFormatException e){
-			intGranularity=1;
+	private String timeGranularityToString(String timeGranularity){
+		if(timeGranularity==null){
+			return "minute";
 		}
-		switch(intGranularity){
-		case 0:
-			return "hour";
-		case 1:
+		switch(timeGranularity){
+		case "0":
+			//show one day, show all data->don't trunc
+			return "minute";
+		case "1":
+			//show one month -> trunc to day
 			return "day";
-		case 2:
+		case "2":
+			//show one year -> trunc to month
 			return "month";
-		case 3:
+		case "3":
+			//show two or more years -> trunc to year
 			return "year";
 		default:
-			System.err.println("Granularity '" + granularity +"' cannot be resolved to type hour(0), day(1), month(2), year(3).");
-			return null;
+			//default, don't trunc
+			return "minute";
 		}
 	}
 	
@@ -236,8 +277,7 @@ public class ChartRenderer extends HttpServlet {
 		case 1:
 			return "sum";
 		default:
-			System.err.println("Count Type '" + intCountType +"' cannot be resolved to type average(0) or sum(1).");
-			return null;			
+			return "sum";			
 		}
 	}
 	

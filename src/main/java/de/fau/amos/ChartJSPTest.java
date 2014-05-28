@@ -72,7 +72,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 		private XYSeries createSeriesQuickTest(String name,double startVal) throws SQLException {
 
 			XYSeries series = new XYSeries("Punkte1");
-			ResultSet rs = SQL.querryToResultSet("select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('day',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where controlpoints.controlpoints_id='1' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
+			ResultSet rs = SQL.queryToResultSet("select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('day',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where controlpoints.controlpoints_id='1' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
 			while (rs.next()) {
 				//TODO remove murks...
 //				series.add(rs.getString(3), rs.getDouble(1));
@@ -89,7 +89,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 //			ResultSet rs = SQL.querryToResultSet("select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('day',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where controlpoints.controlpoints_id='1' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
 			
 			//hour
-						ResultSet rs = SQL.querryToResultSet("select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('hour',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where controlpoints.controlpoints_id='1' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
+						ResultSet rs = SQL.queryToResultSet("select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,date_trunc('hour',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where controlpoints.controlpoints_id='1' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");
 
 			//minute
 //			ResultSet rs = SQL.querryToResultSet("select * from (select sum(wert),control_point_name,zeit from (select sum(value)as wert,control_point_name,measure_time as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where controlpoints.controlpoints_id='"+id+"' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;");

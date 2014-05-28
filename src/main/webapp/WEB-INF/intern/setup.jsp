@@ -31,6 +31,7 @@
 <head>
 <title>AMOS-Cockpit</title>
 <link rel="stylesheet" href="../styles/style.css" type="text/css" />
+<script src="jquery-2.0.0.min.js"></script>
 </head>
 
 <body>
@@ -40,12 +41,7 @@
 		<h2>Green Energy Cockpit</h2>
 	</header>
 	<div id="loginStateBox">
-		Logged in as "
-
-		<% 
-	out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME)); 
-	%>
-		"
+		Logged in as "<%out.print(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME));%>"
 	</div>
 	<nav id="menue">
 		<ul>
@@ -54,21 +50,167 @@
 	</nav>
 
 	<div id="completeContentBox">
-		<div id="content">
+		<div id="setupNavigation">
+			<input type="button" id="setupPlants" value="setup plants">
+			<input type="button" id="setupProducts" value="setup products">
+		</div>
 
+		<div id="content">
+		
+		
+			<script>
+	
+			$(document).ready(
+				function() {
+					$("#setupPlants").click(function() {		
+						$("#plants").show();
+						$("#products").hide();
+					}),
+					$("#setupProducts").click(function() {		
+						$("#products").show();
+						$("#plants").hide();
+					})
+					
+				}
+			)
+				
+			
+			</script>
+			<%boolean showProducts="show".equals(request.getParameter("showProducts"));
+			String addedProductSessionAttr=(session.getAttribute("addedNewProduct")!=null?(String)session.getAttribute("addedNewProduct"):"");
+			if(addedProductSessionAttr!=null&&addedProductSessionAttr.equals("true")){
+				showProducts=true;
+			}
+			session.removeAttribute("addedNewProduct");
+			%>
+			<div id="products" <% if(!showProducts){out.println("style=\"display: none;\"");}%>>
+				
+				<%
+
+				//check parameters for adding a new Product
+				String prodName=request.getParameter("prodName");
+				String prodShortName=request.getParameter("prodShortName");
+				double tnf=-1;
+				try{
+					String tmp=request.getParameter("prodTnf");
+					if(tmp!=null){
+						tnf=Double.parseDouble(tmp);
+					}
+				}catch(NumberFormatException e){
+					
+				}
+				
+				System.out.println("Heres the result:");
+				System.out.println("Name: "+prodName+"; shortName:"+prodShortName+"; tnf:"+tnf);
+
+				//parameters are correct/complete
+				boolean newProductIsOk=true;
+				
+				//check for product name
+				if(prodName==null||prodName.length()==0){
+					newProductIsOk=false;
+
+				//check for product shortName
+				}
+				if(prodShortName==null||prodShortName.length()==0){
+					newProductIsOk=false;
+					
+				//check for tnfvalue
+				}
+				if(tnf==-1){
+					newProductIsOk=false;					
+				}
+				
+				//query products
+				ArrayList<ArrayList<String>> products=SQL.query("SELECT * FROM products;");
+
+				//no plants found, create tabel
+				if(products==null){
+					String command=
+						"CREATE TABLE products (products_id serial primary key, "+ 
+						"product_name varchar(50) NOT NULL, product_short_name varchar(20), tnf decimal not null"+
+						")";			
+					SQL.execute(command);			
+	
+					products=SQL.query("SELECT * FROM products;");
+				}
+					
+				//parameters for new product are ok, check for existing product
+				if(newProductIsOk){
+					boolean prodExists=false;
+					
+					for(int i=1;i<products.size();i++){
+						if(products.get(i).size()>=4){
+							if(prodName.equals(products.get(i).get(1))||
+									prodShortName.equals(products.get(i).get(2))){
+								//found product with same name/shortname
+								prodExists=true;
+								break;
+							}
+						}
+					}
+					
+					if(prodExists){
+						//product exists
+						out.println("Product allready exists, choose other name!");
+					}else{
+						//product doesn't exist, add it and reload
+						ArrayList<String>values=new ArrayList<String>();
+						values.add("");
+						values.add(""+prodName);
+						values.add(""+prodShortName);
+						values.add(""+tnf);
+						SQL.addColumn("products",SQL.getColumns("products"),values);
+						response.setIntHeader("Refresh",0);
+						session.setAttribute("addedNewProduct","true");
+					}
+					
+				}
+				
+
+				
+				%>
+				
+				<table border rules="all" id="productTable" >
+					<tr>
+						<td>
+							Product
+						</td>
+						<td>
+							Shorname
+						</td>
+						<td>
+							equivalent pieces to 1 TNF
+						</td>
+					</tr>
+					<tr>
+						<form method="post" action="">
+							<td><input type="text" name="prodName"></td>
+							<td><input type="text" name="prodShortName"></td>
+							<td><input type="text" name="prodTnf"></td>
+							<input type="hidden" name="addProduct">
+							<input type="hidden" name="showProducts" value="show">
+							<td><input type="submit" value="Add product"></td>
+						</form>
+					</tr>				
+					<%for(int i=1;i<products.size();i++){ 
+						out.println("<tr><td>"+products.get(i).get(1)+"</td><td>"+products.get(i).get(2)+"</td><td>"+products.get(i).get(3)+"</td></tr>\n");
+					} %>
+				</table>				
+				
+			</div>
+			<div id="plants" <%if(showProducts){out.println("style=\"display: none;\"");}%>>
+		
 			<%
 			
-			//out.println(SQL.querry("SELECT * FROM factories"));
-			ArrayList<ArrayList<String>> plants=SQL.querry("SELECT * FROM plants;");
+			ArrayList<ArrayList<String>> plants=SQL.query("SELECT * FROM plants;");
 
 			if(plants==null){
+				//no plants found, create tabel and reload
 				SQL.createTable("plants",new String[]{"plant_name"});
-				plants=SQL.querry("SELECT * FROM plants;");
-				System.out.println("finished, reload");
+				plants=SQL.query("SELECT * FROM plants;");
 				response.sendRedirect("");
 			}
-			
-			//System.out.println("want to show controlPoints for "+request.getParameter("selName"));
 			
 			int selected=0;
 			try{
@@ -88,9 +230,9 @@
 					getControlPoints+=" where plant_id=plants_id;";
 				}
 				//String getControlPoints="Select * from plants,controlpoints where plant_id="+selected+";";
-				//controlPoints=SQL.querry("SELECT * FROM controlpoints;");
+				//controlPoints=SQL.query("SELECT * FROM controlpoints;");
 				System.out.println("get from db: "+getControlPoints);
-				controlPoints=SQL.querry(getControlPoints);
+				controlPoints=SQL.query(getControlPoints);
 				if(controlPoints==null){
 					String command=
 						"CREATE TABLE controlpoints (controlpoints_ID serial primary key, plant_id integer NOT NULL, "+ 
@@ -98,8 +240,8 @@
 					  	"CONSTRAINT controlpoint_plant_id_fkey FOREIGN KEY (plant_id) "+
 					    "REFERENCES plants (plants_id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION)";					
 					SQL.execute(command);			
-					//controlPoints=SQL.querry("SELECT * FROM controlpoints;");
-					controlPoints=SQL.querry(getControlPoints);
+					//controlPoints=SQL.query("SELECT * FROM controlpoints;");
+					controlPoints=SQL.query(getControlPoints);
 				}
 			}
 			
@@ -210,11 +352,20 @@
 						</form>
 					</td>
 
+				</tr>
+				<tr>
 					<td>
-						<form action="../file/upload/import<%=selected %>" method="post"
+						<form action="../file/upload/importEnergyData<%=selected %>" method="post"
 							enctype="multipart/form-data">
 							<input type="file" name="File" /> <input type="submit"
-								value="Import" />
+								value="Import Energydata" />
+						</form>
+					</td>
+					<td>
+						<form action="../file/upload/importProductionData<%=selected %>" method="post"
+							enctype="multipart/form-data">
+							<input type="file" name="File" /> <input type="submit"
+								value="Import Productiondata" />
 						</form>
 					</td>
 
@@ -229,7 +380,7 @@
 			
 					}
 					%>
-				
+				</tr>
 			</table>
 			<%
 			if(controlPoints==null||controlPoints.size()==0){
@@ -258,7 +409,7 @@
 					
 			%>
 
-
+			</div>
 		</div>
 	</div>
 </body>

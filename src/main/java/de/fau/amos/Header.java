@@ -11,7 +11,7 @@ public class Header {
 				"Tabelle"
 				+"</li></a>";
 		out+="<a href="+'"'+
-				"funktion2.jsp"
+				"charts.jsp"
 				+'"'+"><li>"+
 				"Charts"
 				+"</li></a>";
