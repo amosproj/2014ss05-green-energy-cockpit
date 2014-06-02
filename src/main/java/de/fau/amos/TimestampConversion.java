@@ -80,7 +80,8 @@ public class TimestampConversion {
 		case "dec":
 			return "12";
 		default:
-			throw new IllegalArgumentException("Cannot convert Month ('" + Month + "') from String to Int. Unknown Argument.");
+			System.err.println("Cannot convert Month ('" + Month + "') from String to Int. Unknown Argument.");
+			return null;
 		}
 	}
 
