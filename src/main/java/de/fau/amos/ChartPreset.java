@@ -83,16 +83,25 @@ public class ChartPreset {
 
 		out+="<script type=\"text/javascript\">\n"
 				+"$(document).ready(function() {\n"
-//				+"alert(\"code ok"+groupId+"\");\n"
-				+"$(\".group"+groupId+"\").click(function() {\n"
-				+"$(\".groupContent"+groupId+"\").slideToggle(\"fast\");\n"
+				+"$(\"#groupButtonUp"+groupId+"\").click(function() {\n"
+				+"$(\".groupContent"+groupId+"\").slideDown(\"fast\");\n"
+				+"$(\"#groupButtonDown"+groupId+"\").show();\n"
+				+"$(\"#groupButtonUp"+groupId+"\").hide();\n"
+				+"});\n"
+				+"$(\"#groupButtonDown"+groupId+"\").click(function() {\n"
+				+"$(\".groupContent"+groupId+"\").slideUp(\"fast\");\n"
+				+"$(\"#groupButtonUp"+groupId+"\").show();\n"
+				+"$(\"#groupButtonDown"+groupId+"\").hide();\n"
 				+"});\n"
 				+"});\n"
 				+"</script>\n";
 		
 		out+=" <div class=\"group"+groupId+"\">\n"
+				+"<img id=\"groupButtonUp"+groupId+"\" src=\"../images/up.png\" style=\"display: none;\">\n"
+				+"<img id=\"groupButtonDown"+groupId+"\" src=\"../images/down.png\">\n"
 				//+ "<input type=\"checkbox\" name=\"group_" + groupId + "\" value=\"group_" + groupId + "\" onclick=\"javascript:showHide"+groupId+"()\" checked>Group " + groupId +"<br>\n"
-				+"Group "+groupId
+//				+"Group "+groupId
+				+"<input type=\"text\" name=\"groupName"+groupId+"\" placeholder=\"Group "+groupId+"\">\n"
 				+ "</div>\n";
 		
 		out+="<div class=\"groupContent"+groupId+"\">\n";
@@ -102,10 +111,12 @@ public class ChartPreset {
 		//number of plants
 		int j=1;
 		for(int i=1; i < plants.size(); i++ ){
+			//for each plant
 			out += "<div class=\"plants\">\n";
 			out += "<div class=\"plants"+groupId+"_"+plants.get(i).get(0)+"\">\n";
-				//for each plant
 //			out+="<p style=\"margin-left: 10px;\">\n";
+			out+="<img id=\"plantButtonUp"+groupId+"_"+plants.get(i).get(0)+"\" src=\"../images/up.png\" style=\"display: none;\">\n";
+			out+="<img id=\"plantButtonDown"+groupId+"_"+plants.get(i).get(0)+"\" src=\"../images/down.png\">\n";
 			out +="<input type=\"checkbox\" name=\"plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"\" id=\"plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"\" value=\"plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"\">";//+plants.get(i).get(1)+"<br>\n";
 			out +="<div class=\"label_plant_"+groupId+"_"+plants.get(i).get(0)+"\" style=\"display:inline\">"+plants.get(i).get(1)+"</div><br>\n";
 			//			out += "</p>";
@@ -114,10 +125,22 @@ public class ChartPreset {
 			
 			out+="<script type=\"text/javascript\">\n"
 					+"$(document).ready(function() {\n"
-//					+"alert(\"code ok"+groupId+"\");\n"
-					+"$(\".label_plant_"+groupId+"_"+plants.get(i).get(0)+"\").click(function() {\n"		
-					+"$(\".controlpoints"+groupId+"_"+plants.get(i).get(0)+"\").slideToggle(\"fast\");\n"
+
+					+"$(\"#plantButtonUp"+groupId+"_"+plants.get(i).get(0)+"\").click(function() {\n"
+					+"$(\".controlpoints"+groupId+"_"+plants.get(i).get(0)+"\").slideDown(\"fast\");\n"
+					+"$(\"#plantButtonDown"+groupId+"_"+plants.get(i).get(0)+"\").show();\n"
+					+"$(\"#plantButtonUp"+groupId+"_"+plants.get(i).get(0)+"\").hide();\n"
 					+"});\n"
+					+"$(\"#plantButtonDown"+groupId+"_"+plants.get(i).get(0)+"\").click(function() {\n"
+					+"$(\".controlpoints"+groupId+"_"+plants.get(i).get(0)+"\").slideUp(\"fast\");\n"
+					+"$(\"#plantButtonUp"+groupId+"_"+plants.get(i).get(0)+"\").show();\n"
+					+"$(\"#plantButtonDown"+groupId+"_"+plants.get(i).get(0)+"\").hide();\n"
+					+"});\n"
+
+					
+//					+"$(\".label_plant_"+groupId+"_"+plants.get(i).get(0)+"\").click(function() {\n"		
+//					+"$(\".controlpoints"+groupId+"_"+plants.get(i).get(0)+"\").slideToggle(\"fast\");\n"
+//					+"});\n"
 					
 					+"$('#plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"').click(function() {\n"
 					+"if($(\"#plantCheckBox_"+groupId+"_"+plants.get(i).get(0)+"\").is(':checked')){\n"
@@ -149,18 +172,11 @@ public class ChartPreset {
 		return out;
 	}
 
-//	public static String createSelection(String parameterString){
-//		String out="";
-//		
-//		out=createGroup(1);
-//		
-//		return out;
-//	}
-	
 	public static String createParameterString(HttpServletRequest request){
 		String out="";
-		
+//		System.out.println("called createParameterString");
 		ArrayList<String> groups=new ArrayList<String>();
+		ArrayList<String[]> groupNames=new ArrayList<String[]>();
 		ArrayList<String> plants=new ArrayList<String>();
 		ArrayList<String> points=new ArrayList<String>();
 		int numOfGroups=1;
@@ -170,6 +186,8 @@ public class ChartPreset {
 //			System.out.println("found key ["+key+"]["+request.getParameter(key)+"]");
 			if(key.startsWith("group_")){
 //				groups.add(request.getParameter(key));
+			}else if(key.startsWith("groupName")){
+				groupNames.add(new String[]{key,request.getParameter(key)});
 			}else if(key.startsWith("plantCheckBox_")){
 				plants.add(request.getParameter(key));
 			}else if(key.startsWith("controlPointCheckBox_")){
@@ -180,6 +198,24 @@ public class ChartPreset {
 				}catch(NumberFormatException e){}
 			}
 		}
+		
+		for(int i=0;i<groupNames.size();i++){
+//			System.out.println("groupName "+groupNames.get(i)[0]+" "+groupNames.get(i)[1]);
+			int group=0;
+			try{
+				group=Integer.parseInt(groupNames.get(i)[0].substring("groupName".length()));
+			}catch(NumberFormatException e){
+				continue;
+			}
+			while(groups.size()<group+1){
+				groups.add(""+(groups.size()));
+			}
+			if(groupNames.get(i)[1]!=null&&groupNames.get(i)[1].length()!=0){
+				groups.set(group, groupNames.get(i)[1]);
+			}
+		}
+		
+//		System.out.println("no having "+groups.size());
 		
 		for(int i=0;i<points.size();i++){
 //			System.out.println("work with "+points.get(i));
@@ -206,6 +242,7 @@ public class ChartPreset {
 				out+="'0'";
 			}
 //			System.out.println(out);
+			
 //			out+=groups.get(i).substring("group_".length());
 //			boolean added=false;
 //			for(int j=0;j<points.size();j++){
@@ -223,28 +260,36 @@ public class ChartPreset {
 //				}
 //			}
 			
-			out+="s";
+			out+="|";
 //			System.out.println(out);
 		}
-//		System.out.println("generated "+out);
+		System.out.println("generated "+out);
 		out=out.replace("'", "%27");
+		out=out.replace("|", "%7C");
 		out=out.replace(",", "%2C");
 		return out;
 	}
 	
 	public static String createSelection(HttpServletRequest request){
+		
+//		System.out.println("called createSelection");
+		
 		String out="";
 		
 		ArrayList<String> groups=new ArrayList<String>();
+		ArrayList<String[]>groupNames=new ArrayList<String[]>();
 		ArrayList<String> plants=new ArrayList<String>();
 		ArrayList<String> points=new ArrayList<String>();
 		int numOfGroups=1;
 		Enumeration<String> en=request.getParameterNames();
 		while(en.hasMoreElements()){
 			String key=en.nextElement();
+//			System.out.println(key+" ["+request.getParameter(key)+"]");
 			if(key.startsWith("group_")){
 //				System.out.println(key+" = "+request.getParameter(key));
 				groups.add(request.getParameter(key));
+			}else if(key.startsWith("groupName")){
+				groupNames.add(new String[]{key,request.getParameter(key)});
 			}else if(key.startsWith("plantCheckBox_")){
 //				System.out.println(key+" = "+request.getParameter(key));
 				plants.add(request.getParameter(key));
@@ -267,6 +312,12 @@ public class ChartPreset {
 //		System.out.println(out);
 //		System.out.println("===================================");
 
+		for(int i=0;i<groupNames.size();i++){
+			if(groupNames.get(i)[1]!=null&&groupNames.get(i)[1].length()!=0&&!groupNames.get(i)[1].equals("Group "+groupNames.get(i)[0].substring("groupName".length()))){
+				out=out.replace("name=\""+groupNames.get(i)[0]+"\"","name=\""+groupNames.get(i)[0]+"\" value=\""+groupNames.get(i)[1]+"\"");				
+			}
+		}
+		
 		for(int i=0;i<groups.size();i++){
 //			System.out.println("replaced one for group");
 			out=out.replace(groups.get(i)+"\">",groups.get(i)+"\" checked>");

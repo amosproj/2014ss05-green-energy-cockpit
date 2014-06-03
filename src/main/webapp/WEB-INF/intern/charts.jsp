@@ -322,6 +322,7 @@
 			<%
 				int chartType = 0;
 				try {
+					//TODO check if parameter exists
 					chartType = Integer.parseInt(request.getParameter("selectedChartType"));
 				} catch (NumberFormatException e) {
 					chartType = 0;
@@ -420,7 +421,7 @@
 				//String groupParameterString=ChartPreset.createParameterString(request);
 
 				//Create Timestamp for SQL-Query (Start- and End-Date)
-				String time=TimestampConversion.convertTimestamp(0,0,(timeGranularity==1?selectedDay:1),(timeGranularity==1||timeGranularity==2?selectedMonth:1),selectedYear);
+				String time=TimestampConversion.convertTimestamp(0,0,(timeGranularity==0?selectedDay:1),(timeGranularity==0||timeGranularity==1?selectedMonth:1),selectedYear);
 				String endTime="";
 				Calendar c=Calendar.getInstance();
 				c.set(selectedYear,selectedMonth-1,selectedDay);
@@ -454,7 +455,7 @@
 				//		startDay, startMonth, startYear);
 				//String endTime = TimestampConversion.convertTimestamp(0, 0, endDay,
 				//		endMonth, endYear);
-				String startTime="";
+				String startTime=time;
 			%>
 
 
