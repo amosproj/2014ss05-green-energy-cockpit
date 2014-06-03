@@ -415,7 +415,6 @@
 					numberOfGroups = Integer.parseInt(request
 							.getParameter("numberOfGroups"));
 				} catch (NumberFormatException e) {
-					e.printStackTrace();
 				}
 
 				//String groupParameterString=ChartPreset.createParameterString(request);
@@ -521,7 +520,7 @@
 								})
 
 							})
-						</script>
+						</script>	
 
 						<div id="labelFrom" style="display: inline">from</div>
 						<select name="selectDay" id="selectDay" style="display: inline">
@@ -666,6 +665,7 @@
 					</div>
 				</form>
 			</div>
+
 			<script type="text/javascript">
 				function clickAdd() {
 					numberOfGroups.value++;

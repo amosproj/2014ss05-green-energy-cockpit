@@ -20,8 +20,6 @@
 
 package de.fau.amos;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -29,52 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 
 public class ChartPreset {
 	
-
-//	private static int g = 1;	
-//	
-//	public static String createPreset(int groupId){
-//		
-//		String preset = " <div class=\"group\">"
-//				+ "<input type=\"checkbox\" name=\"group" + groupId + "\" value=\"group" + groupId + "\"> Group " + groupId + "<br>"
-//				+ "</div><br>";
-//		
-//		ArrayList<ArrayList<String>> id = SQL.querry("select controlpoints_id from controlpoints;");
-//		ArrayList<ArrayList<String>> name = SQL.querry("select control_point_name from controlpoints;");
-//		
-//		preset += "<div class=\"measure_points\"><br>";
-//		
-//		for(int i=1; i < id.size(); i++ ){
-//			preset += "<input type=\"checkbox\" name=\"" + name.get(i) + "\" value=" + id.get(i) + "> " + name.get(i) + " \n";
-//		}
-//		preset += "</div><br>";
-//		
-////		g++;
-//		
-//		return preset;
-//	}
-//	
-//	public static String addGroup(){
-//		
-//		String add = "<br>" + 
-//				" <div class=\"group\">"
-//				+ "<input type=\"checkbox\" name=\"group" + g + "\" value=\"group" + g + "\"> Group " + g + " 	"
-//				+ "</div>";
-//		
-//		ArrayList<ArrayList<String>> id = SQL.querry("select controlpoints_id from controlpoints;");
-//		ArrayList<ArrayList<String>> name = SQL.querry("select control_point_name from controlpoints;");
-//		
-//		add += "<div class=\"measure_points\">";
-//		
-//		for(int i=1; i < id.size(); i++ ){
-//			add += "<input type=\"checkbox\" name=\"" + name.get(i) + "\" value=" + id.get(i) + "> " + name.get(i) + " <br>";
-//		}
-//		add += "</div>";
-//		
-//		//g++;
-//		
-//		return add;
-//	}
-
 
 	public static String createGroup(int groupId){
 		
@@ -94,6 +46,21 @@ public class ChartPreset {
 				+"$(\"#groupButtonDown"+groupId+"\").hide();\n"
 				+"});\n"
 				+"});\n"
+				
+				+"function checkKeys"+groupId+"(){\n" 
+				+"var is=$(\"#groupName"+groupId+"\").val();\n"
+				+"var validChars=\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890-_\";\n"
+				+"var foundWrong=false;\n"
+				+"var validResult=\"\";\n"
+				+"for(var i=0;i<is.length;i++){\n"
+				+"if(validChars.indexOf(is.charAt(i))==-1){\n"
+				+"foundWrong=true;\n"	
+				+"}else{\n"
+				+"validResult+=is.charAt(i);\n"
+				+"}}\n"					
+				+"if(foundWrong){alert(\"Use only [a-z],[A-Z],[0-9],[-] or [_]!\");\n"
+				+"$(\"#groupName"+groupId+"\").val(validResult);\n"
+				+"}}\n" 
 				+"</script>\n";
 		
 		out+=" <div class=\"group"+groupId+"\">\n"
@@ -101,7 +68,7 @@ public class ChartPreset {
 				+"<img id=\"groupButtonDown"+groupId+"\" src=\"../images/down.png\">\n"
 				//+ "<input type=\"checkbox\" name=\"group_" + groupId + "\" value=\"group_" + groupId + "\" onclick=\"javascript:showHide"+groupId+"()\" checked>Group " + groupId +"<br>\n"
 //				+"Group "+groupId
-				+"<input type=\"text\" name=\"groupName"+groupId+"\" placeholder=\"Group "+groupId+"\">\n"
+				+"<input type=\"text\" id=\"groupName"+groupId+"\" name=\"groupName"+groupId+"\" placeholder=\"Group "+groupId+"\" onkeyup=\"checkKeys"+groupId+"()\">\n"
 				+ "</div>\n";
 		
 		out+="<div class=\"groupContent"+groupId+"\">\n";
@@ -179,7 +146,7 @@ public class ChartPreset {
 		ArrayList<String[]> groupNames=new ArrayList<String[]>();
 		ArrayList<String> plants=new ArrayList<String>();
 		ArrayList<String> points=new ArrayList<String>();
-		int numOfGroups=1;
+//		int numOfGroups=1;
 		Enumeration<String> en=request.getParameterNames();
 		while(en.hasMoreElements()){
 			String key=en.nextElement();
@@ -192,10 +159,10 @@ public class ChartPreset {
 				plants.add(request.getParameter(key));
 			}else if(key.startsWith("controlPointCheckBox_")){
 				points.add(request.getParameter(key));			
-			}else if(key.equals("numberOfGroups")){
-				try{
-					numOfGroups=Integer.parseInt(request.getParameter(key));
-				}catch(NumberFormatException e){}
+//			}else if(key.equals("numberOfGroups")){
+//				try{
+//					numOfGroups=Integer.parseInt(request.getParameter(key));
+//				}catch(NumberFormatException e){}
 			}
 		}
 		
