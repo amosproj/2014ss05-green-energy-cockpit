@@ -7,24 +7,43 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.DateTickMarkPosition;
+import org.jfree.chart.axis.DateTickUnit;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
+import org.jfree.chart.renderer.xy.ClusteredXYBarRenderer;
+import org.jfree.chart.renderer.xy.StackedXYBarRenderer;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.time.Day;
 import org.jfree.data.time.Minute;
+import org.jfree.data.time.Month;
+import org.jfree.data.time.TimePeriodAnchor;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.time.Year;
 import org.jfree.data.xy.IntervalXYDataset;
 import org.jfree.ui.RectangleInsets;
 
@@ -113,7 +132,7 @@ public class ChartRenderer extends HttpServlet {
 					"Energy Consumption",           // y-axis label
 					dataset,            // data
 					true,               // create legend?
-					true,               // generate tooltips?
+					false,               // generate tooltips?
 					false               // generate URLs?
 					);
 			lineChart.setBackgroundPaint(Color.white);
@@ -122,7 +141,15 @@ public class ChartRenderer extends HttpServlet {
 			plot.setDomainGridlinePaint(Color.white);
 			plot.setRangeGridlinePaint(Color.white);
 			plot.setAxisOffset(new RectangleInsets(0, 0, 0, 0));
-
+			
+	        // Set series line styles
+//	        XYItemRenderer r = plot.getRenderer();
+//	        if (r instanceof XYLineAndShapeRenderer) {
+//	            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
+//	            renderer.setBaseShapesVisible(true);
+//	            renderer.setBaseShapesFilled(true);
+//	        }
+	       
 			chart = lineChart;
 		}else{
 
@@ -136,8 +163,14 @@ public class ChartRenderer extends HttpServlet {
 			plot.setDomainGridlinePaint(Color.white);
 			plot.setRangeGridlinePaint(Color.white);
 			plot.setAxisOffset(new RectangleInsets(0, 0, 0, 0));
+//	        ClusteredXYBarRenderer r = (ClusteredXYBarRenderer) plot.getRenderer();
+//	        r.setMargin(0.4);
+			ClusteredXYBarRenderer clusteredxybarrenderer = new ClusteredXYBarRenderer(
+                    0.20000000000000001D, false);
+			plot.setRenderer(clusteredxybarrenderer);
 			chart = barChart;
 		}
+
 
 		//create Image and clear output stream
 		RenderedImage chartImage = chart.createBufferedImage(870-201-15, 512);
@@ -214,15 +247,56 @@ public class ChartRenderer extends HttpServlet {
 			//				}
 			//			}
 			if(rs!=null){
+				switch(granularity){
+				
+				case "minute":
 				while (rs.next()) {
-					series.add(new Minute(
-							Integer.parseInt(rs.getString(2).substring(14,16)),
-							Integer.parseInt(rs.getString(2).substring(11,13)),
-							Integer.parseInt(rs.getString(2).substring(8,10)),
-							Integer.parseInt(rs.getString(2).substring(5,7)),
-							Integer.parseInt(rs.getString(2).substring(0,4))
-							), rs.getDouble(1));	
+						series.add(new Minute(
+								Integer.parseInt(rs.getString(2).substring(14,16)),
+								Integer.parseInt(rs.getString(2).substring(11,13)),
+								Integer.parseInt(rs.getString(2).substring(8,10)),
+								Integer.parseInt(rs.getString(2).substring(5,7)),
+								Integer.parseInt(rs.getString(2).substring(0,4))
+								), rs.getDouble(1));					
+					}
+				break;
+				
+				case "day":
+				while (rs.next()) {	
+						series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
+						Integer.parseInt(rs.getString(2).substring(5,7)),
+						Integer.parseInt(rs.getString(2).substring(0,4))
+						), rs.getDouble(1));					
+					}
+				break;
+				
+				case "month":
+					while (rs.next()) {	
+						series.add(new Month(Integer.parseInt(rs.getString(2).substring(5,7)),
+						Integer.parseInt(rs.getString(2).substring(0,4))
+						), rs.getDouble(1));					
+					}
+				break;
+					
+				case "year":
+					while (rs.next()) {	
+						series.add(new Year(Integer.parseInt(rs.getString(2).substring(0,4))
+						), rs.getDouble(1));					
+					}
+					break;
+				
+					//default: day
+				default:
+					while (rs.next()) {	
+						series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
+						Integer.parseInt(rs.getString(2).substring(5,7)),
+						Integer.parseInt(rs.getString(2).substring(0,4))
+						), rs.getDouble(1));					
+					}
 				}
+				
+				
+				
 				rs.close();	
 			}
 			//Add the series to the collection
