@@ -568,6 +568,7 @@
 							%>
 						</select>
 						
+						<!--
 						<select name="countType" id="countType">
 							<option value="0"
 								<%out.print(((countType == 0) ? " selected" : "") + "");%>>Average values</option>
@@ -576,7 +577,7 @@
 
 
 						</select>
-						
+						-->
 
 					</div>
 
