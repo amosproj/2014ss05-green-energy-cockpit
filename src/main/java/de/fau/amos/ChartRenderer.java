@@ -257,7 +257,7 @@ public class ChartRenderer extends HttpServlet {
 								Integer.parseInt(rs.getString(2).substring(8,10)),
 								Integer.parseInt(rs.getString(2).substring(5,7)),
 								Integer.parseInt(rs.getString(2).substring(0,4))
-								), rs.getDouble(1));					
+								), rs.getDouble(1)/1000);					
 					}
 				break;
 				
@@ -266,7 +266,7 @@ public class ChartRenderer extends HttpServlet {
 						series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
 						Integer.parseInt(rs.getString(2).substring(5,7)),
 						Integer.parseInt(rs.getString(2).substring(0,4))
-						), rs.getDouble(1));					
+						), rs.getDouble(1)/1000);					
 					}
 				break;
 				
@@ -274,14 +274,14 @@ public class ChartRenderer extends HttpServlet {
 					while (rs.next()) {	
 						series.add(new Month(Integer.parseInt(rs.getString(2).substring(5,7)),
 						Integer.parseInt(rs.getString(2).substring(0,4))
-						), rs.getDouble(1));					
+						), rs.getDouble(1)/1000);					
 					}
 				break;
 					
 				case "year":
 					while (rs.next()) {	
 						series.add(new Year(Integer.parseInt(rs.getString(2).substring(0,4))
-						), rs.getDouble(1));					
+						), rs.getDouble(1)/1000);					
 					}
 					break;
 				
@@ -291,7 +291,7 @@ public class ChartRenderer extends HttpServlet {
 						series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
 						Integer.parseInt(rs.getString(2).substring(5,7)),
 						Integer.parseInt(rs.getString(2).substring(0,4))
-						), rs.getDouble(1));					
+						), rs.getDouble(1)/1000);					
 					}
 				}
 				
