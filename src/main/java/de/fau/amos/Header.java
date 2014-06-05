@@ -6,9 +6,9 @@ public class Header {
 		String out="";
 				
 		out+="<a href="+'"'+
-				"funktion1.jsp"
+				"planning.jsp"
 				+'"'+"><li>"+
-				"Tabelle"
+				"Planning"
 				+"</li></a>";
 		out+="<a href="+'"'+
 				"charts.jsp"

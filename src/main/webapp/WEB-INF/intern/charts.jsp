@@ -653,7 +653,7 @@
 
 					</div>
 					 -->
-					<input type="submit" id="showChart" value="Show"> <input
+					<input type="submit" id="showChart" class="buttonDesign" value="Show"> <input
 						type="hidden" name="numberOfGroups" id="numberOfGroups"
 						value="<%=numberOfGroups%>">
 
@@ -661,7 +661,7 @@
 						<div id="groupSelection">
 							<%out.println(ChartPreset.createSelection(request));%>
 						</div>
-						<input type="button" value="Add Group"
+						<input type="button" class="buttonDesign" value="Add Group"
 							onclick="javascript:clickAdd(); this.form.submit()">
 					</div>
 				</form>

@@ -194,3 +194,31 @@ nav a{
 	margin: -512px 0px 0px 220px;
 	
 }
+#showTable{
+	padding: 12px 30px;
+	position:absolute;
+	top: 80px;
+	left: 300px;
+	color: white;
+	font-size: 15pt;
+	border-radius: 10px;
+	box-shadow: black 1px 1px 5px;
+	background-image:url(../images/background_image.fw.png);
+}
+#downloadTable{
+	position:absolute;
+	top: 80px;
+	left: 500px;
+	padding: 12px 30px;
+	color: white;
+	font-size: 15pt;
+	border-radius: 10px;
+	box-shadow: black 1px 1px 5px;
+	background-image:url(../images/background_image.fw.png);
+}
+.buttonDesign{
+	background-image:url(../images/background_image.fw.png);
+	border-radius: 3px;
+	color: white;
+	box-shadow: black 1px 1px 5px;
+}
