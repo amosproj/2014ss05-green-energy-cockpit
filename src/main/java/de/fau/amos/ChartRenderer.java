@@ -23,10 +23,14 @@ import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.DateTickMarkPosition;
 import org.jfree.chart.axis.DateTickUnit;
 import org.jfree.chart.axis.DateTickUnitType;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.renderer.xy.ClusteredXYBarRenderer;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.Minute;
 import org.jfree.data.time.Month;
@@ -64,32 +68,40 @@ public class ChartRenderer extends HttpServlet {
 		//<img src="../ChartRenderer?selectedChartType=<%=chartType%>&time=<%out.println(time+(timeGranularity==3?"&endTime="+endTime:""));%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupParameters=<%out.println(ChartPreset.createParameterString(request));%>" />
 
 		// Parameters from URL
-		String selectedChartType=request.getParameter("selectedChartType");
+		String chartType=request.getParameter("selectedChartType").trim();
 		String time=request.getParameter("time");
 		String endTime=request.getParameter("endTime");
 		String timeGranularity=request.getParameter("timeGranularity");
 		String stringTimeGranularity=timeGranularityToString(timeGranularity);
 		String countType = countTypeToString(request.getParameter("countType"));
-		String groupParameters=encodeGroupParameters(request.getParameter("groupParameters"));
+		String groupLocationParameters=encodeGroupParameters(request.getParameter("groupLocationParameters"));
+		String groupFormatParameters=encodeGroupParameters(request.getParameter("groupFormatParameters"));
 
 
-		// Create TimeSeriesCollection from URL-Parameters. This includes the SQL Query
-		TimeSeriesCollection dataset = null;
-		try {
-			dataset = createTimeCollection(stringTimeGranularity, time, endTime, countType, groupParameters);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		
-		// Create Chart from TimeSeriesCollection and do graphical modifications.
 		JFreeChart chart = null;
-		if(timeGranularity.equals("0")){       
-			chart = createTimeLineChart(dataset, timeGranularity, time);
-		}else{
-			chart = createTimeBarChart(dataset, timeGranularity, time);
+	
+		if(chartType.equals("1")){
+			//show time chart
+		
+			// Create TimeSeriesCollection from URL-Parameters. This includes the SQL Query
+			TimeSeriesCollection dataset = null;
+			dataset = createTimeCollection(stringTimeGranularity, time, endTime, countType, groupLocationParameters);
+	
+	
+			// Create Chart from TimeSeriesCollection and do graphical modifications.
+			if(timeGranularity.equals("0")){       
+				chart = createTimeLineChart(dataset, timeGranularity, time);
+			}else{
+				chart = createTimeBarChart(dataset, timeGranularity, time);
+			}
+			
+		}else if(chartType.equals("2")){
+			
+			//show location-format chart
+			DefaultCategoryDataset dataset=createLocationCollectionCAT(time,endTime,countType,groupLocationParameters, groupFormatParameters);
+			chart=createLocationFormatChartCAT(dataset);
+			
 		}
-
 
 		//create Image and clear output stream
 		RenderedImage chartImage = chart.createBufferedImage(870-201-15, 512);
@@ -105,21 +117,23 @@ public class ChartRenderer extends HttpServlet {
 		doGet(request, response);
 	}
 
-	private TimeSeriesCollection createTimeCollection(String granularity, String startTime, String endTime, String sumOrAvg, String groupParameters) throws NumberFormatException, SQLException{
+	private TimeSeriesCollection createTimeCollection(String granularity, String startTime, String endTime, String sumOrAvg, String groupParameters){
 		TimeSeriesCollection collection = new TimeSeriesCollection();
 		groupParameters=groupParameters.replace("|", "splitHere");
 		String[] groups=groupParameters.split("splitHere");
 		for(int i=0;i<groups.length;i++){
-			System.out.println("search for group "+groups[i]+" groupName: "+(groups[i].contains("'")?groups[i].substring(0,groups[i].indexOf("'")):groups[i]));
 			String groupName=groups[i].contains("'")?groups[i].substring(0, groups[i].indexOf("'")):groups[i];
 			groups[i]=groups[i].contains("'")?groups[i].substring(groupName.length()):"";
-//			TimeSeries series = new TimeSeries(""+SQL.getValueOfFieldWithId("controlpoints","control_point_name",""+i));
+			//			TimeSeries series = new TimeSeries(""+SQL.getValueOfFieldWithId("controlpoints","control_point_name",""+i));
 			TimeSeries series = new TimeSeries(groupName);
 
 			//			ArrayList<ArrayList<String>> ret=SQL.query(
 			//"select control_point_name,value from controlpoints,measures where controlpoint_id='"+(i+1)+"' and controlpoint_id=controlpoints_id;"
 			//"select * from (select round("+ countType +"(wert), 4),control_point_name,zeit from (select "+ countType +"(value)as wert,control_point_name,date_trunc('" + granularity + "',measure_time)as zeit from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+ startTime + "' AND measure_time < '" + endTime + "' group by measure_time,control_point_name) as tmp group by zeit,control_point_name)as unsorted order by zeit,control_point_name;"
-			ResultSet rs = SQL.queryToResultSet(
+			ResultSet rs = null;
+			
+			if(groups[i].trim()!=""){
+				rs=SQL.queryToResultSet(
 					"select * from (select round("
 							+sumOrAvg
 							+"(gruppenWert),4), gruppenZeit from(select "
@@ -136,59 +150,64 @@ public class ChartRenderer extends HttpServlet {
 							+groups[i]
 									+") group by measure_time,control_point_name)as data group by zeit1,control_point_name)as groupedByTime group by gruppenZeit)as result order by gruppenZeit;"
 					);
-
+			}
 			if(rs!=null){
-				switch(granularity){
-				
-				case "minute":
-				while (rs.next()) {
-						series.add(new Minute(
-								Integer.parseInt(rs.getString(2).substring(14,16)),
-								Integer.parseInt(rs.getString(2).substring(11,13)),
-								Integer.parseInt(rs.getString(2).substring(8,10)),
-								Integer.parseInt(rs.getString(2).substring(5,7)),
-								Integer.parseInt(rs.getString(2).substring(0,4))
-								), rs.getDouble(1)/1000);					
+				try{
+					switch(granularity){
+
+					case "minute":
+						while (rs.next()) {
+							series.add(new Minute(
+									Integer.parseInt(rs.getString(2).substring(14,16)),
+									Integer.parseInt(rs.getString(2).substring(11,13)),
+									Integer.parseInt(rs.getString(2).substring(8,10)),
+									Integer.parseInt(rs.getString(2).substring(5,7)),
+									Integer.parseInt(rs.getString(2).substring(0,4))
+									), rs.getDouble(1)/1000);					
+						}
+						break;
+
+					case "day":
+						while (rs.next()) {	
+							series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
+									Integer.parseInt(rs.getString(2).substring(5,7)),
+									Integer.parseInt(rs.getString(2).substring(0,4))
+									), rs.getDouble(1)/1000);					
+						}
+						break;
+
+					case "month":
+						while (rs.next()) {	
+							series.add(new Month(Integer.parseInt(rs.getString(2).substring(5,7)),
+									Integer.parseInt(rs.getString(2).substring(0,4))
+									), rs.getDouble(1)/1000);					
+						}
+						break;
+
+					case "year":
+						while (rs.next()) {	
+							series.add(new Year(Integer.parseInt(rs.getString(2).substring(0,4))
+									), rs.getDouble(1)/1000);					
+						}
+						break;
+
+						//default: day
+					default:
+						while (rs.next()) {	
+							series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
+									Integer.parseInt(rs.getString(2).substring(5,7)),
+									Integer.parseInt(rs.getString(2).substring(0,4))
+									), rs.getDouble(1)/1000);					
+						}
 					}
-				break;
-				
-				case "day":
-				while (rs.next()) {	
-						series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
-						Integer.parseInt(rs.getString(2).substring(5,7)),
-						Integer.parseInt(rs.getString(2).substring(0,4))
-						), rs.getDouble(1)/1000);					
-					}
-				break;
-				
-				case "month":
-					while (rs.next()) {	
-						series.add(new Month(Integer.parseInt(rs.getString(2).substring(5,7)),
-						Integer.parseInt(rs.getString(2).substring(0,4))
-						), rs.getDouble(1)/1000);					
-					}
-				break;
-					
-				case "year":
-					while (rs.next()) {	
-						series.add(new Year(Integer.parseInt(rs.getString(2).substring(0,4))
-						), rs.getDouble(1)/1000);					
-					}
-					break;
-				
-					//default: day
-				default:
-					while (rs.next()) {	
-						series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
-						Integer.parseInt(rs.getString(2).substring(5,7)),
-						Integer.parseInt(rs.getString(2).substring(0,4))
-						), rs.getDouble(1)/1000);					
-					}
+
+					rs.close();	
+
+				}catch(NumberFormatException e){
+
+				} catch (SQLException e) {
+					e.printStackTrace();
 				}
-				
-				
-				
-				rs.close();	
 			}
 			//Add the series to the collection
 			collection.addSeries(series);
@@ -197,14 +216,14 @@ public class ChartRenderer extends HttpServlet {
 	}
 
 	private JFreeChart createTimeLineChart(TimeSeriesCollection collection, String timeGranularity, String time){
-		
+
 		// Modification of X-Axis Label
 		int day = Integer.parseInt(time.substring(8,10));
 		int month = Integer.parseInt(time.substring(5,7));
 		String dayString = new DateFormatSymbols(Locale.US).getWeekdays()[day] + ", " + day + ". ";
 		String monthString = new DateFormatSymbols(Locale.US).getMonths()[month -1];
 		String xAxisLabel = "" + dayString +   monthString + "  " +  time.substring(0,4);
-		 
+
 		//Creation of the lineChart
 		JFreeChart lineChart = ChartFactory.createTimeSeriesChart(
 				"Line Chart",              	// title
@@ -215,7 +234,7 @@ public class ChartRenderer extends HttpServlet {
 				false,               		// generate tooltips?
 				false               		// generate URLs?
 				);
-		
+
 		//graphical modifications for LineChart
 		lineChart.setBackgroundPaint(Color.white);
 		XYPlot plot = lineChart.getXYPlot();
@@ -225,35 +244,35 @@ public class ChartRenderer extends HttpServlet {
 		plot.setAxisOffset(new RectangleInsets(0, 0, 0, 0));
 		return lineChart;
 	}
-	
+
 	private JFreeChart createTimeBarChart(TimeSeriesCollection collection, String timeGranularity, String time){
-		
+
 		String xAxisLabel = null;
-		
+
 		// Modification of X-Axis Label (depending on the granularity)
 		int month;
 
 		String monthString = null;
 		switch(timeGranularity){
 		//for Case "0" see method "createTimeLineChart"
-			case "1":
-				month = Integer.parseInt(time.substring(5,7));
-				monthString = new DateFormatSymbols(Locale.US).getMonths()[month -1];
-				xAxisLabel = "" +  monthString + "  " +  time.substring(0,4);
+		case "1":
+			month = Integer.parseInt(time.substring(5,7));
+			monthString = new DateFormatSymbols(Locale.US).getMonths()[month -1];
+			xAxisLabel = "" +  monthString + "  " +  time.substring(0,4);
 			break;
-		
-			case "2":
+
+		case "2":
 			xAxisLabel = time.substring(0,4);
 			break;
-			
-			case "3":
-				xAxisLabel = "Years";
-				break;
 
-			default:
-				xAxisLabel = "Timespan";
+		case "3":
+			xAxisLabel = "Years";
+			break;
+
+		default:
+			xAxisLabel = "Timespan";
 		}
-		
+
 		JFreeChart barChart = ChartFactory.createXYBarChart(
 				"Bar Chart",              		// title
 				xAxisLabel,             		// x-axis label
@@ -265,7 +284,7 @@ public class ChartRenderer extends HttpServlet {
 				true,               			// generate tooltips?
 				false               			// generate URLs?
 				);
-		
+
 		//graphical modifications for BarChart
 		barChart.setBackgroundPaint(Color.white);
 		XYPlot plot = barChart.getXYPlot();
@@ -273,15 +292,15 @@ public class ChartRenderer extends HttpServlet {
 		plot.setDomainGridlinePaint(Color.white);
 		plot.setRangeGridlinePaint(Color.white);
 		plot.setAxisOffset(new RectangleInsets(0, 0, 0, 0));
-				
+
 		//Axis modification: Set Axis X-Value directly below the bars
 		DateAxis dateAxis = (DateAxis) plot.getDomainAxis();
 		dateAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
-		
+
 		//Axis modification: Remove Values from x-Axis that belong to former/later time element (Month/Day)
 		dateAxis.setLowerMargin(0.01);
 		dateAxis.setUpperMargin(0.01);
-		
+
 		//Axis modification: Axis values (depending on timeGranularity)
 		if(timeGranularity.equals("1")){
 			dateAxis.setTickUnit(new DateTickUnit(DateTickUnitType.DAY, 2,new SimpleDateFormat("  dd.  ", Locale.US)));
@@ -293,9 +312,9 @@ public class ChartRenderer extends HttpServlet {
 			dateAxis.setTickUnit(new DateTickUnit(DateTickUnitType.YEAR, 1,new SimpleDateFormat(" yyyy ", Locale.US)));
 		}
 
-		
+
 		ClusteredXYBarRenderer clusteredxybarrenderer = new ClusteredXYBarRenderer(
-                0.25, false);
+				0.25, false);
 		clusteredxybarrenderer.setShadowVisible(false);
 		clusteredxybarrenderer.setBarPainter(new StandardXYBarPainter());
 		plot.setRenderer(clusteredxybarrenderer);
@@ -303,6 +322,81 @@ public class ChartRenderer extends HttpServlet {
 
 	}
 
+	private DefaultCategoryDataset createLocationCollectionCAT(String startTime, String endTime, String sumOrAvg, String locationGroupParameters,String formatGroupParameters){
+		DefaultCategoryDataset collection=new DefaultCategoryDataset();
+		locationGroupParameters=locationGroupParameters.replace("|", "splitHere");
+		String[] locationGroups=locationGroupParameters.split("splitHere");
+		formatGroupParameters=formatGroupParameters.replace("|", "splitHere");
+		String[] formatGroups=formatGroupParameters.split("splitHere");
+		
+		for(int f=0;f<formatGroups.length;f++){
+			String formatGroupName=formatGroups[f].contains("'")?formatGroups[f].substring(0, formatGroups[f].indexOf("'")):formatGroups[f];
+			String formatGroupParam=formatGroups[f].contains("'")?formatGroups[f].substring(formatGroupName.length()):"";
+			if(formatGroupParam.trim().equals("")){
+				continue;
+			}
+			for(int l=0;l<locationGroups.length;l++){
+				String locationGroupName=locationGroups[l].contains("'")?locationGroups[l].substring(0, locationGroups[l].indexOf("'")):locationGroups[l];
+				String locationGroupParam=locationGroups[l].contains("'")?locationGroups[l].substring(locationGroupName.length()):"";
+
+				ResultSet rs = null;
+				
+				if(locationGroups[l].trim()!=""){
+					rs=SQL.queryToResultSet(
+						"SELECT sum(amount)"
+								+" FROM productiondata"
+								+" WHERE measure_time >='"
+								+startTime
+								+"' AND measure_time <'"
+								+endTime
+								+"' AND controlpoint_id in("
+								+ locationGroupParam
+								+") AND product_id in("
+								+ formatGroupParam
+								+");"
+						);
+				}
+				if(rs!=null){
+					
+					try {
+						rs.next();
+						collection.addValue(rs.getDouble(1),formatGroupName,locationGroupName);
+						rs.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}	
+				}
+				
+			}
+		}
+		return collection;
+	}
+	
+	private JFreeChart createLocationFormatChartCAT(DefaultCategoryDataset collection){
+
+		JFreeChart barChart = ChartFactory.createBarChart("Production Consumption","",
+				"Produced pieces [TNF]", collection, PlotOrientation.VERTICAL, true, true, false);
+
+		//graphical modifications for BarChart
+		barChart.setBackgroundPaint(Color.white);
+		CategoryPlot plot = barChart.getCategoryPlot();
+		plot.setBackgroundPaint(Color.white);
+		plot.setDomainGridlinePaint(Color.white);
+		plot.setRangeGridlinePaint(Color.white);
+		plot.setAxisOffset(new RectangleInsets(0, 0, 0, 0));
+		plot.setShadowGenerator(null);
+
+		//Barmodifications
+		BarRenderer renderer=(BarRenderer) plot.getRenderer();
+		renderer.setBarPainter(new StandardBarPainter());
+		renderer.setItemMargin(0);
+		renderer.setShadowVisible(false);
+		plot.setRenderer(renderer);
+		
+		return barChart;
+
+	}
+	
 	private String timeGranularityToString(String timeGranularity){
 		if(timeGranularity==null){
 			return "minute";
@@ -326,7 +420,7 @@ public class ChartRenderer extends HttpServlet {
 		}
 	}
 
-	
+
 	private String countTypeToString(String countType){
 		int intCountType=0;
 		try{

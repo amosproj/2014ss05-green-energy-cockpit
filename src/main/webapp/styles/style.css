@@ -188,6 +188,9 @@ nav a{
 .controlpoints{
 	margin-left: 20px;
 }
+.formats{
+	margin-left: 10px;
+}
 #chart{
 
 	position: absolute;
