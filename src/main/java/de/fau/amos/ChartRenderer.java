@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Locale;
 
 import javax.imageio.ImageIO;
@@ -217,10 +218,18 @@ public class ChartRenderer extends HttpServlet {
 
 	private JFreeChart createTimeLineChart(TimeSeriesCollection collection, String timeGranularity, String time){
 
+
+		
 		// Modification of X-Axis Label
 		int day = Integer.parseInt(time.substring(8,10));
 		int month = Integer.parseInt(time.substring(5,7));
-		String dayString = new DateFormatSymbols(Locale.US).getWeekdays()[day] + ", " + day + ". ";
+		int year = Integer.parseInt(time.substring(0,4));
+		//get Weekday
+		Calendar c = Calendar.getInstance();
+		c.set(year, month - 1, day, 0, 0);
+		int weekDay = c.get(Calendar.DAY_OF_WEEK);
+		
+		String dayString = new DateFormatSymbols(Locale.US).getWeekdays()[weekDay] + ", " + day + ". ";
 		String monthString = new DateFormatSymbols(Locale.US).getMonths()[month -1];
 		String xAxisLabel = "" + dayString +   monthString + "  " +  time.substring(0,4);
 
