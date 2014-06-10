@@ -48,6 +48,7 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 
 	<script>
 		function changeChartType() {
+			alert("changeChartType");
 			var e = document.getElementById("selectChartType");
 			var val = e.options[e.selectedIndex].value;
 			//document.getElementById("selectedChartType").value = val;
@@ -289,6 +290,7 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 						<option value="0" <%out.print(((chartType == 0) ? " selected" : "") + "");%>></option>
 						<option value="1" <%out.print(((chartType == 1) ? " selected" : "") + "");%>>Time</option>
 						<option value="2" <%out.print(((chartType == 2) ? " selected" : "") + "");%>>Location - Format</option>
+						<option value="3" <%out.print(((chartType == 3) ? " selected" : "") + "");%>>Format - Location</option>
 					</select>
 				</form>
 			</div>
@@ -362,7 +364,7 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 						</div>
 						<input type="button" class="buttonDesign" value="Add Group" onclick="javascript:clickAddLocationGroup(); this.form.submit()">
 					</div>
-					<% if(chartType==2){%>
+					<% if(chartType==2||chartType==3){%>
 					<input type="hidden" name="numberOfFormatGroups" id="numberOfFormatGroups" value="<%=numberOfFormatGroups%>">
 					<div style="width: 200px; height: 244px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
 						<div id="groupSelection">
@@ -397,7 +399,7 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 				%>
 				<img src="../ChartRenderer?selectedChartType=<%=chartType%>&time=<%=time%>&endTime=<%=endTime%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupLocationParameters=<%out.println(ChartPreset.createLocationParameterString(request));%>" />
 				<%
-					}else if (chartType == 2) {
+					}else if (chartType == 2||chartType == 3) {
 				%>
 				<img src="../ChartRenderer?selectedChartType=<%=chartType%>&time=<%=time%>&endTime=<%=endTime%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupLocationParameters=<%out.println(ChartPreset.createLocationParameterString(request));%>&groupFormatParameters=<%out.println(ChartPreset.createFormatParameterString(request));%>" />
 				<%

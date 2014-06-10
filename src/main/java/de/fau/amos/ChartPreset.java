@@ -232,19 +232,61 @@ public class ChartPreset {
 			}
 		}
 		
-		for(int i=0;i<groupNames.size();i++){
-//			System.out.println("groupName "+groupNames.get(i)[0]+" "+groupNames.get(i)[1]);
+		for(int g=0;g<groupNames.size();g++){
+			//			System.out.println("groupName "+groupNames.get(i)[0]+" "+groupNames.get(i)[1]);
 			int group=0;
 			try{
-				group=Integer.parseInt(groupNames.get(i)[0].substring("locationGroupName".length()));
+				group=Integer.parseInt(groupNames.get(g)[0].substring("locationGroupName".length()));
 			}catch(NumberFormatException e){
 				continue;
 			}
 			while(groups.size()<group+1){
 				groups.add("Group "+(groups.size()));
 			}
-			if(groupNames.get(i)[1]!=null&&groupNames.get(i)[1].length()!=0){
-				groups.set(group, groupNames.get(i)[1]);
+			if(groupNames.get(g)[1]!=null&&groupNames.get(g)[1].length()!=0){
+				groups.set(group, groupNames.get(g)[1]);
+			}else{
+				//set empty groupnames with only one selected item to product name
+				if(groupNames.get(g)[1].equals("")){
+					int foundItems=0;
+					String posIdx="";
+					String searchPatern="controlPointCheckBox_"+groupNames.get(g)[0].substring("locationGroupName".length())+"_";
+//					System.out.println("ggg search for ["+searchPatern+"]");
+					for(int j=0;j<points.size();j++){
+//						System.out.println("ggg compare with ["+points.get(j)+"]");
+						if(points.get(j).startsWith(searchPatern)){
+//							System.out.println("ggg match");
+							if(foundItems==0){
+								posIdx=points.get(j).substring(points.get(j).lastIndexOf("_")+1);
+//								System.out.println("ggg now its "+posIdx);
+							}
+							foundItems++;
+						}
+					}
+					if(foundItems==1){
+						//get controlpoint name
+						groupNames.get(g)[1]=SQL.getValueOfFieldWithId("controlpoints","control_point_name",posIdx);
+//						System.out.println("ggg one item ["+groupNames.get(g)[1]+"]");
+					}else{
+//						System.out.println("ggg to many");
+						foundItems=0;
+						posIdx="";
+						searchPatern="plantCheckBox_"+groupNames.get(g)[0].substring("locationGroupName".length())+"_";
+						for(int j=0;j<plants.size();j++){
+							if(plants.get(j).startsWith(searchPatern)){
+								if(foundItems==0){
+									posIdx=plants.get(j).substring(plants.get(j).lastIndexOf("_")+1);
+								}
+								foundItems++;
+							}
+						}
+						if(foundItems==1){
+							//get plant name
+							groupNames.get(g)[1]=SQL.getValueOfFieldWithId("plants","plant_name",posIdx);
+						}						
+					}
+				}
+				groups.set(group, groupNames.get(g)[1]);
 			}
 		}
 		
@@ -267,13 +309,14 @@ public class ChartPreset {
 			groups.set(group,groups.get(group)+"'"+last+"',");			
 		}
 		
-		for(int i=1;i<groups.size();i++){
-			out+=groups.get(i);
-			if(groups.get(i).contains("'")){
+		for(int g=1;g<groups.size();g++){
+			out+=groups.get(g);
+			if(groups.get(g).contains("'")){
 				out=out.substring(0,out.length()-1);
 			}else{
 				out+="'0'";
 			}
+		
 //			System.out.println(out);
 			
 //			out+=groups.get(i).substring("group_".length());
@@ -296,7 +339,7 @@ public class ChartPreset {
 			out+="|";
 //			System.out.println(out);
 		}
-		System.out.println("generated "+out);
+//		System.out.println("generated "+out);
 		out=out.replace("'", "%27");
 		out=out.replace("|", "%7C");
 		out=out.replace(",", "%2C");
@@ -340,6 +383,52 @@ public class ChartPreset {
 		for(int i=1;i<=numOfGroups;i++){
 			out+=createLocationGroup(i);
 		}
+		
+		//set empty groupnames with only one selected item to product name
+		for(int i=0;i<groupNames.size();i++){
+			if(groupNames.get(i)[1]!=null){
+				if(groupNames.get(i)[1].equals("")){
+					int foundItems=0;
+					String posIdx="";
+					String searchPatern="controlPointCheckBox_"+groupNames.get(i)[0].substring("locationGroupName".length())+"_";
+//					System.out.println("search for ["+searchPatern+"]");
+					for(int j=0;j<points.size();j++){
+//						System.out.println("compare with ["+points.get(j)+"]");
+						if(points.get(j).startsWith(searchPatern)){
+//							System.out.println("match!");
+							if(foundItems==0){
+								posIdx=points.get(j).substring(points.get(j).lastIndexOf("_")+1);
+//								System.out.println("now its "+posIdx);
+							}
+							foundItems++;
+						}
+					}
+					if(foundItems==1){
+						//get controlpoint name
+						groupNames.get(i)[1]=SQL.getValueOfFieldWithId("controlpoints","control_point_name",posIdx);
+//						System.out.println("get the name ["+groupNames.get(i)[1]+"]");
+					}else{
+//						System.out.println("to many");
+						foundItems=0;
+						posIdx="";
+						searchPatern="plantCheckBox_"+groupNames.get(i)[0].substring("locationGroupName".length())+"_";
+						for(int j=0;j<plants.size();j++){
+							if(plants.get(j).startsWith(searchPatern)){
+								if(foundItems==0){
+									posIdx=plants.get(j).substring(plants.get(j).lastIndexOf("_")+1);
+								}
+								foundItems++;
+							}
+						}
+						if(foundItems==1){
+							//get plant name
+							groupNames.get(i)[1]=SQL.getValueOfFieldWithId("plants","plant_name",posIdx);
+						}						
+					}
+				}
+			}
+		}
+		
 		
 //		System.out.println("===================================");
 //		System.out.println(out);
@@ -481,7 +570,7 @@ public class ChartPreset {
 			out+="|";
 //			System.out.println(out);
 		}
-		System.out.println("generated "+out);
+//		System.out.println("generated "+out);
 		out=out.replace("'", "%27");
 		out=out.replace("|", "%7C");
 		out=out.replace(",", "%2C");
@@ -491,7 +580,7 @@ public class ChartPreset {
 
 	public static String createFormatSelection(HttpServletRequest request){
 		
-		System.out.println("called createSelection");
+//		System.out.println("called createSelection");
 		
 		String out="";
 		

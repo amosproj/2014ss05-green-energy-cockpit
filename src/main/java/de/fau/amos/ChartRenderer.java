@@ -99,9 +99,15 @@ public class ChartRenderer extends HttpServlet {
 		}else if(chartType.equals("2")){
 			
 			//show location-format chart
-			DefaultCategoryDataset dataset=createLocationCollectionCAT(time,endTime,countType,groupLocationParameters, groupFormatParameters);
-			chart=createLocationFormatChartCAT(dataset);
+			DefaultCategoryDataset dataset=createLocationFormatCollection(time,endTime,countType,groupLocationParameters, groupFormatParameters);
+			chart=createLocationFormatChart(dataset);
 			
+		}else if(chartType.equals("3")){
+			
+			//show location-format chart
+			DefaultCategoryDataset dataset=createFormatLocationCollection(time,endTime,countType,groupLocationParameters, groupFormatParameters);
+			chart=createLocationFormatChart(dataset);
+						
 		}
 
 		//create Image and clear output stream
@@ -331,7 +337,7 @@ public class ChartRenderer extends HttpServlet {
 
 	}
 
-	private DefaultCategoryDataset createLocationCollectionCAT(String startTime, String endTime, String sumOrAvg, String locationGroupParameters,String formatGroupParameters){
+	private DefaultCategoryDataset createLocationFormatCollection(String startTime, String endTime, String sumOrAvg, String locationGroupParameters,String formatGroupParameters){
 		DefaultCategoryDataset collection=new DefaultCategoryDataset();
 		locationGroupParameters=locationGroupParameters.replace("|", "splitHere");
 		String[] locationGroups=locationGroupParameters.split("splitHere");
@@ -347,6 +353,9 @@ public class ChartRenderer extends HttpServlet {
 			for(int l=0;l<locationGroups.length;l++){
 				String locationGroupName=locationGroups[l].contains("'")?locationGroups[l].substring(0, locationGroups[l].indexOf("'")):locationGroups[l];
 				String locationGroupParam=locationGroups[l].contains("'")?locationGroups[l].substring(locationGroupName.length()):"";
+				if(locationGroupParam.trim().equals("")){
+					continue;
+				}
 
 				ResultSet rs = null;
 				
@@ -381,7 +390,61 @@ public class ChartRenderer extends HttpServlet {
 		return collection;
 	}
 	
-	private JFreeChart createLocationFormatChartCAT(DefaultCategoryDataset collection){
+	private DefaultCategoryDataset createFormatLocationCollection(String startTime, String endTime, String sumOrAvg, String locationGroupParameters,String formatGroupParameters){
+		DefaultCategoryDataset collection=new DefaultCategoryDataset();
+		locationGroupParameters=locationGroupParameters.replace("|", "splitHere");
+		String[] locationGroups=locationGroupParameters.split("splitHere");
+		formatGroupParameters=formatGroupParameters.replace("|", "splitHere");
+		String[] formatGroups=formatGroupParameters.split("splitHere");
+		
+		for(int l=0;l<locationGroups.length;l++){
+			String locationGroupName=locationGroups[l].contains("'")?locationGroups[l].substring(0, locationGroups[l].indexOf("'")):locationGroups[l];
+			String locationGroupParam=locationGroups[l].contains("'")?locationGroups[l].substring(locationGroupName.length()):"";
+			if(locationGroupParam.trim().equals("")){
+				continue;
+			}
+
+			for(int f=0;f<formatGroups.length;f++){
+				String formatGroupName=formatGroups[f].contains("'")?formatGroups[f].substring(0, formatGroups[f].indexOf("'")):formatGroups[f];
+				String formatGroupParam=formatGroups[f].contains("'")?formatGroups[f].substring(formatGroupName.length()):"";
+				if(formatGroupParam.trim().equals("")){
+					continue;
+				}
+
+				ResultSet rs = null;
+				
+				if(locationGroups[l].trim()!=""){
+					rs=SQL.queryToResultSet(
+						"SELECT sum(amount)"
+								+" FROM productiondata"
+								+" WHERE measure_time >='"
+								+startTime
+								+"' AND measure_time <'"
+								+endTime
+								+"' AND controlpoint_id in("
+								+ locationGroupParam
+								+") AND product_id in("
+								+ formatGroupParam
+								+");"
+						);
+				}
+				if(rs!=null){
+					
+					try {
+						rs.next();
+						collection.addValue(rs.getDouble(1),locationGroupName,formatGroupName);
+						rs.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}	
+				}
+				
+			}
+		}
+		return collection;
+	}
+	
+	private JFreeChart createLocationFormatChart(DefaultCategoryDataset collection){
 
 		JFreeChart barChart = ChartFactory.createBarChart("Production Consumption","",
 				"Produced pieces [TNF]", collection, PlotOrientation.VERTICAL, true, true, false);
