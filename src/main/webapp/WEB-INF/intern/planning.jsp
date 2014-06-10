@@ -97,7 +97,7 @@
 
 					<div style="width: 200px; height: 200px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
 						<div id="groupSelection">
-							<%out.println(ChartPreset.createSelection(request));%>
+							<%out.println(ChartPreset.createLocationSelection(request));%>
 						</div>
 					</div>
 					
@@ -113,7 +113,8 @@
 			
 			String[] months = new DateFormatSymbols(Locale.ENGLISH).getMonths();
 			
-			out.println("<table border cellpadding=\"13\" rules=\"all\" id= \"dataTable\" >");
+			out.println("<table border cellpadding=\"7\" rules=\"all\" id= \"dataTable\" >");
+			
 			out.println("<tr>");
 			out.println("<td style=\"word-break:break-all;word-wrap:break-word\" >Measure point</td>");
 			for(int i=0;i<months.length-1;i++){
@@ -121,6 +122,30 @@
 				out.println(months[i]);
 				out.println("</td>");
 			}
+			out.println("</tr>");
+			
+			out.println("<tr>");
+			out.println("<td style=\"word-break:break-all;word-wrap:break-word\" >Erlangen</td>");
+			for(int i=0;i<12;i++){
+				out.println("<td style=\"word-break:break-all;word-wrap:break-word\" >");
+				out.println(String.valueOf(Math.round(Math.random()*10+100)) + "kWh <br>");
+				out.println("(" + String.valueOf(Math.round(Math.random()*10+100)) + "kWh)<br>");
+				out.print("<input type=\"text\" size=\"1\" maxlength=\"3\">");
+				out.println("</td>");
+			}
+			out.println("</tr>");
+			
+			out.println("<tr>");
+			out.println("<td style=\"word-break:break-all;word-wrap:break-word\" >Dresden</td>");
+			for(int i=0;i<12;i++){
+				out.println("<td style=\"word-break:break-all;word-wrap:break-word\" >");
+				out.println(String.valueOf(Math.round(Math.random()*10+100)) + "kWh <br>");
+				out.println("(" + String.valueOf(Math.round(Math.random()*10+100)) + "kWh)<br>");
+				out.print("<input type=\"text\" size=\"1\" maxlength=\"3\">");
+				out.println("</td>");
+			}
+			out.println("</tr>");
+			
 			out.println("</table>");
 				
 			%>
