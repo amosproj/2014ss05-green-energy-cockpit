@@ -243,7 +243,7 @@ public class ChartRenderer extends HttpServlet {
 		JFreeChart lineChart = ChartFactory.createTimeSeriesChart(
 				"Line Chart",              	// title
 				xAxisLabel,             	// x-axis label
-				"Energy Consumption [kW]",       // y-axis label
+				"Energy Consumption [kWh]",       // y-axis label
 				collection,            		// data
 				true,               		// create legend?
 				false,               		// generate tooltips?
@@ -292,7 +292,7 @@ public class ChartRenderer extends HttpServlet {
 				"Bar Chart",              		// title
 				xAxisLabel,             		// x-axis label
 				true,               			// date axis?
-				"Energy Consumption [kW]",           // y-axis label
+				"Energy Consumption [kWh]",           // y-axis label
 				collection,            			// data
 				PlotOrientation.VERTICAL,       // orientation
 				true,               			// create legend?
