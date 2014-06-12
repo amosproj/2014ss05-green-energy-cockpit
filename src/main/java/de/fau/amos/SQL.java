@@ -34,10 +34,6 @@ public class SQL{
 
 	private static Connection c;
 
-//	public static void main(String[] args){
-//		System.out.println(getValueOfFieldWithId("controlpoints","control_point_name","2"));
-//	}
-	
 	public static void execute(String command){
 
 		System.out.println("execute "+command);
@@ -146,6 +142,8 @@ public class SQL{
 
 	public static ResultSet queryToResultSet(String command){
 
+		System.out.println("queryToResultSet: "+command);
+		
 		Statement stmt = null;
 		try {
 			if(c==null||c.isClosed()){

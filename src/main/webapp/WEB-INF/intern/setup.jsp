@@ -223,7 +223,7 @@
 			ArrayList<ArrayList<String>> controlPoints=null;
 			
 			if(selected>0||selected==-1){
-				String getControlPoints="Select plant_name,control_point_name from plants,controlpoints";
+				String getControlPoints="Select plant_name,control_point_name,reference_point from plants,controlpoints";
 				if(selected>0){
 					getControlPoints+=" where plant_id="+selected+" and plants_id="+selected+";";
 				}else if(selected==-1){
@@ -236,7 +236,7 @@
 				if(controlPoints==null){
 					String command=
 						"CREATE TABLE controlpoints (controlpoints_ID serial primary key, plant_id integer NOT NULL, "+ 
-						"control_point_short_name varchar(10) not null, control_point_name varchar(50),"+
+						"control_point_short_name varchar(10) not null, control_point_name varchar(50), reference_point boolean DEFAULT false, "+
 					  	"CONSTRAINT controlpoint_plant_id_fkey FOREIGN KEY (plant_id) "+
 					    "REFERENCES plants (plants_id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION)";					
 					SQL.execute(command);			
@@ -275,8 +275,7 @@
 			}else if(request.getParameter(Const.RequestParameters.SETUP_NEW_CONTROL_POINT_NAME)!=null){
 				//reloaded page and want to add a new control point
 				String controlPointName=request.getParameter(Const.RequestParameters.SETUP_NEW_CONTROL_POINT_NAME);
-				System.out.println("want to add "+controlPointName+" "+selected);
-	
+				
 				boolean nameOK=true;
 				if(controlPointName==null||controlPointName.trim().length()<3){
 					nameOK=false;
@@ -299,8 +298,11 @@
 					values.add(""+plants.get(selected).get(0));
 					values.add(controlPointName.substring(0,3).toUpperCase());
 					values.add(controlPointName);
+					values.add("set".equals(request.getParameter("reference_point"))+"");
 					SQL.addColumn("controlpoints",SQL.getColumns("controlpoints"),values);
 					response.setIntHeader("Refresh",0);
+				}else{
+					System.out.println("name not ok");
 				}
 
 			}
@@ -313,7 +315,6 @@
 					<td>
 						<form method="post" action="">
 							<select name="selName" onChange="this.form.submit()">
-								<!-- select name="selName" id="selectPlant" onchange="changeSelectPlant()"-->
 								<option value="0" />
 								<%
 								
@@ -340,13 +341,14 @@
 				</tr>
 
 
-				<%if(selected==0){out.println("<!--");} %>
+				<%if(selected==0||selected==-1){out.println("<!--");} %>
 				<tr>
 					<td>
 						<form method="post" action="">
 							Name : <input type="text"
 								name="<%=Const.RequestParameters.SETUP_NEW_CONTROL_POINT_NAME%>">
 							<input type="hidden" name="selName" value="<%=selected %>">
+							<input type="checkbox" name="reference_point" value="set"> Referencecontrolpoint
 							<input type="submit"
 								value="Add control point<%out.println(((selected!=0&&plants.size()>selected&&selected>0)?" to "+plants.get(selected).get(1):"")); %>">
 						</form>
@@ -370,7 +372,7 @@
 					</td>
 
 				</tr>
-				<%if(selected==0){out.println("-->");} %>
+				<%if(selected==0||selected==-1){out.println("-->");} %>
 
 				<tr>
 					<%
@@ -395,9 +397,15 @@
 		
 				for(int i=0;i<controlPoints.size();i++){
 					out.println("<tr>");
-					for(int j=0;j<controlPoints.get(i).size();j++){
+					for(int j=0;j<2;j++){
 						out.println("<td style=\"word-break:break-all;word-wrap:break-word\" width=\"180\">");
+						if(j==1&&controlPoints.get(i).get(2).equals("t")){
+							out.println("<i>");
+						}
 						out.println(controlPoints.get(i).get(j));
+						if(j==1&&controlPoints.get(i).get(2).equals("t")){
+							out.println("</i>");
+						}
 						out.println("</td>");
 						
 					}
