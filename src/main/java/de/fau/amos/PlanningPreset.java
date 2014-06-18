@@ -91,7 +91,12 @@ public class PlanningPreset {
 		if(request.getParameter("percentageChange") == null){
 			percentageChange = 0;
 		}else{
-			int change = Integer.parseInt(request.getParameter("percentageChange"));
+			int change = 0;
+			try{
+				change=Integer.parseInt(request.getParameter("percentageChange"));
+			}catch(NumberFormatException e){
+				change=0;
+			}
 			if(change != 0){
 				percentageChange = change;
 			}
