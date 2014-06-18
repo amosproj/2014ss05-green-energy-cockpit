@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletRequest;
 public class ChartPreset {
 	
 
-	public static String createLocationGroup(int locationGroupId){
-		
+	public static String createLocationGroup(int locationGroupId,String chartType){
+				
 //		System.out.println("called group with "+groupId);
 		String out = "";		
 
@@ -73,8 +73,19 @@ public class ChartPreset {
 		
 		out+="<div class=\"locationGroupContent"+locationGroupId+"\">\n";
 				
-		ArrayList<ArrayList<String>> plants=SQL.query("select plant_id,plant_name, count(controlpoints_id) from controlpoints inner join plants on plants.plants_id=controlpoints.plant_id group by plant_name,plant_id;");
-		ArrayList<ArrayList<String>> data = SQL.query("select plant_id,plant_name,controlpoints_id, control_point_name from controlpoints inner join plants on plants.plants_id=controlpoints.plant_id order by plant_name, control_point_name;");
+		ArrayList<ArrayList<String>> plants=SQL.query(
+				"select plant_id,plant_name, count(controlpoints_id) "
+				+"from controlpoints inner join plants on plants.plants_id=controlpoints.plant_id "
+				+("2".equals(chartType)?" where reference_point='t' ":"")
+				+"group by plant_name,plant_id "
+				+"order by plant_name "
+				+ ";");
+		ArrayList<ArrayList<String>> data = SQL.query(
+				"select plant_id,plant_name,controlpoints_id, control_point_name,reference_point "
+				+"from controlpoints inner join plants on plants.plants_id=controlpoints.plant_id "
+				+("2".equals(chartType)?" where reference_point='t' ":"")
+				+"order by plant_name, control_point_name"
+				+";");
 		//number of plants
 		int j=1;
 		for(int i=1; i < plants.size(); i++ ){
@@ -120,17 +131,21 @@ public class ChartPreset {
 					+"});\n"		
 					+"</script>\n";
 
-			
-			int max=(j+Integer.parseInt(plants.get(i).get(2)));
-			out+="<div class=\"controlpoints\">\n";
-			out+="<div class=\"controlpoints"+locationGroupId+"_"+plants.get(i).get(0)+"\">\n";
-//			out+="<p style=\"margin-left: 20px;\">\n";
-			for(; j < max;j++){
-				out += "<input type=\"checkbox\" name=\"controlPointCheckBox_"+locationGroupId+"_"+plants.get(i).get(0)+"_"+data.get(j).get(2) + "\" id=\"controlPointCheckBox_"+locationGroupId+"_"+plants.get(i).get(0)+"_"+data.get(j).get(2) + "\" value=\"controlPointCheckBox_"+locationGroupId+"_"+plants.get(i).get(0)+"_"+data.get(j).get(2) + "\">" + data.get(j).get(3) +"<br>\n";				
-			}
-//			out+="</p>\n";
-			out+="</div>\n";
-			out+="</div>\n";
+				int max=(j+Integer.parseInt(plants.get(i).get(2)));
+				out+="<div class=\"controlpoints\""+("3".equals(chartType)?"style=\"display: none;\"" : "")+">\n";
+				out+="<div class=\"controlpoints"+locationGroupId+"_"+plants.get(i).get(0)+"\">\n";
+	//			out+="<p style=\"margin-left: 20px;\">\n";
+				for(; j < max;j++){
+					out += "<input type=\"checkbox\" name=\"controlPointCheckBox_"+locationGroupId+"_"+plants.get(i).get(0)+"_"+data.get(j).get(2) + "\" id=\"controlPointCheckBox_"+locationGroupId+"_"+plants.get(i).get(0)+"_"+data.get(j).get(2) + "\" value=\"controlPointCheckBox_"+locationGroupId+"_"+plants.get(i).get(0)+"_"+data.get(j).get(2) + "\">" 
+							+ (data.get(j).get(4).equals("t")?"<i>":"")
+							+ data.get(j).get(3) +"<br>\n"
+							+ (data.get(j).get(4).equals("t")?"</i>":"");
+					
+				}
+				
+	//			out+="</p>\n";
+				out+="</div>\n";
+				out+="</div>\n";
 		}
 		
 		out+="</div>\n";
@@ -206,12 +221,15 @@ public class ChartPreset {
 
 	
 	public static String createLocationParameterString(HttpServletRequest request){
+		//creates sth like [groupName1'id1','id2'|groupName2'id3','id4']
+		
 		String out="";
 //		System.out.println("called createParameterString");
 		ArrayList<String> groups=new ArrayList<String>();
 		ArrayList<String[]> groupNames=new ArrayList<String[]>();
 		ArrayList<String> plants=new ArrayList<String>();
 		ArrayList<String> points=new ArrayList<String>();
+		ArrayList<ArrayList<String>>usedPlants=new ArrayList<ArrayList<String>>();
 //		int numOfGroups=1;
 		Enumeration<String> en=request.getParameterNames();
 		while(en.hasMoreElements()){
@@ -232,17 +250,24 @@ public class ChartPreset {
 			}
 		}
 		
+		//step through group names
 		for(int g=0;g<groupNames.size();g++){
 			//			System.out.println("groupName "+groupNames.get(i)[0]+" "+groupNames.get(i)[1]);
+			
+			//get groupId
 			int group=0;
 			try{
 				group=Integer.parseInt(groupNames.get(g)[0].substring("locationGroupName".length()));
 			}catch(NumberFormatException e){
 				continue;
 			}
+			
+			//add new groups until group with id "group" exists
 			while(groups.size()<group+1){
 				groups.add("Group "+(groups.size()));
 			}
+			
+			//set groupname
 			if(groupNames.get(g)[1]!=null&&groupNames.get(g)[1].length()!=0){
 				groups.set(group, groupNames.get(g)[1]);
 			}else{
@@ -292,31 +317,66 @@ public class ChartPreset {
 		
 //		System.out.println("no having "+groups.size());
 		
+		//step through points
 		for(int i=0;i<points.size();i++){
 //			System.out.println("work with "+points.get(i));
 			String point=points.get(i);
 			point=point.substring("controlPointCheckBox_".length());
+			
+			//find groupId of point
 			int group=0;
 			try{
 				group=Integer.parseInt(point.substring(0,point.indexOf("_")));
 			}catch(NumberFormatException e){
 				continue;
 			}
+			
+			//add group if group with id "group" does not exist
 			while(groups.size()<group+1){
 				groups.add("Group "+(groups.size()));
 			}
+			
+			//add groups for usedPlanrt with id "group" if it does not exist
+			while(usedPlants.size()<group+1){
+				usedPlants.add(new ArrayList<String>());
+			}
+			
+			//get plant id
+			String plantId=point.substring(point.indexOf("_")+1,point.lastIndexOf("_"));
+			//add plant to usedPlants
+			boolean allreadyAdded=false;
+			for(int p=0;p<usedPlants.get(group).size();p++){
+				if(usedPlants.get(group).get(p).equals(plantId)){
+					allreadyAdded=true;
+					break;
+				}
+			}
+			if(!allreadyAdded){
+				usedPlants.get(group).add(plantId);
+			}
+			
+			//get point id
 			String last=point.substring(point.lastIndexOf("_")+1);
 			groups.set(group,groups.get(group)+"'"+last+"',");			
 		}
 		
 		for(int g=1;g<groups.size();g++){
 			out+=groups.get(g);
+			
 			if(groups.get(g).contains("'")){
 				out=out.substring(0,out.length()-1);
 			}else{
 				out+="'0'";
 			}
-		
+			out+="|";
+			out+="'0'";
+			if(usedPlants.size()>g){
+				for(int p=0;p<usedPlants.get(g).size();p++){
+					out+=",'"+usedPlants.get(g).get(p)+"'";
+				}
+			}
+	
+			
 //			System.out.println(out);
 			
 //			out+=groups.get(i).substring("group_".length());
@@ -336,7 +396,7 @@ public class ChartPreset {
 //				}
 //			}
 			
-			out+="|";
+			out+="||";
 //			System.out.println(out);
 		}
 //		System.out.println("generated "+out);
@@ -381,7 +441,7 @@ public class ChartPreset {
 		}
 		
 		for(int i=1;i<=numOfGroups;i++){
-			out+=createLocationGroup(i);
+			out+=createLocationGroup(i,request.getParameter("selectChartType"));
 		}
 		
 		//set empty groupnames with only one selected item to product name
