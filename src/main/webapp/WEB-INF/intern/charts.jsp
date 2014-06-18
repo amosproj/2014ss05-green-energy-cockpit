@@ -249,27 +249,46 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 				} catch (NumberFormatException e) {
 				}
 
+				int unit = 1;
+				try {
+					unit = Integer.parseInt(request
+							.getParameter("selectUnit"));
+				} catch (NumberFormatException e) {
+				}
+				
+				String sessionID=request.getParameter("sessionID");
+				if(sessionID==null||sessionID.trim().length()==0){
+					do{
+						sessionID="";
+						for(int i=0;i<6;i++){
+							sessionID+=(int)(Math.random()*10);
+						}
+					}while(session.getAttribute(sessionID)!=null);
+				}
+				
+				String startTime="nix";
+				
 				//Create Timestamp for SQL-Query (Start- and End-Date)
-				String time = TimestampConversion.convertTimestamp(0, 0,(timeGranularity == 0 ? selectedDay : 1),
+				String start = TimestampConversion.convertTimestamp(0, 0,(timeGranularity == 0 ? selectedDay : 1),
 						(timeGranularity == 0 || timeGranularity == 1 ? selectedMonth : 1), selectedYear);
-				String endTime = "";
+				String end = "";
 				Calendar c = Calendar.getInstance();
 				c.set(selectedYear, selectedMonth - 1, selectedDay);
 				switch (timeGranularity) {
 					case 0 :
 						//show one day
 						c.add(Calendar.DATE, 1);
-						endTime = TimestampConversion.convertTimestamp(0, 0,c.get(Calendar.DATE), c.get(Calendar.MONTH) + 1,c.get(Calendar.YEAR));
+						end = TimestampConversion.convertTimestamp(0, 0,c.get(Calendar.DATE), c.get(Calendar.MONTH) + 1,c.get(Calendar.YEAR));
 						break;
 					case 1 :
 						//show one month
 						c.add(Calendar.MONTH, 1);
-						endTime = TimestampConversion.convertTimestamp(0, 0, c.get(Calendar.DATE), c.get(Calendar.MONTH) + 1, c.get(Calendar.YEAR));
+						end = TimestampConversion.convertTimestamp(0, 0, c.get(Calendar.DATE), c.get(Calendar.MONTH) + 1, c.get(Calendar.YEAR));
 						break;
 					case 2 :
 						//show one year
 						c.add(Calendar.YEAR, 1);
-						endTime = TimestampConversion.convertTimestamp(0, 0, c.get(Calendar.DATE), c.get(Calendar.MONTH) + 1, c.get(Calendar.YEAR));
+						end = TimestampConversion.convertTimestamp(0, 0, c.get(Calendar.DATE), c.get(Calendar.MONTH) + 1, c.get(Calendar.YEAR));
 						break;
 					case 3 :
 						//show more years
@@ -277,9 +296,12 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 
 					default :
 						c.set(selectedEndYear + 1, 0, 1);
-						endTime = TimestampConversion.convertTimestamp(0, 0, c.get(Calendar.DATE), c.get(Calendar.MONTH) + 1, c.get(Calendar.YEAR));
+						end = TimestampConversion.convertTimestamp(0, 0, c.get(Calendar.DATE), c.get(Calendar.MONTH) + 1, c.get(Calendar.YEAR));
 				}
-				String startTime = time;
+
+				
+				String endTime=end;
+				startTime=start;
 			%>
 
 			
@@ -299,13 +321,17 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 
 				<form id="selectionForm" method="post" action="">
 					<input type="hidden" name="selectChartType" value="<%=chartType%>">
-
+					<input type="hidden" name="sessionID" value="<%=sessionID %>">
+					<input type="hidden" id="startTime" name="startTime" value="not set">
+					<input type="hidden" id="endTime" name="endTime" value="not set">
+					<input type="hidden" id="double" name ="double" value="false">
+													
 					<div id="timeSelectionBar">
 
 						<div class="timeGranularityDiv" style="display: inline">
 							Show me the 
 							<select name="timeGranularity" id="timeGranularity" onchange="changeTimeGranularity();">
-								<option value="0" <%out.print(((timeGranularity == 0) ? " selected" : "") + "");%>>day</option>
+								<%if(unit==1){ %><option value="0" <%out.print(((timeGranularity == 0) ? " selected" : "") + "");%>>day</option><%} %>
 								<option value="1" <%out.print(((timeGranularity == 1) ? " selected" : "") + "");%>>month</option>
 								<option value="2" <%out.print(((timeGranularity == 2) ? " selected" : "") + "");%>>year</option>
 								<option value="3" <%out.print(((timeGranularity == 3) ? " selected" : "") + "");%>>years</option>
@@ -333,7 +359,7 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 						</select>
 						<select name="selectYear" id="selectYear" onchange="changeSelectDays();" style="display: inline">
 							<%
-								for (int i = 2012; i <= 2020; i++) {
+								for (int i = 2004; i <= 2020; i++) {
 							%>
 							<option value="<%=i%>"<%out.print(((selectedYear == i) ? " selected" : "") + "");%>><%=i%></option>
 							<%
@@ -343,17 +369,23 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 						<div id="labelTo" style="display: inline">to</div>
 						<select name="selectEndYear" id="selectEndYear" onchange="changeSelectEndYear();" style="display: inline">
 							<%
-								for (int i = 2012; i <= 2020; i++) {
+								for (int i = 2004; i <= 2020; i++) {
 							%>
 							<option value="<%=i%>"<%out.print(((selectedEndYear == i) ? " selected" : "") + "");%>><%=i%></option>
 							<%
 								}
 							%>
 						</select>
-
+						
+						<div id="labelUnit" style="display: inline">in units of</div>
+						<select name="selectUnit" id="selectUnit" style="display: inline" onChange="this.form.submit()">
+							<option value="1"<%out.print(((unit==1)?" selected":"")+"");%>>kWh</option>
+							<option value="2"<%out.print(((unit==2)?" selected":"")+"");%>>kWh/TNF</option>
+							<%if(chartType!=1){ %><option value="3"<%out.print(((unit==3)?" selected":"")+"");%>>TNF</option><%} %>
+						</select>
 					</div>
 
-					<input type="submit" id="showChart" class="buttonDesign" value="Show">
+					<input type="button" id="showChart" class="buttonDesign" value="Show" onclick="javascript:setValues();this.form.submit()">
 					
 					<input type="hidden" name="numberOfLocationGroups" id="numberOfLocationGroups" value="<%=numberOfLocationGroups%>">
 					<div style="width: 200px; height: <%out.print(chartType==1?"500px":"244px"); %>; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
@@ -389,19 +421,30 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 				function clickAddFormatGroup() {
 					numberOfFormatGroups.value++;
 					document.getElementById("numberOfFormatGroups").value = numberOfFormatGroups.value;
-				};
+				}
 			</script>
+	
+			<script type="text/javascript">
+				function setValues() {
+					document.getElementById("double").value = 'true';
+				}
+			</script>
+	
 	
 	
 			<div id="chart">
 				<%
 					if (chartType == 1) {
+				
+					session.setAttribute(sessionID,request);
+						
 				%>
-				<img src="../ChartRenderer?selectedChartType=<%=chartType%>&time=<%=time%>&endTime=<%=endTime%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupLocationParameters=<%out.println(ChartPreset.createLocationParameterString(request));%>" />
+				<!-- img src="../ChartRenderer?id=<%=sessionID %>"-->
+				<img src="../ChartRenderer?selectedChartType=<%=chartType%>&time=<%=startTime%>&endTime=<%=endTime%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupLocationParameters=<%out.println(ChartPreset.createLocationParameterString(request));%>&unit=<%out.println(unit); %>" /> 
 				<%
 					}else if (chartType == 2||chartType == 3) {
 				%>
-				<img src="../ChartRenderer?selectedChartType=<%=chartType%>&time=<%=time%>&endTime=<%=endTime%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupLocationParameters=<%out.println(ChartPreset.createLocationParameterString(request));%>&groupFormatParameters=<%out.println(ChartPreset.createFormatParameterString(request));%>" />
+				<img src="../ChartRenderer?selectedChartType=<%=chartType%>&time=<%=startTime%>&endTime=<%=endTime%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupLocationParameters=<%out.println(ChartPreset.createLocationParameterString(request));%>&groupFormatParameters=<%out.println(ChartPreset.createFormatParameterString(request));%>&unit=<%out.println(unit); %>" />
 				<%
 					}
 				%>

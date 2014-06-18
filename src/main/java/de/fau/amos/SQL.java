@@ -33,14 +33,18 @@ import java.util.ArrayList;
 public class SQL{
 
 	private static Connection c;
+	private static boolean debug=false;
+//	private static boolean debug=true;
 
-//	public static void main(String[] args){
-//		System.out.println(getValueOfFieldWithId("controlpoints","control_point_name","2"));
-//	}
+	private static void print(String msg){
+		if(debug){
+			System.out.println(msg);
+		}
+	}
 	
 	public static void execute(String command){
 
-		System.out.println("execute "+command);
+		print("execute "+command);
 		Statement stmt = null;
 		try {
 			if(c==null||c.isClosed()){
@@ -92,7 +96,7 @@ public class SQL{
 	public static ArrayList<ArrayList<String>> query(String command){
 		ArrayList<ArrayList<String>> data=new ArrayList<ArrayList<String>>();
 
-		System.out.println("querycommand: "+command);
+		print("querycommand: "+command);
 //		select * from 
 //			(select round
 //					(sum(gruppenWert),4), gruppenZeit from
@@ -146,6 +150,8 @@ public class SQL{
 
 	public static ResultSet queryToResultSet(String command){
 
+		print("queryToResultSet: "+command);
+		
 		Statement stmt = null;
 		try {
 			if(c==null||c.isClosed()){
