@@ -77,7 +77,7 @@
 			%>
 
 			<div id="timeChart">
-				<form id="selectionForm" method="post" action="">
+				<form id="selectionPlants" method="post" action="">
 					<div id="timeSelectionBar">
 						<div id="labelFrom" style="display: inline">Select a year:</div>
 						<select name="selectYear" id="selectYear" style="display: inline">
@@ -91,63 +91,24 @@
 							%>
 						</select>	
 						<div id="labelFrom" style="display: inline"> Percentage change:</div>
-						<input type="text" id="percentageChange" style="text-align: right">%				
-					</div>
-					
-
+						<input type="text" name="percentageChange" id="percentageChange" style="text-align: right">%				
+					</div>			
 					<div style="width: 200px; height: 200px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
 						<div id="groupSelection">
-							<%out.println(ChartPreset.createLocationSelection(request));%>
+							<%out.println(PlanningPreset.LocationSelection(request));%>
 						</div>
 					</div>
 					
-					<input type="submit" id="showTable" value="Show"> 
-					<input type="submit" id="downloadTable" value="Download table">	
-					
+					<input type="submit" id="showTable" value="Show"> 		
+							
 				</form>
+				<input type="submit" id="downloadTable" value="Download table">	
 			</div>
 
 			<div style="width: 850px; height: 380px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
 			
-			<%
-			
-			String[] months = new DateFormatSymbols(Locale.ENGLISH).getMonths();
-			
-			out.println("<table border cellpadding=\"7\" rules=\"all\" id= \"dataTable\" >");
-			
-			out.println("<tr>");
-			out.println("<td style=\"word-break:break-all;word-wrap:break-word\" >Measure point</td>");
-			for(int i=0;i<months.length-1;i++){
-				out.println("<td style=\"word-break:break-all;word-wrap:break-word\" >");
-				out.println(months[i]);
-				out.println("</td>");
-			}
-			out.println("</tr>");
-			
-			out.println("<tr>");
-			out.println("<td style=\"word-break:break-all;word-wrap:break-word\" >Erlangen</td>");
-			for(int i=0;i<12;i++){
-				out.println("<td style=\"word-break:break-all;word-wrap:break-word\" >");
-				out.println(String.valueOf(Math.round(Math.random()*10+100)) + "kWh <br>");
-				out.println("(" + String.valueOf(Math.round(Math.random()*10+100)) + "kWh)<br>");
-				out.print("<input type=\"text\" size=\"1\" maxlength=\"3\">");
-				out.println("</td>");
-			}
-			out.println("</tr>");
-			
-			out.println("<tr>");
-			out.println("<td style=\"word-break:break-all;word-wrap:break-word\" >Dresden</td>");
-			for(int i=0;i<12;i++){
-				out.println("<td style=\"word-break:break-all;word-wrap:break-word\" >");
-				out.println(String.valueOf(Math.round(Math.random()*10+100)) + "kWh <br>");
-				out.println("(" + String.valueOf(Math.round(Math.random()*10+100)) + "kWh)<br>");
-				out.print("<input type=\"text\" size=\"1\" maxlength=\"3\">");
-				out.println("</td>");
-			}
-			out.println("</tr>");
-			
-			out.println("</table>");
-				
+			<%						
+			out.println(PlanningPreset.getTable());				
 			%>
 
 
