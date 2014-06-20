@@ -13,35 +13,62 @@ public class PlanningPreset {
 	private static String selectedPlant = null;
 	private static String selectedYear = null;
 	private static int percentageChange = 0;
+	private static boolean debug = true;
 	
 	
 	public static ArrayList<Double> getPrevYearValues(int year, String plantID, int format){
 		String startTime = year + ".01.01 00:00:00";
 		String endTime = (year+1) + ".01.01 00:00:00";
 		ResultSet rs = null;		
-		try{
-			rs=SQL.queryToResultSet("select controlpoints.controlpoints_id,sum(productiondata.amount), plant_id," 
-		 			+ "date_trunc ('month', measure_time), product_id"
-					+ "from controlpoints "
-					+ "INNER JOIN productiondata "
-					+ "ON controlpoints.controlpoints_id = productiondata.controlpoint_id "
-					+ "where plant_id = " + Integer.parseInt(plantID)
-					+ "AND product_id = " + format
-					+ "AND measure_time >= '" + startTime
-					+ "' AND measure_time < '" + endTime + "'"  
-					+ "GROUP BY date_trunc,controlpoints.controlpoints_id, product_id;"			
-			);
-		}finally{
+		try{		
+			if(debug){
+				System.out.println("Database Query for monthly values of previos year: select sum(productiondata.amount), plant_id," 
+			 			+ " date_trunc ('month', measure_time), product_id"
+						+ " from controlpoints"
+						+ " INNER JOIN productiondata"
+						+ " ON controlpoints.controlpoints_id = productiondata.controlpoint_id"
+						+ " where plant_id = " + Integer.parseInt(plantID)
+						+ " AND product_id = " + format
+						+ " AND measure_time >= '" + startTime
+						+ "' AND measure_time < '" + endTime + "'"  
+						+ " GROUP BY date_trunc, plant_id, product_id ORDER BY date_trunc asc;"	);
+			}
 			
+			rs=SQL.queryToResultSet("Database Query for monthly values of previos year: select sum(productiondata.amount), plant_id," 
+		 			+ " date_trunc ('month', measure_time), product_id"
+					+ " from controlpoints"
+					+ " INNER JOIN productiondata"
+					+ " ON controlpoints.controlpoints_id = productiondata.controlpoint_id"
+					+ " where plant_id = " + Integer.parseInt(plantID)
+					+ " AND product_id = " + format
+					+ " AND measure_time >= '" + startTime
+					+ "' AND measure_time < '" + endTime + "'"  
+					+ " GROUP BY date_trunc, plant_id, product_id ORDER BY date_trunc asc;"			
+			);
+			if(debug){
+				System.out.println("TESTPOINT 2");
+			}
 		}
+			finally{
+				
+			}
 		ArrayList<Double> prevYearValues = new ArrayList<Double>();
+		if(debug){
+			System.out.println("TESTPOINT 3");
+		}
+		if(rs == null && debug){
+			System.out.println("TESTPOINT 4: rs == null");
+		}
 		if(rs!=null){
+			if(debug){
+				System.out.println("TESTPOINT 1");
+			}
 			try{
 				while (rs.next()) {						
 					prevYearValues.add(rs.getDouble(1));			
 				}
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
+				System.out.println("SQL Exception at creation of Arraylist");
 				e.printStackTrace();
 			}
 		}
