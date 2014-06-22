@@ -133,14 +133,18 @@ public class PlanningPreset {
 		
 		String out = "";
 		
-		for(int i = 1; i<plants.size();i++){		
-			out+= "<input type=\"radio\" name=\"plants\" value=\"" + plants.get(i).get(0) + "\"> " + plants.get(i).get(1) + "<br>";		
-		}
+
 		
 		String checkedPlants = request.getParameter("plants");
 		if(checkedPlants != null){
 			selectedPlant = checkedPlants;
-		}	
+		}
+		
+		for(int i = 1; i<plants.size();i++){		
+			out+= "<input type=\"radio\" name=\"plants\" value=\"" + plants.get(i).get(0) + "\"" + ((plants.get(i).get(0).equals(selectedPlant))?" checked" : "") + "> " + plants.get(i).get(1) + "<br>";		
+		}
+		
+	
 		String checkedYear = request.getParameter("selectYear");
 		if(checkedYear != null){
 			selectedYear = checkedYear;
@@ -201,12 +205,9 @@ public class PlanningPreset {
 		finally{}
 		if(rs!=null){
 			try{
-				System.out.print("Point1: getAllFormats(): ");
 				while (rs.next()) {		
-					System.out.print(rs.getInt(1) + ", ");
 					allFormatsList.add(rs.getInt(1));			
 				}
-				System.out.println();
 			} catch (SQLException e) {
 				System.err.println("SQL Exception at creation of Arraylist");
 				e.printStackTrace();
@@ -216,7 +217,7 @@ public class PlanningPreset {
 	}
 
 	public static String getTable(){
-	
+		
 		String[] months = new DateFormatSymbols(Locale.ENGLISH).getShortMonths();
 		String out = " ";
 		
@@ -258,8 +259,11 @@ public class PlanningPreset {
 						}						
 							out += "<td style=\"word-break:break-all;word-wrap:break-word" + ((percentageChange!=0 && j+1 < tempValueList.size())? "; color:orange\"" :"\"") + ">"+ tempValueList.get(j);
 						
-						if(j+1 < tempValueList.size()){		//field not for Sum of values
-							out += "</br><input type=\"text\" size=\"1\" maxlength=\"3\"></td>";
+						if(j+1 < tempValueList.size()){		//input field not for Sum of values
+							out += "</br><input type=\"text\" ";
+							out += "name = \"field:" + tempValueList.get(2) + "-" + i + "-" + j + "\" ";
+							out += "id = \"field:" + tempValueList.get(2) + "-" + i + "-" + j + "\" ";
+							out += "size=\"1\" maxlength=\"3\"></td>";
 						}
 					}
 					
@@ -284,140 +288,4 @@ public class PlanningPreset {
 		return out;
 	}
 	
-//	
-//	public static String getTable(){
-//		
-//		String[] months = new DateFormatSymbols(Locale.ENGLISH).getShortMonths();
-//		
-//		String out = " ";
-//		
-//		
-//		if(percentageChange != 0){
-//			if(selectedPlant != null && selectedYear != null){
-//				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
-//				out += "<tr>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" > Format </td>";
-//				for(int i=0;i<months.length-1;i++){
-//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-//					out += months[i];
-//					out +="</td>";
-//				}
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG kwh/TNF</td>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >kwh Planning</td>";
-//				out += "</tr>";
-//				
-//				for(int i = 0; i < getProductNames().size();i++){
-//					out += "<tr>";
-//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-//					out += getProductNames().get(i);
-//					out += "</td>";
-//					
-//					if(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size() != 0){
-//						for(int j = 0; j < getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size();j++){
-//							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-//							out += String.valueOf(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).get(j)) + "<br>";
-//							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
-//							out += "</td>";
-//						}
-//					}else{
-//						for(int j = 0; j < 12;j++){
-//							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-//							out += "so much?" + "<br>";
-//							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
-//							out += "</td>";
-//						}
-//					}					
-//					out += "</tr>";
-//				}
-//				out += "</table>";
-//				
-//				out += "<table border cellpadding=\"7\" rules=\"all\" id= \"dataTable\" >";
-//				out += "<tr>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage New</td>";
-//				out += "</tr>";
-//				out += "<tr>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage Old</td>";
-//				out += "</tr>";
-//				out += "</table>";
-//			}else{
-//				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
-//				out += "<tr>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Format</td>";
-//				for(int i=0;i<months.length-1;i++){
-//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-//					out += months[i];
-//					out +="</td>";
-//				}
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG kwh/TNF</td>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >kwh Planning</td>";
-//				out += "</tr>";
-//			}		
-//		}else{
-//			if(selectedPlant != null && selectedYear != null){
-//				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
-//				out += "<tr>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Format</td>";
-//				for(int i=0;i<months.length-1;i++){
-//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-//					out += months[i];
-//					out +="</td>";
-//				}
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG kwh/TNF</td>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >kwh Planning</td>";
-//				out += "</tr>";
-//				
-//				for(int i = 0; i < getProductNames().size();i++){
-//					out += "<tr>";
-//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-//					out += getProductNames().get(i);
-//					out += "</td>";
-//					
-//					if(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size() != 0){
-//						for(int j = 0; j < getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size();j++){
-//							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-//							out += String.valueOf(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).get(j)) + "<br>";
-//							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
-//							out += "</td>";
-//						}
-//					}else{
-//						for(int j = 0; j < 12;j++){
-//							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-//							out += "no data yet" + "<br>";
-//							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
-//							out += "</td>";
-//						}
-//					}					
-//					out += "</tr>";
-//				}
-//				out += "</table>";
-//				
-//				out += "<table border cellpadding=\"7\" rules=\"all\" id= \"dataTable\" >";
-//				out += "<tr>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage New</td>";
-//				out += "</tr>";
-//				out += "<tr>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage Old</td>";
-//				out += "</tr>";
-//				out += "</table>";
-//			}else{
-//				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
-//				out += "<tr>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Format</td>";
-//				for(int i=0;i<months.length-1;i++){
-//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-//					out += months[i];
-//					out +="</td>";
-//				}
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG kwh/TNF</td>";
-//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >kwh Planning</td>";
-//				out += "</tr>";
-//			}		
-//		}
-//		
-//			return out;
-//	}
 }
