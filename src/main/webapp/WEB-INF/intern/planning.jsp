@@ -91,8 +91,42 @@
 							%>
 						</select>	
 						<div id="labelFrom" style="display: inline"> Percentage change:</div>
-						<input type="text" name="percentageChange" id="percentageChange" style="text-align: right">%				
-					</div>			
+						<% 
+						int globalPercentageChange = 0;
+							try {
+								globalPercentageChange = Integer.parseInt(request
+										.getParameter("percentageChange"));
+							} catch (NumberFormatException e) {
+								globalPercentageChange = 0;
+							} 
+						%>
+						<input type="number" name="percentageChange" value =  "<%out.print(globalPercentageChange);%>" id="percentageChange" style="text-align: right">%				
+					</div>	
+					<div id="labelFrom" style="display: inline"> Precision:</div>
+						<% 
+						int precision = 1;
+							try {
+								precision = Integer.parseInt(request
+										.getParameter("selectedPrecision"));
+							} catch (NumberFormatException e) {
+								precision = 1;
+							} 
+						%>
+						<select name="selectedPrecision" id="selectedPrecision" style="display: inline">
+							<%
+								for (int i = 1; i <= 3; i++) {
+									%>
+									<option value="<%=i%>"
+										<%out.print(((precision == i) ? " selected" : "") + "");%>><%=i%></option>
+									<%
+								}
+							%>
+						</select>	
+						</div>	
+					
+					
+					
+							
 					<div style="width: 200px; height: 200px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
 						<div id="groupSelection">
 							<%out.println(PlanningPreset.LocationSelection(request));%>

@@ -13,64 +13,76 @@ public class PlanningPreset {
 	private static String selectedPlant = null;
 	private static String selectedYear = null;
 	private static int percentageChange = 0;
-	private static boolean debug = true;
+	private static int selectedPrecision = 1;
 	
-	
-	public static ArrayList<Double> getPrevYearValues(int year, String plantID, int format){
+	private static Double roundToDigits(double value){
+		double factor = Math.pow(10, selectedPrecision);
+		return ((double)Math.round(value * factor)) / factor;
+	}
+	private static ArrayList<Double> getPrevYearValues(int year, int plantID, int format, int globalPercentageChange){
 		String startTime = year + ".01.01 00:00:00";
 		String endTime = (year+1) + ".01.01 00:00:00";
 		ResultSet rs = null;		
 		try{		
-			if(debug){
-				System.out.println("Database Query for monthly values of previos year: select sum(productiondata.amount), plant_id," 
-			 			+ " date_trunc ('month', measure_time), product_id"
-						+ " from controlpoints"
-						+ " INNER JOIN productiondata"
-						+ " ON controlpoints.controlpoints_id = productiondata.controlpoint_id"
-						+ " where plant_id = " + Integer.parseInt(plantID)
-						+ " AND product_id = " + format
-						+ " AND measure_time >= '" + startTime
-						+ "' AND measure_time < '" + endTime + "'"  
-						+ " GROUP BY date_trunc, plant_id, product_id ORDER BY date_trunc asc;"	);
-			}
 			
-			rs=SQL.queryToResultSet("Database Query for monthly values of previos year: select sum(productiondata.amount), plant_id," 
+			System.out.println("select sum(productiondata.amount), plant_id," 
 		 			+ " date_trunc ('month', measure_time), product_id"
 					+ " from controlpoints"
 					+ " INNER JOIN productiondata"
 					+ " ON controlpoints.controlpoints_id = productiondata.controlpoint_id"
-					+ " where plant_id = " + Integer.parseInt(plantID)
+					+ " where plant_id = " + plantID
+					+ " AND product_id = " + format
+					+ " AND measure_time >= '" + startTime
+					+ "' AND measure_time < '" + endTime + "'"  
+					+ " GROUP BY date_trunc, plant_id, product_id ORDER BY date_trunc asc;");
+			
+			
+			rs=SQL.queryToResultSet("select sum(productiondata.amount), plant_id," 
+		 			+ " date_trunc ('month', measure_time), product_id"
+					+ " from controlpoints"
+					+ " INNER JOIN productiondata"
+					+ " ON controlpoints.controlpoints_id = productiondata.controlpoint_id"
+					+ " where plant_id = " + plantID
 					+ " AND product_id = " + format
 					+ " AND measure_time >= '" + startTime
 					+ "' AND measure_time < '" + endTime + "'"  
 					+ " GROUP BY date_trunc, plant_id, product_id ORDER BY date_trunc asc;"			
 			);
-			if(debug){
-				System.out.println("TESTPOINT 2");
-			}
 		}
 			finally{
 				
 			}
 		ArrayList<Double> prevYearValues = new ArrayList<Double>();
-		if(debug){
-			System.out.println("TESTPOINT 3");
+		if(globalPercentageChange < -100){
+			globalPercentageChange = -100;
 		}
-		if(rs == null && debug){
-			System.out.println("TESTPOINT 4: rs == null");
-		}
+		double globalPercentageFactor = 1.0 + ((double)globalPercentageChange/100);
+		int i = 3;
 		if(rs!=null){
-			if(debug){
-				System.out.println("TESTPOINT 1");
-			}
-			try{
-				while (rs.next()) {						
-					prevYearValues.add(rs.getDouble(1));			
+			try{	
+				prevYearValues.add(0,(double)year);
+				prevYearValues.add(1,(double)plantID);
+				prevYearValues.add(2,(double)format);
+				if (rs.next()) {						
+					do{								
+						
+						prevYearValues.add(i++,roundToDigits(rs.getDouble(1)*globalPercentageFactor));	
+					}while(rs.next());
+					
+				}else{
+					while(i<15){
+						prevYearValues.add(i++,0.0);
+					}
+					if (format == 4){
+						for (int j = 0; j<  prevYearValues.size();j++){
+						}
+					}
 				}
-			} catch (SQLException e) {
-				System.out.println("SQL Exception at creation of Arraylist");
+			}catch (SQLException e) {
+				System.err.println("SQL Exception at creation of Arraylist");
 				e.printStackTrace();
 			}
+		
 		}
 		return prevYearValues;
 	}
@@ -86,7 +98,25 @@ public class PlanningPreset {
 		}	
 		return products;
 	}
-	
+
+	public static String getProductNameFromID(int productID) throws SQLException{
+		String result = "";
+		ResultSet rs = null;
+		try{		
+				rs = SQL.queryToResultSet("SELECT product_name FROM products WHERE products_id = '" + productID + "';");
+		}finally{}
+		if(rs!=null){
+			try{
+				while (rs.next()) {						
+					result += rs.getString(1);			
+				}
+			} catch (SQLException e) {
+				System.err.println("SQL Exception when geting ProductNameFromID");
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
 	public static ArrayList<String> getPlants(){
 		ArrayList<ArrayList<String>> p =SQL.query("SELECT plants_id,plant_name FROM plants ORDER BY plants_id;");
 		ArrayList<String> plants = new ArrayList<String>();
@@ -115,172 +145,279 @@ public class PlanningPreset {
 		if(checkedYear != null){
 			selectedYear = checkedYear;
 		}
-		if(request.getParameter("percentageChange") == null){
-			percentageChange = 0;
-		}else{
-			int change = 0;
+		String checkedPrecision = request.getParameter("selectedPrecision");
+		if(checkedPrecision != null){
 			try{
-				change=Integer.parseInt(request.getParameter("percentageChange"));
+				selectedPrecision = Integer.parseInt(checkedPrecision);
 			}catch(NumberFormatException e){
-				change=0;
-			}
-			if(change != 0){
-				percentageChange = change;
+				System.err.println("Problem with precision adjustment: NumberFormatException by cast of '" + request.getParameter("selectedPrecision") + "'.");
 			}
 		}
-		//System.out.println(selectedYear + " " + selectedPlant + " " + percentageChange );
+		if(request.getParameter("percentageChange") != null && request.getParameter("percentageChange")!=""){
+			try{
+				percentageChange=Integer.parseInt(request.getParameter("percentageChange"));
+			}catch(NumberFormatException e){
+				System.err.println("Problem with global percentage adjustment: NumberFormatException by cast of '" + request.getParameter("percentageChange") + "'.");
+			}
+		}
 		return out;
 	}
 	
-	
-	
-	
-	public static String getTable(){
+	private static ArrayList<ArrayList<Double>> getPlanningData (int year, int plant, int globalPercentageChange){
+		ArrayList<ArrayList<Double>> allPlanningDataList = new ArrayList<ArrayList<Double>>();		
+
 		
-		String[] months = new DateFormatSymbols(Locale.ENGLISH).getMonths();
+		//get all formats (product_id) and save in ArrayList
+		ArrayList<Integer> allFormatsList = getAllFormats();
 		
-		String out = " ";
-		
-		ArrayList<Integer> test = new ArrayList<Integer>();
-		test.add(83);
-		test.add(123);
-		test.add(113);
-		test.add(100);
-		test.add(150);
-		test.add(111);
-		test.add(96);
-		test.add(98);
-		test.add(101);
-		test.add(50);
-		test.add(90);
-		test.add(88);
-		
-		if(percentageChange != 0){
-			if(selectedPlant != null && selectedYear != null){
-				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
-				out += "<tr>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" > Format </td>";
-				for(int i=0;i<months.length-1;i++){
-					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-					out += months[i];
-					out +="</td>";
-				}
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Average Energy Usage/TNF</td>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Energy Usage Planning</td>";
-				out += "</tr>";
-				
-				for(int i = 0; i < getProductNames().size();i++){
-					out += "<tr>";
-					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-					out += getProductNames().get(i);
-					out += "</td>";
-					
-					if(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size() != 0){
-						for(int j = 0; j < getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size();j++){
-							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-							out += String.valueOf(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).get(j)) + "<br>";
-							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
-							out += "</td>";
-						}
-					}else{
-						for(int j = 0; j < 12;j++){
-							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-							out += "so much?" + "<br>";
-							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
-							out += "</td>";
-						}
-					}					
-					out += "</tr>";
-				}
-				out += "</table>";
-				
-				out += "<table border cellpadding=\"7\" rules=\"all\" id= \"dataTable\" >";
-				out += "<tr>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage New</td>";
-				out += "</tr>";
-				out += "<tr>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage Old</td>";
-				out += "</tr>";
-				out += "</table>";
-			}else{
-				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
-				out += "<tr>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Format</td>";
-				for(int i=0;i<months.length-1;i++){
-					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-					out += months[i];
-					out +="</td>";
-				}
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Average Energy Usage/TNF</td>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Energy Usage Planning</td>";
-				out += "</tr>";
-			}		
-		}else{
-			if(selectedPlant != null && selectedYear != null){
-				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
-				out += "<tr>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Format</td>";
-				for(int i=0;i<months.length-1;i++){
-					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-					out += months[i];
-					out +="</td>";
-				}
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Average Energy Usage/TNF</td>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Energy Usage Planning</td>";
-				out += "</tr>";
-				
-				for(int i = 0; i < getProductNames().size();i++){
-					out += "<tr>";
-					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-					out += getProductNames().get(i);
-					out += "</td>";
-					
-					if(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size() != 0){
-						for(int j = 0; j < getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size();j++){
-							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-							out += String.valueOf(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).get(j)) + "<br>";
-							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
-							out += "</td>";
-						}
-					}else{
-						for(int j = 0; j < 12;j++){
-							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-							out += "no data yet" + "<br>";
-							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
-							out += "</td>";
-						}
-					}					
-					out += "</tr>";
-				}
-				out += "</table>";
-				
-				out += "<table border cellpadding=\"7\" rules=\"all\" id= \"dataTable\" >";
-				out += "<tr>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage New</td>";
-				out += "</tr>";
-				out += "<tr>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage Old</td>";
-				out += "</tr>";
-				out += "</table>";
-			}else{
-				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
-				out += "<tr>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Format</td>";
-				for(int i=0;i<months.length-1;i++){
-					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
-					out += months[i];
-					out +="</td>";
-				}
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Average Energy Usage/TNF</td>";
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Energy Usage Planning</td>";
-				out += "</tr>";
-			}		
+		//create for each Format an ArrayList with monthly values (plus year, plant, productID in first three cells)
+		for (int i = 0; i < allFormatsList.size();i++){
+			int productID = allFormatsList.get(i);		
+			ArrayList<Double> valueList = getPrevYearValues(year, plant, productID, globalPercentageChange);
+			allPlanningDataList.add(i, valueList);		
 		}
 		
-			return out;
+		//add Sum of monthly values of Result (Column Total)
+		
+		for (int i = 0; i < allPlanningDataList.size(); i++){
+			Double sumOfRowValues = 0.0;			
+			for (int j =3; j < allPlanningDataList.get(i).size() ; j++){
+					sumOfRowValues += allPlanningDataList.get(i).get(j);
+				
+			}
+
+			allPlanningDataList.get(i).add(roundToDigits(sumOfRowValues));
+			
+		}
+		return allPlanningDataList;
 	}
+	
+	private static ArrayList<Integer> getAllFormats(){		
+		ArrayList<Integer> allFormatsList = new ArrayList<Integer>();
+		ResultSet rs = null;	
+		try{
+			rs = SQL.queryToResultSet("SELECT products_id from products;");
+		}
+		finally{}
+		if(rs!=null){
+			try{
+				System.out.print("Point1: getAllFormats(): ");
+				while (rs.next()) {		
+					System.out.print(rs.getInt(1) + ", ");
+					allFormatsList.add(rs.getInt(1));			
+				}
+				System.out.println();
+			} catch (SQLException e) {
+				System.err.println("SQL Exception at creation of Arraylist");
+				e.printStackTrace();
+			}
+		}
+		return allFormatsList;
+	}
+
+	public static String getTable(){
+	
+		String[] months = new DateFormatSymbols(Locale.ENGLISH).getShortMonths();
+		String out = " ";
+		
+		//First Row with titles
+		if(selectedPlant != null && selectedYear != null){
+			out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
+			out += "<tr>";
+			out += "<td style=\"word-break:break-all;word-wrap:break-word\" > Format </td>";
+			
+			for(int i=0;i<months.length-1;i++){
+				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+				out += months[i];
+				out +="</td>";
+			}
+			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
+			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG kwh/TNF</td>";
+			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >kwh Planning</td>";
+			out += "</tr>";
+			
+		//Rows per Format with values
+			ArrayList<ArrayList<Double>> allData = getPlanningData(Integer.parseInt(selectedYear), Integer.parseInt(selectedPlant), percentageChange);
+			for(int i = 0; i < allData.size() ;i++){
+				ArrayList<Double> tempValueList = allData.get(i);
+				if(tempValueList.get(15) != 0.0){	//display only Rows, where at least one value is available (Sum>0)
+					out += "<tr>";				
+					try {
+						out += "<td style=\"word-break:break-all;word-wrap:break-word\" >"+ getProductNameFromID(tempValueList.get(2).intValue());
+						//add percentage to Format Field
+						if(percentageChange != 0){
+							out += "</br> +" + percentageChange + "%";
+						}
+					} catch (SQLException e) {
+						out += "<td style=\"word-break:break-all;word-wrap:break-word\" >" + tempValueList.get(2).intValue();
+						e.printStackTrace();
+					}
+					for(int j = 3; j < tempValueList.size(); j++){
+						if(percentageChange != 0){		
+							
+						}						
+							out += "<td style=\"word-break:break-all;word-wrap:break-word" + ((percentageChange!=0 && j+1 < tempValueList.size())? "; color:orange\"" :"\"") + ">"+ tempValueList.get(j);
+						
+						if(j+1 < tempValueList.size()){		//field not for Sum of values
+							out += "</br><input type=\"text\" size=\"1\" maxlength=\"3\"></td>";
+						}
+					}
+					
+					out += "</tr>";
+				}
+			}
+			//add Row with Sum Y-Values for each Month
+			out+="<tr>";
+			out+="<td>Sum</td>";
+			Double sumPerMonth;
+			for (int i = 3; i < 16;i++){
+				sumPerMonth =  0.0;
+				for (int j = 0; j < allData.size();j++){
+					sumPerMonth += allData.get(j).get(i);
+				}
+				sumPerMonth = roundToDigits(sumPerMonth);
+				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >"+ sumPerMonth + "</td>";
+			}
+			
+			out+="</tr>";
+		}	
+		return out;
+	}
+	
+//	
+//	public static String getTable(){
+//		
+//		String[] months = new DateFormatSymbols(Locale.ENGLISH).getShortMonths();
+//		
+//		String out = " ";
+//		
+//		
+//		if(percentageChange != 0){
+//			if(selectedPlant != null && selectedYear != null){
+//				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
+//				out += "<tr>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" > Format </td>";
+//				for(int i=0;i<months.length-1;i++){
+//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+//					out += months[i];
+//					out +="</td>";
+//				}
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG kwh/TNF</td>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >kwh Planning</td>";
+//				out += "</tr>";
+//				
+//				for(int i = 0; i < getProductNames().size();i++){
+//					out += "<tr>";
+//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+//					out += getProductNames().get(i);
+//					out += "</td>";
+//					
+//					if(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size() != 0){
+//						for(int j = 0; j < getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size();j++){
+//							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+//							out += String.valueOf(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).get(j)) + "<br>";
+//							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
+//							out += "</td>";
+//						}
+//					}else{
+//						for(int j = 0; j < 12;j++){
+//							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+//							out += "so much?" + "<br>";
+//							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
+//							out += "</td>";
+//						}
+//					}					
+//					out += "</tr>";
+//				}
+//				out += "</table>";
+//				
+//				out += "<table border cellpadding=\"7\" rules=\"all\" id= \"dataTable\" >";
+//				out += "<tr>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage New</td>";
+//				out += "</tr>";
+//				out += "<tr>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage Old</td>";
+//				out += "</tr>";
+//				out += "</table>";
+//			}else{
+//				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
+//				out += "<tr>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Format</td>";
+//				for(int i=0;i<months.length-1;i++){
+//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+//					out += months[i];
+//					out +="</td>";
+//				}
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG kwh/TNF</td>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >kwh Planning</td>";
+//				out += "</tr>";
+//			}		
+//		}else{
+//			if(selectedPlant != null && selectedYear != null){
+//				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
+//				out += "<tr>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Format</td>";
+//				for(int i=0;i<months.length-1;i++){
+//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+//					out += months[i];
+//					out +="</td>";
+//				}
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG kwh/TNF</td>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >kwh Planning</td>";
+//				out += "</tr>";
+//				
+//				for(int i = 0; i < getProductNames().size();i++){
+//					out += "<tr>";
+//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+//					out += getProductNames().get(i);
+//					out += "</td>";
+//					
+//					if(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size() != 0){
+//						for(int j = 0; j < getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).size();j++){
+//							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+//							out += String.valueOf(getPrevYearValues(Integer.parseInt(selectedYear), selectedPlant, i+1).get(j)) + "<br>";
+//							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
+//							out += "</td>";
+//						}
+//					}else{
+//						for(int j = 0; j < 12;j++){
+//							out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+//							out += "no data yet" + "<br>";
+//							out += "<input type=\"text\" size=\"1\" maxlength=\"3\">";
+//							out += "</td>";
+//						}
+//					}					
+//					out += "</tr>";
+//				}
+//				out += "</table>";
+//				
+//				out += "<table border cellpadding=\"7\" rules=\"all\" id= \"dataTable\" >";
+//				out += "<tr>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage New</td>";
+//				out += "</tr>";
+//				out += "<tr>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total Energy Usage Old</td>";
+//				out += "</tr>";
+//				out += "</table>";
+//			}else{
+//				out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
+//				out += "<tr>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Format</td>";
+//				for(int i=0;i<months.length-1;i++){
+//					out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+//					out += months[i];
+//					out +="</td>";
+//				}
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG kwh/TNF</td>";
+//				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >kwh Planning</td>";
+//				out += "</tr>";
+//			}		
+//		}
+//		
+//			return out;
+//	}
 }
