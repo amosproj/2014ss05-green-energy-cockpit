@@ -3,8 +3,9 @@ package de.fau.amos;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormatSymbols;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,13 +16,24 @@ public class PlanningPreset {
 	private static String selectedYear = null;
 	private static int percentageChange = 0;
 	private static int selectedPrecision = 1;
+	private static ArrayList<ArrayList<Double>> valuesOfInputFields = new ArrayList<ArrayList<Double>>();
+	private static HttpServletRequest currentRequest = null;
 	
 	private static Double roundToDigits(double value){
 		double factor = Math.pow(10, selectedPrecision);
 		return ((double)Math.round(value * factor)) / factor;
 	}
 	
-	private static ArrayList<Double> getPrevYearValues(int year, int plantID, int format, int globalPercentageChange){
+
+	private static Double modifyIfNegativeValueToZero(Double value){
+		if (value < 0.0){
+			value = 0.0;
+		}
+		return value;
+	}
+	
+	private static ArrayList<Double> getFormatYearValues(int year, int plantID, int format, int globalPercentageChange){
+		NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
 		String startTime = year + ".01.01 00:00:00";
 		String endTime = (year+1) + ".01.01 00:00:00";
 		ResultSet rs = null;		
@@ -66,12 +78,24 @@ public class PlanningPreset {
 				prevYearValues.add(1,(double)plantID);
 				prevYearValues.add(2,(double)format);
 				if (rs.next()) {						
-					do{								
-						
-						prevYearValues.add(i++,roundToDigits(rs.getDouble(1)*globalPercentageFactor));	
+					do{	
+						System.out.println("TESTPOINT: " + currentRequest.getParameter(format + "X" + i));
+						//if value is modified manually in input field
+						if(currentRequest.getParameter(format + "X" + i) != ""){
+//							prevYearValues.add(i,roundToDigits(Double.parseDouble(currentRequest.getParameter(format + "X" + i++))));
+							try {
+								prevYearValues.add(i,modifyIfNegativeValueToZero(roundToDigits((nf_in.parse(currentRequest.getParameter(format + "X" + i++))).doubleValue())));
+							} catch (ParseException e) {
+								prevYearValues.add(i,modifyIfNegativeValueToZero(roundToDigits(Double.parseDouble(currentRequest.getParameter(format + "X" + i++)))));
+								e.printStackTrace();
+							}
+							
+						}else{ //if value is empty in input field --> Value from Previous year
+							prevYearValues.add(i++,roundToDigits(rs.getDouble(1)*globalPercentageFactor));	
+						}
 					}while(rs.next());
 					
-				}else{
+				}else{ //fill ArrayList with 0.0 if values are not available 
 					while(i<15){
 						prevYearValues.add(i++,0.0);
 					}
@@ -130,25 +154,10 @@ public class PlanningPreset {
 	}
 	
 	public static String LocationSelection(HttpServletRequest request){
+		
+		currentRequest = request;
 
-		//check Parameters in request
-		Enumeration parameterList = request.getParameterNames();
-		  while( parameterList.hasMoreElements() )
-		  {
-		    String   sName     = parameterList.nextElement().toString();
-		    String[] sMultiple = request.getParameterValues( sName );
-		    if( 1 >= sMultiple.length )
-		      System.out.println( sName + " = " + request.getParameter( sName ) + "<br>" );
-		    else
-		      for( int i=0; i<sMultiple.length; i++ )
-		        System.out.println( sName + "[" + i + "] = " + sMultiple[i] + "<br>" );
-		  }
-		for(int i = 1; i<4;i++){
-			for(int j = 3; j<15;j++){
-				System.out.println(request.getParameter(i + "X" + j));
-			}
-		}
-		//End Check
+		
 		
 		ArrayList<ArrayList<String>> plants=SQL.query("select plants_id,plant_name from plants order by plants_id;");	
 		
@@ -198,7 +207,7 @@ public class PlanningPreset {
 		//create for each Format an ArrayList with monthly values (plus year, plant, productID in first three cells)
 		for (int i = 0; i < allFormatsList.size();i++){
 			int productID = allFormatsList.get(i);		
-			ArrayList<Double> valueList = getPrevYearValues(year, plant, productID, globalPercentageChange);
+			ArrayList<Double> valueList = getFormatYearValues(year, plant, productID, globalPercentageChange);
 			allPlanningDataList.add(i, valueList);		
 		}
 		
@@ -275,16 +284,19 @@ public class PlanningPreset {
 						e.printStackTrace();
 					}
 					for(int j = 3; j < tempValueList.size(); j++){
-						if(percentageChange != 0){		
-							
-						}						
-							out += "<td style=\"word-break:break-all;word-wrap:break-word" + ((percentageChange!=0 && j+1 < tempValueList.size())? "; color:orange\"" :"\"") + ">"+ tempValueList.get(j);
+						String colorOfValue = "orange";
+						if(currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !=""){
+							colorOfValue = "red";
+						}
+						out += "<td style=\"word-break:break-all;word-wrap:break-word" + ((percentageChange!=0 && j+1 < tempValueList.size())? "; color:" +colorOfValue + "\"" :"\"") + ">"+ tempValueList.get(j);
 						
 						if(j+1 < tempValueList.size()){		//input field not for Sum of values
 							out += "</br><input type=\"text\" ";
 							out += "name = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
-							out += "id = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
 							out += "size=\"1\" maxlength=\"3\"";
+							if(currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !=""){
+								out+= " value = \"" + currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) + "\"";
+							}
 							out += "></td>";
 						}
 					}

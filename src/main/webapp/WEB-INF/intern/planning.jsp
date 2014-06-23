@@ -100,7 +100,7 @@
 								globalPercentageChange = 0;
 							} 
 						%>
-						<input type="number"  name="percentageChange" value =  "<%out.print(globalPercentageChange);%>" id="percentageChange" style="text-align: right">				
+						<input type="number"  name="percentageChange" value =  "<%out.print(globalPercentageChange);%>" style="text-align: right">				
 					</div>	
 					<div id="labelFrom" style="display: inline"> Precision:</div>
 						<% 
@@ -112,7 +112,7 @@
 								precision = 1;
 							} 
 						%>
-						<select name="selectedPrecision" id="selectedPrecision" style="display: inline">
+						<select name="selectedPrecision"  style="display: inline">
 							<%
 								for (int i = 1; i <= 3; i++) {
 									%>
@@ -135,7 +135,7 @@
 					
 					<input type="submit" id="showTable" value="Show"> 		
 							
-				</form>
+				
 				<input type="submit" id="downloadTable" value="Download table">	
 			</div>
 
@@ -144,7 +144,7 @@
 			<%						
 			out.println(PlanningPreset.getTable());				
 			%>
-
+			</form>
 
 			</div>
 			
