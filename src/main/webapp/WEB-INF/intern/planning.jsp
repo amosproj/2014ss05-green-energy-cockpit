@@ -100,7 +100,7 @@
 								globalPercentageChange = 0;
 							} 
 						%>
-						<input type="number" name="percentageChange" value =  "<%out.print(globalPercentageChange);%>" id="percentageChange" style="text-align: right">%				
+						<input type="number"  name="percentageChange" value =  "<%out.print(globalPercentageChange);%>" id="percentageChange" style="text-align: right">				
 					</div>	
 					<div id="labelFrom" style="display: inline"> Precision:</div>
 						<% 

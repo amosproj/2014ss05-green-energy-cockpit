@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ public class PlanningPreset {
 		double factor = Math.pow(10, selectedPrecision);
 		return ((double)Math.round(value * factor)) / factor;
 	}
+	
 	private static ArrayList<Double> getPrevYearValues(int year, int plantID, int format, int globalPercentageChange){
 		String startTime = year + ".01.01 00:00:00";
 		String endTime = (year+1) + ".01.01 00:00:00";
@@ -85,8 +87,7 @@ public class PlanningPreset {
 		
 		}
 		return prevYearValues;
-	}
-	
+	}	
 	
 	public static ArrayList<String> getProductNames(){		
 		ArrayList<ArrayList<String>> pn = SQL.query("SELECT product_name FROM products;");
@@ -117,6 +118,7 @@ public class PlanningPreset {
 		}
 		return result;
 	}
+	
 	public static ArrayList<String> getPlants(){
 		ArrayList<ArrayList<String>> p =SQL.query("SELECT plants_id,plant_name FROM plants ORDER BY plants_id;");
 		ArrayList<String> plants = new ArrayList<String>();
@@ -127,8 +129,27 @@ public class PlanningPreset {
 		return plants;
 	}
 	
-	
 	public static String LocationSelection(HttpServletRequest request){
+
+		//check Parameters in request
+		Enumeration parameterList = request.getParameterNames();
+		  while( parameterList.hasMoreElements() )
+		  {
+		    String   sName     = parameterList.nextElement().toString();
+		    String[] sMultiple = request.getParameterValues( sName );
+		    if( 1 >= sMultiple.length )
+		      System.out.println( sName + " = " + request.getParameter( sName ) + "<br>" );
+		    else
+		      for( int i=0; i<sMultiple.length; i++ )
+		        System.out.println( sName + "[" + i + "] = " + sMultiple[i] + "<br>" );
+		  }
+		for(int i = 1; i<4;i++){
+			for(int j = 3; j<15;j++){
+				System.out.println(request.getParameter(i + "X" + j));
+			}
+		}
+		//End Check
+		
 		ArrayList<ArrayList<String>> plants=SQL.query("select plants_id,plant_name from plants order by plants_id;");	
 		
 		String out = "";
@@ -261,9 +282,10 @@ public class PlanningPreset {
 						
 						if(j+1 < tempValueList.size()){		//input field not for Sum of values
 							out += "</br><input type=\"text\" ";
-							out += "name = \"field:" + tempValueList.get(2) + "-" + i + "-" + j + "\" ";
-							out += "id = \"field:" + tempValueList.get(2) + "-" + i + "-" + j + "\" ";
-							out += "size=\"1\" maxlength=\"3\"></td>";
+							out += "name = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
+							out += "id = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
+							out += "size=\"1\" maxlength=\"3\"";
+							out += "></td>";
 						}
 					}
 					
