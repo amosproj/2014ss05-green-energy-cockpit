@@ -18,19 +18,133 @@ public class PlanningPreset {
 	private static int selectedPrecision = 1;
 	private static ArrayList<ArrayList<Double>> valuesOfInputFields = new ArrayList<ArrayList<Double>>();
 	private static HttpServletRequest currentRequest = null;
+	private static boolean isReset = false;
+	
+	
+	public static void setValues(HttpServletRequest request){
+		//Set isReset
+		if(request.getParameter("reset") != null){
+			isReset = true;
+		}else{
+			isReset = false;
+		}
+		
+		//set current Request
+		currentRequest = request;
+		
+		//set Year
+		String checkedYear = request.getParameter("selectYear");
+		if(checkedYear != null){
+			selectedYear = checkedYear;
+		}
+		
+		//set Precision
+		String checkedPrecision = request.getParameter("selectedPrecision");
+		if(checkedPrecision != null){
+			try{
+				selectedPrecision = Integer.parseInt(checkedPrecision);
+			}catch(NumberFormatException e){
+				System.err.println("Problem with precision adjustment: NumberFormatException by cast of '" + request.getParameter("selectedPrecision") + "'.");
+			}
+		}
+		
+		//set global Percentage Change
+		if(request.getParameter("percentageChange") != null && request.getParameter("percentageChange")!=""){
+			try{
+				percentageChange=Integer.parseInt(request.getParameter("percentageChange"));
+			}catch(NumberFormatException e){
+				System.err.println("Problem with global percentage adjustment: NumberFormatException by cast of '" + request.getParameter("percentageChange") + "'.");
+			}
+		}
+		
+		
+	}
+		
+	public static String LocationSelection(HttpServletRequest request){
+		
+		ArrayList<ArrayList<String>> plants=SQL.query("select plants_id,plant_name from plants order by plants_id;");			
+		String out = "";		
+		String checkedPlants = request.getParameter("plants");
+		if(checkedPlants != null){
+			selectedPlant = checkedPlants;
+		}		
+		for(int i = 1; i<plants.size();i++){		
+			out+= "<input type=\"radio\" name=\"plants\" value=\"" + plants.get(i).get(0) + "\"" + ((plants.get(i).get(0).equals(selectedPlant))?" checked" : "") + "> " + plants.get(i).get(1) + "<br>";		
+		}
+		return out;
+	}
 	
 	private static Double roundToDigits(double value){
 		double factor = Math.pow(10, selectedPrecision);
 		return ((double)Math.round(value * factor)) / factor;
 	}
 	
-
 	private static Double modifyIfNegativeValueToZero(Double value){
 		if (value < 0.0){
 			value = 0.0;
 		}
 		return value;
 	}
+		
+	public static ArrayList<String> getPlants(){
+		ArrayList<ArrayList<String>> p =SQL.query("SELECT plants_id,plant_name FROM plants ORDER BY plants_id;");
+		ArrayList<String> plants = new ArrayList<String>();
+		
+		for(int i = 1; i<p.size();i++){
+			plants.add(p.get(i).get(1));
+		}
+		return plants;
+	}
+	
+	private static ArrayList<Integer> getAllFormats(){		
+		ArrayList<Integer> allFormatsList = new ArrayList<Integer>();
+		ResultSet rs = null;	
+		try{
+			rs = SQL.queryToResultSet("SELECT products_id from products;");
+		}
+		finally{}
+		if(rs!=null){
+			try{
+				while (rs.next()) {		
+					allFormatsList.add(rs.getInt(1));			
+				}
+			} catch (SQLException e) {
+				System.err.println("SQL Exception at creation of Arraylist");
+				e.printStackTrace();
+			}
+		}
+		return allFormatsList;
+	}
+	
+	public static ArrayList<String> getProductNames(){		
+		ArrayList<ArrayList<String>> pn = SQL.query("SELECT product_name FROM products;");
+		
+		ArrayList<String> products = new ArrayList<String>();
+		
+		for(int i=1; i<pn.size();i++){
+			products.add(pn.get(i).get(0));
+		}	
+		return products;
+	}
+
+	public static String getProductNameFromID(int productID) throws SQLException{
+		String result = "";
+		ResultSet rs = null;
+		try{		
+				rs = SQL.queryToResultSet("SELECT product_name FROM products WHERE products_id = '" + productID + "';");
+		}finally{}
+		if(rs!=null){
+			try{
+				while (rs.next()) {						
+					result += rs.getString(1);			
+				}
+			} catch (SQLException e) {
+				System.err.println("SQL Exception when geting ProductNameFromID");
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}	
 	
 	private static ArrayList<Double> getFormatYearValues(int year, int plantID, int format, int globalPercentageChange){
 		NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
@@ -39,16 +153,16 @@ public class PlanningPreset {
 		ResultSet rs = null;		
 		try{		
 			
-			System.out.println("select sum(productiondata.amount), plant_id," 
-		 			+ " date_trunc ('month', measure_time), product_id"
-					+ " from controlpoints"
-					+ " INNER JOIN productiondata"
-					+ " ON controlpoints.controlpoints_id = productiondata.controlpoint_id"
-					+ " where plant_id = " + plantID
-					+ " AND product_id = " + format
-					+ " AND measure_time >= '" + startTime
-					+ "' AND measure_time < '" + endTime + "'"  
-					+ " GROUP BY date_trunc, plant_id, product_id ORDER BY date_trunc asc;");
+//			System.out.println("select sum(productiondata.amount), plant_id," 
+//		 			+ " date_trunc ('month', measure_time), product_id"
+//					+ " from controlpoints"
+//					+ " INNER JOIN productiondata"
+//					+ " ON controlpoints.controlpoints_id = productiondata.controlpoint_id"
+//					+ " where plant_id = " + plantID
+//					+ " AND product_id = " + format
+//					+ " AND measure_time >= '" + startTime
+//					+ "' AND measure_time < '" + endTime + "'"  
+//					+ " GROUP BY date_trunc, plant_id, product_id ORDER BY date_trunc asc;");
 			
 			
 			rs=SQL.queryToResultSet("select sum(productiondata.amount), plant_id," 
@@ -79,9 +193,8 @@ public class PlanningPreset {
 				prevYearValues.add(2,(double)format);
 				if (rs.next()) {						
 					do{	
-						System.out.println("TESTPOINT: " + currentRequest.getParameter(format + "X" + i));
 						//if value is modified manually in input field
-						if(currentRequest.getParameter(format + "X" + i) != "" && currentRequest.getParameter(format + "X" + i) != null){
+						if(!isReset && currentRequest.getParameter(format + "X" + i) != "" && currentRequest.getParameter(format + "X" + i) != null){
 //							prevYearValues.add(i,roundToDigits(Double.parseDouble(currentRequest.getParameter(format + "X" + i++))));
 							try {
 								prevYearValues.add(i,modifyIfNegativeValueToZero(roundToDigits((nf_in.parse(currentRequest.getParameter(format + "X" + i++))).doubleValue())));
@@ -112,91 +225,7 @@ public class PlanningPreset {
 		}
 		return prevYearValues;
 	}	
-	
-	public static ArrayList<String> getProductNames(){		
-		ArrayList<ArrayList<String>> pn = SQL.query("SELECT product_name FROM products;");
 		
-		ArrayList<String> products = new ArrayList<String>();
-		
-		for(int i=1; i<pn.size();i++){
-			products.add(pn.get(i).get(0));
-		}	
-		return products;
-	}
-
-	public static String getProductNameFromID(int productID) throws SQLException{
-		String result = "";
-		ResultSet rs = null;
-		try{		
-				rs = SQL.queryToResultSet("SELECT product_name FROM products WHERE products_id = '" + productID + "';");
-		}finally{}
-		if(rs!=null){
-			try{
-				while (rs.next()) {						
-					result += rs.getString(1);			
-				}
-			} catch (SQLException e) {
-				System.err.println("SQL Exception when geting ProductNameFromID");
-				e.printStackTrace();
-			}
-		}
-		return result;
-	}
-	
-	public static ArrayList<String> getPlants(){
-		ArrayList<ArrayList<String>> p =SQL.query("SELECT plants_id,plant_name FROM plants ORDER BY plants_id;");
-		ArrayList<String> plants = new ArrayList<String>();
-		
-		for(int i = 1; i<p.size();i++){
-			plants.add(p.get(i).get(1));
-		}
-		return plants;
-	}
-	
-	public static String LocationSelection(HttpServletRequest request){
-		
-		currentRequest = request;
-
-		
-		
-		ArrayList<ArrayList<String>> plants=SQL.query("select plants_id,plant_name from plants order by plants_id;");	
-		
-		String out = "";
-		
-
-		
-		String checkedPlants = request.getParameter("plants");
-		if(checkedPlants != null){
-			selectedPlant = checkedPlants;
-		}
-		
-		for(int i = 1; i<plants.size();i++){		
-			out+= "<input type=\"radio\" name=\"plants\" value=\"" + plants.get(i).get(0) + "\"" + ((plants.get(i).get(0).equals(selectedPlant))?" checked" : "") + "> " + plants.get(i).get(1) + "<br>";		
-		}
-		
-	
-		String checkedYear = request.getParameter("selectYear");
-		if(checkedYear != null){
-			selectedYear = checkedYear;
-		}
-		String checkedPrecision = request.getParameter("selectedPrecision");
-		if(checkedPrecision != null){
-			try{
-				selectedPrecision = Integer.parseInt(checkedPrecision);
-			}catch(NumberFormatException e){
-				System.err.println("Problem with precision adjustment: NumberFormatException by cast of '" + request.getParameter("selectedPrecision") + "'.");
-			}
-		}
-		if(request.getParameter("percentageChange") != null && request.getParameter("percentageChange")!=""){
-			try{
-				percentageChange=Integer.parseInt(request.getParameter("percentageChange"));
-			}catch(NumberFormatException e){
-				System.err.println("Problem with global percentage adjustment: NumberFormatException by cast of '" + request.getParameter("percentageChange") + "'.");
-			}
-		}
-		return out;
-	}
-	
 	private static ArrayList<ArrayList<Double>> getPlanningData (int year, int plant, int globalPercentageChange){
 		ArrayList<ArrayList<Double>> allPlanningDataList = new ArrayList<ArrayList<Double>>();		
 
@@ -224,26 +253,6 @@ public class PlanningPreset {
 			
 		}
 		return allPlanningDataList;
-	}
-	
-	private static ArrayList<Integer> getAllFormats(){		
-		ArrayList<Integer> allFormatsList = new ArrayList<Integer>();
-		ResultSet rs = null;	
-		try{
-			rs = SQL.queryToResultSet("SELECT products_id from products;");
-		}
-		finally{}
-		if(rs!=null){
-			try{
-				while (rs.next()) {		
-					allFormatsList.add(rs.getInt(1));			
-				}
-			} catch (SQLException e) {
-				System.err.println("SQL Exception at creation of Arraylist");
-				e.printStackTrace();
-			}
-		}
-		return allFormatsList;
 	}
 
 	public static String getTable(){
@@ -277,24 +286,30 @@ public class PlanningPreset {
 						out += "<td style=\"word-break:break-all;word-wrap:break-word\" >"+ getProductNameFromID(tempValueList.get(2).intValue());
 						//add percentage to Format Field
 						if(percentageChange != 0){
-							out += "</br> +" + percentageChange + "%";
+							out += "</br>"+ (percentageChange>0?"+":"") + percentageChange + "%";
 						}
 					} catch (SQLException e) {
 						out += "<td style=\"word-break:break-all;word-wrap:break-word\" >" + tempValueList.get(2).intValue();
 						e.printStackTrace();
 					}
 					for(int j = 3; j < tempValueList.size(); j++){
-						String colorOfValue = "orange";
-						if(currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !=""){
-							colorOfValue = "red";
+						//change color of displayed value
+						String colorOfValue = "\"";
+						if(!isReset && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && j+1 < tempValueList.size()){
+							colorOfValue = "; color: red\"";
+						}else if(percentageChange!= 0 && j+1 < tempValueList.size()){
+							colorOfValue = "; color: orange\"";
 						}
-						out += "<td style=\"word-break:break-all;word-wrap:break-word" + ((percentageChange!=0 && j+1 < tempValueList.size())? "; color:" +colorOfValue + "\"" :"\"") + ">"+ tempValueList.get(j);
 						
-						if(j+1 < tempValueList.size()){		//input field not for Sum of values
+						//display value
+						out += "<td style=\"word-break:break-all;word-wrap:break-word"  +colorOfValue + ">"+ tempValueList.get(j);
+						
+						//display input fields (only for monthly values)
+						if(j+1 < tempValueList.size()){
 							out += "</br><input type=\"text\" ";
 							out += "name = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
 							out += "size=\"1\" maxlength=\"3\"";
-							if(currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
+							if((!isReset) && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
 								out+= " value = \"" + currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) + "\"";
 							}
 							out += "></td>";
@@ -322,4 +337,14 @@ public class PlanningPreset {
 		return out;
 	}
 	
+	public static String getPercentageChange(){
+		if(isReset){
+			percentageChange = 0;
+		}
+		String out = "<input type=\"number\"  name=\"percentageChange\" value = \"";
+		out+= percentageChange;
+		out+= "\" style=\"text-align: right\">";
+		return out;
+	}
+
 }

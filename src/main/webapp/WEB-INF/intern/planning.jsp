@@ -45,7 +45,7 @@
 </head>
 
 <body>
-
+	<% PlanningPreset.setValues(request); %>
 	<header>
 		<h1>AMOS PROJECT</h1>
 		<h2>Green Energy Cockpit</h2>
@@ -92,15 +92,9 @@
 						</select>	
 						<div id="labelFrom" style="display: inline"> Percentage change:</div>
 						<% 
-						int globalPercentageChange = 0;
-							try {
-								globalPercentageChange = Integer.parseInt(request
-										.getParameter("percentageChange"));
-							} catch (NumberFormatException e) {
-								globalPercentageChange = 0;
-							} 
+							out.println(PlanningPreset.getPercentageChange());	
 						%>
-						<input type="number"  name="percentageChange" value =  "<%out.print(globalPercentageChange);%>" style="text-align: right">				
+									
 					</div>	
 					<div id="labelFrom" style="display: inline"> Precision:</div>
 						<% 
@@ -134,7 +128,7 @@
 					</div>
 					
 					<input type="submit" id="showTable" value="Show"> 		
-							
+					<input type="submit" name = "reset" id="reset" value="Reset"> 		
 				
 				<input type="submit" id="downloadTable" value="Download table">	
 			</div>
