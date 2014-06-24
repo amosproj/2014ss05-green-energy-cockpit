@@ -81,7 +81,7 @@ public class PlanningPreset {
 					do{	
 						System.out.println("TESTPOINT: " + currentRequest.getParameter(format + "X" + i));
 						//if value is modified manually in input field
-						if(currentRequest.getParameter(format + "X" + i) != ""){
+						if(currentRequest.getParameter(format + "X" + i) != "" && currentRequest.getParameter(format + "X" + i) != null){
 //							prevYearValues.add(i,roundToDigits(Double.parseDouble(currentRequest.getParameter(format + "X" + i++))));
 							try {
 								prevYearValues.add(i,modifyIfNegativeValueToZero(roundToDigits((nf_in.parse(currentRequest.getParameter(format + "X" + i++))).doubleValue())));
@@ -294,7 +294,7 @@ public class PlanningPreset {
 							out += "</br><input type=\"text\" ";
 							out += "name = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
 							out += "size=\"1\" maxlength=\"3\"";
-							if(currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !=""){
+							if(currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
 								out+= " value = \"" + currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) + "\"";
 							}
 							out += "></td>";
