@@ -197,6 +197,10 @@ nav a{
 	margin: -512px 0px 0px 220px;
 	
 }
+#forecastChart{
+	
+	margin-top: 15px;
+}
 #showTable{
 	padding: 12px 30px;
 	position:absolute;
