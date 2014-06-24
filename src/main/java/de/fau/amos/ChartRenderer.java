@@ -132,13 +132,13 @@ public class ChartRenderer extends HttpServlet {
 			}else if(chartType.equals("2")){
 				
 				//show location-format chart
-				DefaultCategoryDataset dataset=createLocationFormatCollection(time,endTime,countType,groupLocationParameters, groupFormatParameters,unit);
+				DefaultCategoryDataset dataset=createLocationFormatCollection(time,endTime,countType,groupLocationParameters, groupFormatParameters,unit,chartType);
 				chart=createLocationFormatChart(dataset,unit);
 				
 			}else if(chartType.equals("3")){
 				
 				//show location-format chart
-				DefaultCategoryDataset dataset=createFormatLocationCollection(time,endTime,countType,groupLocationParameters, groupFormatParameters,unit);
+				DefaultCategoryDataset dataset=createLocationFormatCollection(time,endTime,countType,groupLocationParameters, groupFormatParameters,unit,chartType);
 				chart=createLocationFormatChart(dataset,unit);
 							
 			}
@@ -158,6 +158,7 @@ public class ChartRenderer extends HttpServlet {
 		doGet(request, response);
 	}
 
+	//for time chart
 	private TimeSeriesCollection createTimeCollection(String granularity, String startTime, String endTime, String sumOrAvg, String groupParameters,String unit){
 		
 		//time series containing all data
@@ -409,9 +410,14 @@ public class ChartRenderer extends HttpServlet {
 
 	}
 
-	private DefaultCategoryDataset createLocationFormatCollection(String startTime, String endTime, String sumOrAvg, String locationGroupParameters,String formatGroupParameters,String unit){
+	//for chart 2
+	private DefaultCategoryDataset createLocationFormatCollection(String startTime, String endTime, String sumOrAvg, String locationGroupParameters,String formatGroupParameters,String unit,String chartType){
 		//create collection to store data
 		DefaultCategoryDataset collection=new DefaultCategoryDataset();
+
+		if(!"2".equals(chartType)&&!"3".equals(chartType)){
+			return collection;
+		}
 		
 		//get location groups
 		locationGroupParameters=locationGroupParameters.replace("||", "splitHere");
@@ -433,7 +439,7 @@ public class ChartRenderer extends HttpServlet {
 				}
 
 				//get used plants
-				String plants=locationGroupParam.substring(locationGroupParam.indexOf("|")+1);
+//				String plants=locationGroupParam.substring(locationGroupParam.indexOf("|")+1);
 				
 				//prepare queryString
 				locationGroupParam=locationGroupParam.substring(0,locationGroupParam.indexOf("|"));
@@ -442,82 +448,126 @@ public class ChartRenderer extends HttpServlet {
 				
 				if(locationGroups[l].trim()!=""){
 					if("1".equals(unit)){
+						//query kWh
 						rs=SQL.queryToResultSet(
-								"select round(sum(value)*(SELECT round(sum(amount)/(SELECT sum(amount) FROM productiondata "
-								+ "inner join controlpoints on productiondata.controlpoint_id=controlpoints.controlpoints_id "
-								+ "WHERE measure_time >='"
+								"select round(sum(measures.value),4)from productiondata"
+								+ " inner join measures on measures.controlpoint_id=productiondata.controlpoint_id and measures.measure_time=productiondata.measure_time"
+								+ " where productiondata.measure_time >= '"
 								+ startTime
-								+ "' AND measure_time <'"
+								+ "' AND productiondata.measure_time < '"
 								+ endTime
-								+ "' AND plant_id in("
-								+ plants
-								+ ")),4)FROM productiondata WHERE measure_time >='"
-								+ startTime
-								+ "' AND measure_time <'"
-								+ endTime
-								+ "' AND controlpoint_id in("
+								+ "' AND measures.controlpoint_id in("
 								+ locationGroupParam
-								+ ") AND product_id in("
+								+ ") AND productiondata.product_id in("
 								+ formatGroupParam
-								+ ")),4)from measures "
-								+ "inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id "
-								+ "WHERE measure_time >='"
-								+ startTime
-								+ "' AND measure_time <'"
-								+ endTime
-								+ "' AND controlpoint_id in("
-								+ locationGroupParam
 								+ ")"
 								+ ";"
+
+								
+//								"select round(sum(value)*(SELECT round(sum(amount)/(SELECT sum(amount) FROM productiondata "
+//								+ "inner join controlpoints on productiondata.controlpoint_id=controlpoints.controlpoints_id "
+//								+ "WHERE measure_time >='"
+//								+ startTime
+//								+ "' AND measure_time <'"
+//								+ endTime
+//								+ "' AND plant_id in("
+//								+ plants
+//								+ ")),4)FROM productiondata WHERE measure_time >='"
+//								+ startTime
+//								+ "' AND measure_time <'"
+//								+ endTime
+//								+ "' AND controlpoint_id in("
+//								+ locationGroupParam
+//								+ ") AND product_id in("
+//								+ formatGroupParam
+//								+ ")),4)from measures "
+//								+ "inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id "
+//								+ "WHERE measure_time >='"
+//								+ startTime
+//								+ "' AND measure_time <'"
+//								+ endTime
+//								+ "' AND controlpoint_id in("
+//								+ locationGroupParam
+//								+ ")"
+//								+ ";"
 								);
 					}else if("2".equals(unit)){
+						//query kWh/TNF
 						rs=SQL.queryToResultSet(
-								"select round((sum(value)*(SELECT round(sum(amount)/(SELECT sum(amount) "
-								+ "FROM productiondata inner join controlpoints on productiondata.controlpoint_id=controlpoints.controlpoints_id WHERE measure_time >='"
+								
+								"select round(avg(measures.value/productiondata.amount),4)from productiondata"
+								+ " inner join measures on measures.controlpoint_id=productiondata.controlpoint_id and measures.measure_time=productiondata.measure_time"
+								+ " where productiondata.measure_time >= '"
 								+ startTime
-								+ "' AND measure_time <'"
+								+ "' AND productiondata.measure_time < '"
 								+ endTime
-								+ "' AND plant_id in("
-								+ plants
-								+ ")),4)FROM productiondata WHERE measure_time >='"
-								+ startTime
-								+ "' AND measure_time <'"
-								+ endTime
-								+ "' AND controlpoint_id in("
+								+ "' AND measures.controlpoint_id in("
 								+ locationGroupParam
-								+ ") AND product_id in("
+								+ ") AND productiondata.product_id in("
 								+ formatGroupParam
-								+ ")))/(select sum(amount) from productiondata inner join controlpoints on productiondata.controlpoint_id=controlpoints.controlpoints_id WHERE measure_time >='"
-								+ startTime
-								+ "' AND measure_time <'"
-								+ endTime
-								+ "'AND controlpoint_id in("
-								+ locationGroupParam
-								+ ")AND product_id in("
-								+ formatGroupParam
-								+ ")),4)from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id WHERE measure_time >='"
-								+ startTime
-								+ "' AND measure_time <'"
-								+ endTime
-								+ "' AND controlpoint_id in("
-								+ locationGroupParam
 								+ ")"
 								+ ";"
+								
+//								"select round((sum(value)*(SELECT round(sum(amount)/(SELECT sum(amount) "
+//								+ "FROM productiondata inner join controlpoints on productiondata.controlpoint_id=controlpoints.controlpoints_id WHERE measure_time >='"
+//								+ startTime
+//								+ "' AND measure_time <'"
+//								+ endTime
+//								+ "' AND plant_id in("
+//								+ plants
+//								+ ")),4)FROM productiondata WHERE measure_time >='"
+//								+ startTime
+//								+ "' AND measure_time <'"
+//								+ endTime
+//								+ "' AND controlpoint_id in("
+//								+ locationGroupParam
+//								+ ") AND product_id in("
+//								+ formatGroupParam
+//								+ ")))/(select sum(amount) from productiondata inner join controlpoints on productiondata.controlpoint_id=controlpoints.controlpoints_id WHERE measure_time >='"
+//								+ startTime
+//								+ "' AND measure_time <'"
+//								+ endTime
+//								+ "'AND controlpoint_id in("
+//								+ locationGroupParam
+//								+ ")AND product_id in("
+//								+ formatGroupParam
+//								+ ")),4)from measures inner join controlpoints on measures.controlpoint_id=controlpoints.controlpoints_id WHERE measure_time >='"
+//								+ startTime
+//								+ "' AND measure_time <'"
+//								+ endTime
+//								+ "' AND controlpoint_id in("
+//								+ locationGroupParam
+//								+ ")"
+//								+ ";"
 								);
 						
 					}else if("3".equals(unit)){
 						rs=SQL.queryToResultSet(
-								"select sum(amount) from productiondata "
-								+ "inner join controlpoints on productiondata.controlpoint_id=controlpoints.controlpoints_id "
-								+ "WHERE measure_time >='"
+								"select round(sum(productiondata.amount),4)from productiondata"
+								+ " inner join measures on measures.controlpoint_id=productiondata.controlpoint_id and measures.measure_time=productiondata.measure_time"
+								+ " where productiondata.measure_time >= '"
 								+ startTime
-								+ "' AND measure_time <'"
+								+ "' AND productiondata.measure_time < '"
 								+ endTime
-								+ "'AND controlpoint_id in("
+								+ "' AND measures.controlpoint_id in("
 								+ locationGroupParam
-								+ ")AND product_id in("
+								+ ") AND productiondata.product_id in("
 								+ formatGroupParam
-								+ ");"
+								+ ")"
+								+ ";"
+
+								
+//								"select sum(amount) from productiondata "
+//								+ "inner join controlpoints on productiondata.controlpoint_id=controlpoints.controlpoints_id "
+//								+ "WHERE measure_time >='"
+//								+ startTime
+//								+ "' AND measure_time <'"
+//								+ endTime
+//								+ "'AND controlpoint_id in("
+//								+ locationGroupParam
+//								+ ")AND product_id in("
+//								+ formatGroupParam
+//								+ ");"
 								);
 					}
 				}
@@ -525,7 +575,11 @@ public class ChartRenderer extends HttpServlet {
 					
 					try {
 						rs.next();
-						collection.addValue(rs.getDouble(1),formatGroupName,locationGroupName);
+						if("2".equals(chartType)){
+							collection.addValue(rs.getDouble(1),formatGroupName,locationGroupName);
+						}else if("3".equals(chartType)){
+							collection.addValue(rs.getDouble(1),locationGroupName,formatGroupName);							
+						}
 						rs.close();
 					} catch (SQLException e) {
 						e.printStackTrace();
@@ -536,7 +590,10 @@ public class ChartRenderer extends HttpServlet {
 		}
 		return collection;
 	}
-	
+
+	@SuppressWarnings("unused")
+	@Deprecated
+	//was for chart 3 -> added to createLocationFormatCollection
 	private DefaultCategoryDataset createFormatLocationCollection(String startTime, String endTime, String sumOrAvg, String locationGroupParameters,String formatGroupParameters,String unit){
 		DefaultCategoryDataset collection=new DefaultCategoryDataset();
 		locationGroupParameters=locationGroupParameters.replace("||", "splitHere");
@@ -552,7 +609,7 @@ public class ChartRenderer extends HttpServlet {
 			}
 
 			//get used plants
-			String plants=locationGroupParam.substring(locationGroupParam.indexOf("|")+1);
+//			String plants=locationGroupParam.substring(locationGroupParam.indexOf("|")+1);
 			
 			//prepare queryString
 			locationGroupParam=locationGroupParam.substring(0,locationGroupParam.indexOf("|"));
