@@ -16,9 +16,9 @@ public class Header {
 				"Charts"
 				+"</li></a>";
 		out+="<a href="+'"'+
-				"funktion3.jsp"
+				"forecast.jsp"
 				+'"'+"><li>"+
-				"Download"
+				"Forecast"
 				+"</li></a>";
 		out+="<a href="+'"'+
 				"setup.jsp"

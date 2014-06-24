@@ -435,17 +435,20 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 	
 			<div id="chart">
 				<%
+					int width=870-201-15;
+					int height=512;
 					if (chartType == 1) {
 				
 					session.setAttribute(sessionID,request);
-						
+				
 				%>
 				<!-- img src="../ChartRenderer?id=<%=sessionID %>"-->
-				<img src="../ChartRenderer?selectedChartType=<%=chartType%>&time=<%=startTime%>&endTime=<%=endTime%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupLocationParameters=<%out.println(ChartPreset.createLocationParameterString(request));%>&unit=<%out.println(unit); %>" /> 
+				
+				<img src="../ChartRenderer?w=<%=width%>&h=<%=height%>&selectedChartType=<%=chartType%>&startTime=<%=startTime%>&endTime=<%=endTime%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupLocationParameters=<%out.println(ChartPreset.createLocationParameterString(request));%>&unit=<%out.println(unit); %>" /> 
 				<%
 					}else if (chartType == 2||chartType == 3) {
 				%>
-				<img src="../ChartRenderer?selectedChartType=<%=chartType%>&time=<%=startTime%>&endTime=<%=endTime%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupLocationParameters=<%out.println(ChartPreset.createLocationParameterString(request));%>&groupFormatParameters=<%out.println(ChartPreset.createFormatParameterString(request));%>&unit=<%out.println(unit); %>" />
+				<img src="../ChartRenderer?w=<%=width%>&h=<%=height%>&selectedChartType=<%=chartType%>&startTime=<%=startTime%>&endTime=<%=endTime%>&timeGranularity=<%=timeGranularity%>&countType=<%=countType%>&groupLocationParameters=<%out.println(ChartPreset.createLocationParameterString(request));%>&groupFormatParameters=<%out.println(ChartPreset.createFormatParameterString(request));%>&unit=<%out.println(unit); %>" />
 				<%
 					}
 				%>
