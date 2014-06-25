@@ -108,6 +108,9 @@ public class PlanningPreset {
 	}
 
 	private static boolean checkIfStringIsNumber(String checkString){
+		if(checkString == null){
+			return false;
+		}
 		int numberOfSigns = 0;
 		for (int i = 0; i < checkString.length(); i++){
 			if(!(Character.isDigit(checkString.charAt(i)) || (checkString.charAt(i) == ',' || checkString.charAt(i) == '.'))){				
@@ -299,7 +302,7 @@ public class PlanningPreset {
 				if (rs.next()) {						
 					do{	
 						//if value is modified manually in input field and is a number
-						if(!isReset && checkIfStringIsNumber(currentRequest.getParameter(format + "X" + i)) && currentRequest.getParameter(format + "X" + i) != "" && currentRequest.getParameter(format + "X" + i) != null){
+						if(!isReset && currentRequest.getParameter(format + "X" + i) != null&& checkIfStringIsNumber(currentRequest.getParameter(format + "X" + i)) && currentRequest.getParameter(format + "X" + i) != "" ){
 							formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++)));
 							
 						}else{ //if value is empty in input field --> Value from Previous year
