@@ -126,11 +126,17 @@
 							<%out.println(PlanningPreset.LocationSelection(request));%>
 						</div>
 					</div>
-					
-					<input type="submit" id="showTable" value="Show"> 		
-					<input type="submit" name = "reset" id="reset" value="Reset"> 		
+					<div style="width: 400px; height: 200px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
+						<div id="groupSelection">
+						Saved Planning Data: <br>
+							<% out.println(PlanningPreset.getSavedPlannings()); %>
+							<input type="submit" value="Load"> 	
+						</div>
+					</div>
+					<input type="submit" value="Show"> 		
+					<input type="submit" name = "reset" value="Reset"> 		
 				
-				<input type="submit" id="downloadTable" value="Download table">	
+				<input type="submit" name ="saveInput" value="Save Planning Data">	
 			</div>
 
 			<div style="width: 850px; height: 380px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">

@@ -12,16 +12,19 @@ import javax.servlet.http.HttpServletRequest;
 
 public class PlanningPreset {
 	
-	private static String selectedPlant = null;
-	private static String selectedYear = null;
+	private static int selectedPlant = 0;
+	private static int selectedYear = 0;
 	private static int percentageChange = 0;
 	private static int selectedPrecision = 1;
-	private static ArrayList<ArrayList<Double>> valuesOfInputFields = new ArrayList<ArrayList<Double>>();
 	private static HttpServletRequest currentRequest = null;
 	private static boolean isReset = false;
-	
+	private static String loadedSave = null;
+	private static ArrayList<ArrayList<Double>> loadedData = new ArrayList<ArrayList<Double>>();
+
 	
 	public static void setValues(HttpServletRequest request){
+
+		
 		//Set isReset
 		if(request.getParameter("reset") != null){
 			isReset = true;
@@ -35,7 +38,12 @@ public class PlanningPreset {
 		//set Year
 		String checkedYear = request.getParameter("selectYear");
 		if(checkedYear != null){
-			selectedYear = checkedYear;
+			selectedYear = Integer.parseInt(checkedYear);
+		}
+		//set Plant
+		String checkedPlant = request.getParameter("plants");
+		if(checkedPlant != null){
+			selectedYear = Integer.parseInt(checkedYear);
 		}
 		
 		//set Precision
@@ -57,6 +65,29 @@ public class PlanningPreset {
 			}
 		}
 		
+		//if save Planning Data
+		if(request.getParameter("saveInput") != null){
+			saveValuesToDatabase();
+		}
+		
+		//if Load Data
+		if(request.getParameter("savedData") != null){
+			loadedSave = request.getParameter("savedData");
+			getSavedPlanningValues();
+			//get Percentage Change
+			ResultSet rs = SQL.queryToResultSet("SELECT global_value_percentage_change FROM planning_cockpit WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "';");
+			if(rs!=null){
+				try{
+					while (rs.next()) {	
+						System.out.println(stringNegativeNumberToDouble(rs.getString(1)));
+						percentageChange = (int)stringNegativeNumberToDouble(rs.getString(1));
+					}
+				} catch (SQLException e) {
+					System.err.println("SQL Exception when querying Data from planning_cockpit");
+					e.printStackTrace();
+				}
+			}	
+		}
 		
 	}
 		
@@ -66,10 +97,10 @@ public class PlanningPreset {
 		String out = "";		
 		String checkedPlants = request.getParameter("plants");
 		if(checkedPlants != null){
-			selectedPlant = checkedPlants;
+			selectedPlant = Integer.parseInt(checkedPlants);
 		}		
 		for(int i = 1; i<plants.size();i++){		
-			out+= "<input type=\"radio\" name=\"plants\" value=\"" + plants.get(i).get(0) + "\"" + ((plants.get(i).get(0).equals(selectedPlant))?" checked" : "") + "> " + plants.get(i).get(1) + "<br>";		
+			out+= "<input type=\"radio\" name=\"plants\" value=\"" + plants.get(i).get(0) + "\"" + ((plants.get(i).get(0).equals(Integer.toString(selectedPlant)))?" checked" : "") + "> " + plants.get(i).get(1) + "<br>";		
 		}
 		return out;
 	}
@@ -146,8 +177,54 @@ public class PlanningPreset {
 		return result;
 	}	
 	
+	public static String getPlantNameFromID(int plantID) throws SQLException{
+		String result = "";
+		ResultSet rs = SQL.queryToResultSet("SELECT plant_name FROM plants WHERE plants_id = '" + plantID + "';");
+		if(rs!=null){
+			try{
+				while (rs.next()) {						
+					result += rs.getString(1);			
+				}
+			} catch (SQLException e) {
+				System.err.println("SQL Exception when geting ProductNameFromID");
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}	
+	
+	private static double stringNumberToDouble(String value){
+		Double result = 0.0;
+		if(value.contains(",")){
+			NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
+			try {
+				result = modifyIfNegativeValueToZero(roundToDigits((nf_in.parse(value)).doubleValue()));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}else{
+			result = modifyIfNegativeValueToZero(roundToDigits(Double.parseDouble(value)));
+		}		
+		return result;
+	}	
+	
+	private static double stringNegativeNumberToDouble(String value){
+		Double result = 0.0;
+		if(value.contains(",")){
+			NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
+			try {
+				result = roundToDigits((nf_in.parse(value)).doubleValue());
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}else{
+			result = roundToDigits(Double.parseDouble(value));
+		}		
+		return result;
+	}
+	
 	private static ArrayList<Double> getFormatYearValues(int year, int plantID, int format, int globalPercentageChange){
-		NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
+
 		String startTime = year + ".01.01 00:00:00";
 		String endTime = (year+1) + ".01.01 00:00:00";
 		ResultSet rs = null;		
@@ -180,7 +257,7 @@ public class PlanningPreset {
 			finally{
 				
 			}
-		ArrayList<Double> prevYearValues = new ArrayList<Double>();
+		ArrayList<Double> formatYearValues = new ArrayList<Double>();
 		if(globalPercentageChange < -100){
 			globalPercentageChange = -100;
 		}
@@ -188,32 +265,28 @@ public class PlanningPreset {
 		int i = 3;
 		if(rs!=null){
 			try{	
-				prevYearValues.add(0,(double)year);
-				prevYearValues.add(1,(double)plantID);
-				prevYearValues.add(2,(double)format);
+				formatYearValues.add(0,(double)year);
+				formatYearValues.add(1,(double)plantID);
+				formatYearValues.add(2,(double)format);
 				if (rs.next()) {						
 					do{	
+
+
 						//if value is modified manually in input field
 						if(!isReset && currentRequest.getParameter(format + "X" + i) != "" && currentRequest.getParameter(format + "X" + i) != null){
-//							prevYearValues.add(i,roundToDigits(Double.parseDouble(currentRequest.getParameter(format + "X" + i++))));
-							try {
-								prevYearValues.add(i,modifyIfNegativeValueToZero(roundToDigits((nf_in.parse(currentRequest.getParameter(format + "X" + i++))).doubleValue())));
-							} catch (ParseException e) {
-								prevYearValues.add(i,modifyIfNegativeValueToZero(roundToDigits(Double.parseDouble(currentRequest.getParameter(format + "X" + i++)))));
-								e.printStackTrace();
-							}
+							formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++)));
 							
 						}else{ //if value is empty in input field --> Value from Previous year
-							prevYearValues.add(i++,roundToDigits(rs.getDouble(1)*globalPercentageFactor));	
+							formatYearValues.add(i++,roundToDigits(rs.getDouble(1)*globalPercentageFactor));	
 						}
 					}while(rs.next());
 					
 				}else{ //fill ArrayList with 0.0 if values are not available 
 					while(i<15){
-						prevYearValues.add(i++,0.0);
+						formatYearValues.add(i++,0.0);
 					}
 					if (format == 4){
-						for (int j = 0; j<  prevYearValues.size();j++){
+						for (int j = 0; j<  formatYearValues.size();j++){
 						}
 					}
 				}
@@ -223,7 +296,7 @@ public class PlanningPreset {
 			}
 		
 		}
-		return prevYearValues;
+		return formatYearValues;
 	}	
 		
 	private static ArrayList<ArrayList<Double>> getPlanningData (int year, int plant, int globalPercentageChange){
@@ -261,7 +334,7 @@ public class PlanningPreset {
 		String out = " ";
 		
 		//First Row with titles
-		if(selectedPlant != null && selectedYear != null){
+		if(selectedPlant != 0 && selectedYear != 0){
 			out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
 			out += "<tr>";
 			out += "<td style=\"word-break:break-all;word-wrap:break-word\" > Format </td>";
@@ -277,7 +350,7 @@ public class PlanningPreset {
 			out += "</tr>";
 			
 		//Rows per Format with values
-			ArrayList<ArrayList<Double>> allData = getPlanningData(Integer.parseInt(selectedYear), Integer.parseInt(selectedPlant), percentageChange);
+			ArrayList<ArrayList<Double>> allData = getPlanningData(selectedYear, selectedPlant, percentageChange);
 			for(int i = 0; i < allData.size() ;i++){
 				ArrayList<Double> tempValueList = allData.get(i);
 				if(tempValueList.get(15) != 0.0){	//display only Rows, where at least one value is available (Sum>0)
@@ -293,9 +366,13 @@ public class PlanningPreset {
 						e.printStackTrace();
 					}
 					for(int j = 3; j < tempValueList.size(); j++){
+						
 						//change color of displayed value
 						String colorOfValue = "\"";
-						if(!isReset && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && j+1 < tempValueList.size()){
+						if(!isReset 
+								&& currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null 
+								&& currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" 
+								&& j+1 < tempValueList.size()){
 							colorOfValue = "; color: red\"";
 						}else if(percentageChange!= 0 && j+1 < tempValueList.size()){
 							colorOfValue = "; color: orange\"";
@@ -309,13 +386,15 @@ public class PlanningPreset {
 							out += "</br><input type=\"text\" ";
 							out += "name = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
 							out += "size=\"1\" maxlength=\"3\"";
-							if((!isReset) && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
+							if((loadedSave == null)&&(!isReset) && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
 								out+= " value = \"" + currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) + "\"";
 							}
-							out += "></td>";
-						}
-					}
-					
+							if(loadedSave != null && loadedData.get(i).get(j) >= 0.0){
+								out+= " value = \"" + loadedData.get(i).get(j) + "\"";
+							}
+							out += "></td>";							
+						}						
+					}					
 					out += "</tr>";
 				}
 			}
@@ -334,6 +413,7 @@ public class PlanningPreset {
 			
 			out+="</tr>";
 		}	
+		loadedSave = null;
 		return out;
 	}
 	
@@ -347,4 +427,120 @@ public class PlanningPreset {
 		return out;
 	}
 
+	private static void saveValuesToDatabase(){
+	//Modify Cockpit
+		//check if planning data to year/plant already exists
+		ResultSet rs = null;
+		String check = "SELECT * FROM planning_cockpit WHERE planning_year = '" + selectedYear 
+				+ "' AND plant_id = '" + selectedPlant + "';";
+		rs = SQL.queryToResultSet(check);
+		System.out.println("Check: " + check);
+		String delCockpit= "DELETE FROM planning_cockpit WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "';";;
+		String query = "";
+		try {
+			if(rs!=null && rs.next()){ //already exists -> update
+				query = "UPDATE planning_cockpit SET global_value_percentage_change = " + percentageChange + ", planning_created_on = 'now'  WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "'; ";
+				System.out.println(query);
+			}else{ //Planning doesn't exist yet -> Insert Into
+				query = "INSERT INTO planning_cockpit (planning_year, plant_id, global_value_percentage_change, planning_created_on) VALUES ('" + selectedYear + "', '" + selectedPlant + "', '" + percentageChange + "', 'now');";
+				System.out.println(query);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		SQL.execute(query);
+		
+	//Modify planning_values
+		//Delete old Planning Values
+		String delQuery = "DELETE FROM planning_values WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "';";
+		System.out.println("delQuery" + delQuery);
+		SQL.execute(delQuery);
+		
+		//Create ArrayList<ArrayList<Double>> with all values from the browser- input field
+		ArrayList<ArrayList<Double>> allInsertedData = new ArrayList<ArrayList<Double>>();
+		ArrayList<Integer> allFormats = getAllFormats();		
+		for (int i = 0; i<allFormats.size(); i++){
+			//Check if Format id displayed
+				if(currentRequest.getParameter(allFormats.get(i) + "X" + 3) != null){ 	
+					ArrayList<Double> tempValues = new ArrayList<Double>();
+					//Add format to first column of ArrayList
+					tempValues.add(0, (double)allFormats.get(i));
+					for(int j = 3; j<15;j++){
+						//Check if a value was entered into the input field, otherwise set the value to -3.0
+						Double tempDouble = currentRequest.getParameter(allFormats.get(i) + "X" + j) == ""? -3.0:Double.parseDouble(currentRequest.getParameter(allFormats.get(i) + "X" + j));
+						tempValues.add(j-2, tempDouble);
+					}
+					allInsertedData.add(i, tempValues);
+			}
+		}
+		
+		
+
+		//Insert Planning Values into Database
+		String queryValueInsertion = "INSERT INTO planning_values (planning_year, plant_id, product_id, m_1, m_2, m_3, m_4, m_5, m_6, m_7, m_8, m_9, m_10, m_11, m_12) VALUES";
+				
+		for (int i = 0; i<allInsertedData.size();i++){
+			queryValueInsertion += "('" + selectedYear + "', '" + selectedPlant + "'" + ", '" + allInsertedData.get(i).get(0) + "'";			
+			for (int j = 0; j<12;j++){
+				queryValueInsertion += ", '" + allInsertedData.get(i).get(j+1) + "'";
+			}
+			queryValueInsertion += i+1<allInsertedData.size()? ")," : ");" ;			
+		}
+		System.out.println("queryValueInsertion: " + queryValueInsertion);
+		SQL.execute(queryValueInsertion);
+	}
+
+	public static String getSavedPlannings(){
+		//Load Data from planning_cockpit into ArrayList
+		ArrayList<ArrayList<String>> planningCockpitData = new ArrayList<ArrayList<String>>();
+		ResultSet rs = SQL.queryToResultSet("SELECT * FROM planning_cockpit WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "';");		
+		if(rs!=null){
+			try{
+				while (rs.next() && rs.getString(1) != null) {	
+					ArrayList<String> tmpCockpitData = new ArrayList<String>();
+					for (int i = 0; i<4;i++){
+						tmpCockpitData.add(i, rs.getString(i+1));
+					}
+					planningCockpitData.add(tmpCockpitData);
+				}
+			} catch (SQLException e) {
+				System.err.println("SQL Exception when querying Data from planning_cockpit");
+				e.printStackTrace();
+			}
+		}		
+		
+		//Create Selection with saved Data		
+		String out = "";
+		for(int i = 0; i<planningCockpitData.size(); i++){
+			try {
+				out +=  "<input type=\"radio\" name=\"savedData\" value=\"" + planningCockpitData.get(i).get(0) + "X" + planningCockpitData.get(i).get(1)+ "\"> Year: " + planningCockpitData.get(i).get(0) + "; Plant: " + getPlantNameFromID(Integer.parseInt(planningCockpitData.get(i).get(1))) + "; Saved: " + planningCockpitData.get(i).get(3).substring(0,10)+"<br>";
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}		
+		return out;
+	}
+
+	private static void getSavedPlanningValues(){
+		//Get Data from Database
+		System.out.println("TESTPOINT: " + "SELECT * FROM planning_values WHERE planning_year = '" + loadedSave.substring(0,4) + "' AND plant_id = '" + loadedSave.substring(5) + "';");
+		ResultSet rs = SQL.queryToResultSet("SELECT * FROM planning_values WHERE planning_year = '" + loadedSave.substring(0,4) + "' AND plant_id = '" + loadedSave.substring(5) + "';");
+		if(rs!=null){
+			try{
+				int j = 0;
+				while (rs.next()) {	
+					ArrayList<Double> tmpLoadData = new ArrayList<Double>();
+					for (int i = 0; i<15;i++){
+						tmpLoadData.add(i, stringNegativeNumberToDouble(rs.getString(i+1)));
+					}
+					loadedData.add(j++,tmpLoadData);
+				}
+			} catch (SQLException e) {
+				System.err.println("SQL Exception when querying Data from planning_cockpit");
+				e.printStackTrace();
+			}
+		}	
+	}
 }
