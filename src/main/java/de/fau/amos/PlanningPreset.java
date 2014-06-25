@@ -23,10 +23,6 @@ public class PlanningPreset {
 
 	
 	public static void setValues(HttpServletRequest request){
-
-		
-
-		
 		//Set isReset
 		if(request.getParameter("reset") != null){
 			isReset = true;
@@ -109,6 +105,23 @@ public class PlanningPreset {
 			out+= "<input type=\"radio\" name=\"plants\" value=\"" + plants.get(i).get(0) + "\"" + ((plants.get(i).get(0).equals(Integer.toString(selectedPlant)))?" checked" : "") + "> " + plants.get(i).get(1) + "<br>";		
 		}
 		return out;
+	}
+
+	private static boolean checkIfStringIsNumber(String checkString){
+		int numberOfSigns = 0;
+		for (int i = 0; i < checkString.length(); i++){
+			if(!(Character.isDigit(checkString.charAt(i)) || (checkString.charAt(i) == ',' || checkString.charAt(i) == '.'))){				
+			return false;
+			}
+			//check amount of signs (, and .)
+			if((checkString.charAt(i) == ',' || checkString.charAt(i) == '.')){
+				numberOfSigns++;
+			}
+		}
+		if(numberOfSigns>1){
+			return false;
+		}
+		return true;
 	}
 	
 	private static Double roundToDigits(double value){
@@ -201,6 +214,15 @@ public class PlanningPreset {
 	
 	private static double stringNumberToDouble(String value){
 		Double result = 0.0;
+		//check if value only contains digits and ',' or '.'
+//		boolean isLetterinInput = false;
+//		for (int i = 0; i < value.length();i++){
+//			if(!(Character.isDigit(value.charAt(i)) || value.charAt(i) == ',' || value.charAt(i) == '.'));
+//			isLetterinInput=true;
+//		}
+//		if(isLetterinInput){
+////			value = "0.0";
+//		}
 		if(value.contains(",")){
 			NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
 			try {
@@ -231,8 +253,8 @@ public class PlanningPreset {
 	
 	private static ArrayList<Double> getFormatYearValues(int year, int plantID, int format, int globalPercentageChange){
 
-		String startTime = year + ".01.01 00:00:00";
-		String endTime = (year+1) + ".01.01 00:00:00";
+		String startTime = (year-1) + ".01.01 00:00:00";
+		String endTime = year + ".01.01 00:00:00";
 		ResultSet rs = null;		
 		try{		
 			
@@ -276,14 +298,17 @@ public class PlanningPreset {
 				formatYearValues.add(2,(double)format);
 				if (rs.next()) {						
 					do{	
-
-
-						//if value is modified manually in input field
-						if(!isReset && currentRequest.getParameter(format + "X" + i) != "" && currentRequest.getParameter(format + "X" + i) != null){
+						//if value is modified manually in input field and is a number
+						if(!isReset && checkIfStringIsNumber(currentRequest.getParameter(format + "X" + i)) && currentRequest.getParameter(format + "X" + i) != "" && currentRequest.getParameter(format + "X" + i) != null){
 							formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++)));
 							
 						}else{ //if value is empty in input field --> Value from Previous year
-							formatYearValues.add(i++,roundToDigits(rs.getDouble(1)*globalPercentageFactor));	
+							//check if month is correct, otherwise add 0.0
+							while((double)(i-2) < stringNumberToDouble(rs.getString(3).substring(5,7))){
+								formatYearValues.add(i++, 0.0);
+							}							
+							formatYearValues.add(i++,roundToDigits(rs.getDouble(1)*globalPercentageFactor));
+							
 						}
 					}while(rs.next());
 					
@@ -379,7 +404,7 @@ public class PlanningPreset {
 								&& currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null 
 								&& currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" 
 								&& j+1 < tempValueList.size()){
-							colorOfValue = "; color: red\"";
+							colorOfValue = "; color: yellow\"";
 						}else if(percentageChange!= 0 && j+1 < tempValueList.size()){
 							colorOfValue = "; color: orange\"";
 						}
@@ -392,7 +417,9 @@ public class PlanningPreset {
 							out += "</br><input type=\"text\" ";
 							out += "name = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
 							out += "size=\"1\" maxlength=\"5\"";
-							if((loadedSave == null)&&(!isReset) && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
+							
+						//insert values from request
+							if((loadedSave == null)&& checkIfStringIsNumber(currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j)) && (!isReset) && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
 								out+= " value = \"" + currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) + "\"";
 							}
 							if(loadedSave != null && loadedData.get(i).get(j) >= 0.0){
@@ -452,7 +479,6 @@ public class PlanningPreset {
 				+ "' AND plant_id = '" + selectedPlant + "';";
 		rs = SQL.queryToResultSet(check);
 		System.out.println("Check: " + check);
-		String delCockpit= "DELETE FROM planning_cockpit WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "';";;
 		String query = "";
 		try {
 			if(rs!=null && rs.next()){ //already exists -> update
