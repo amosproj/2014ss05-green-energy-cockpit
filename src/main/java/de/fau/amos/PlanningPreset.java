@@ -25,6 +25,8 @@ public class PlanningPreset {
 	public static void setValues(HttpServletRequest request){
 
 		
+
+		
 		//Set isReset
 		if(request.getParameter("reset") != null){
 			isReset = true;
@@ -79,7 +81,6 @@ public class PlanningPreset {
 			if(rs!=null){
 				try{
 					while (rs.next()) {	
-						System.out.println(stringNegativeNumberToDouble(rs.getString(1)));
 						percentageChange = (int)stringNegativeNumberToDouble(rs.getString(1));
 					}
 				} catch (SQLException e) {
@@ -87,6 +88,11 @@ public class PlanningPreset {
 					e.printStackTrace();
 				}
 			}	
+		}
+		
+		//if isDelete
+		if(request.getParameter("Delete") != null){
+			deleteSaveFromDB();
 		}
 		
 	}
@@ -385,7 +391,7 @@ public class PlanningPreset {
 						if(j+1 < tempValueList.size()){
 							out += "</br><input type=\"text\" ";
 							out += "name = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
-							out += "size=\"1\" maxlength=\"3\"";
+							out += "size=\"1\" maxlength=\"5\"";
 							if((loadedSave == null)&&(!isReset) && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
 								out+= " value = \"" + currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) + "\"";
 							}
@@ -427,8 +433,19 @@ public class PlanningPreset {
 		return out;
 	}
 
+	private static void deleteSaveFromDB(){
+		String query = "DELETE FROM planning_cockpit WHERE planning_year = '" + selectedYear 
+				+ "' AND plant_id = '" + selectedPlant + "';";
+		String query2 = "DELETE FROM planning_values WHERE planning_year = '" + selectedYear 
+				+ "' AND plant_id = '" + selectedPlant + "';";
+		System.out.println(query);
+		System.out.println(query2);
+		SQL.execute(query);
+		SQL.execute(query2);
+	}	
+	
 	private static void saveValuesToDatabase(){
-	//Modify Cockpit
+	//Modify planning_cockpit
 		//check if planning data to year/plant already exists
 		ResultSet rs = null;
 		String check = "SELECT * FROM planning_cockpit WHERE planning_year = '" + selectedYear 
@@ -439,7 +456,7 @@ public class PlanningPreset {
 		String query = "";
 		try {
 			if(rs!=null && rs.next()){ //already exists -> update
-				query = "UPDATE planning_cockpit SET global_value_percentage_change = " + percentageChange + ", planning_created_on = 'now'  WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "'; ";
+				query = "UPDATE planning_cockpit SET global_value_percentage_change = '" + percentageChange + "', planning_created_on = 'now'  WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "'; ";
 				System.out.println(query);
 			}else{ //Planning doesn't exist yet -> Insert Into
 				query = "INSERT INTO planning_cockpit (planning_year, plant_id, global_value_percentage_change, planning_created_on) VALUES ('" + selectedYear + "', '" + selectedPlant + "', '" + percentageChange + "', 'now');";
@@ -467,7 +484,7 @@ public class PlanningPreset {
 					tempValues.add(0, (double)allFormats.get(i));
 					for(int j = 3; j<15;j++){
 						//Check if a value was entered into the input field, otherwise set the value to -3.0
-						Double tempDouble = currentRequest.getParameter(allFormats.get(i) + "X" + j) == ""? -3.0:Double.parseDouble(currentRequest.getParameter(allFormats.get(i) + "X" + j));
+						Double tempDouble = currentRequest.getParameter(allFormats.get(i) + "X" + j) == ""? -3.0:stringNumberToDouble(currentRequest.getParameter(allFormats.get(i) + "X" + j));
 						tempValues.add(j-2, tempDouble);
 					}
 					allInsertedData.add(i, tempValues);

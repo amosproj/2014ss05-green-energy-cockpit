@@ -121,16 +121,16 @@
 					
 					
 							
-					<div style="width: 200px; height: 200px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
+					<div style="width: 200px; height: 150px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px ;">
 						<div id="groupSelection">
 							<%out.println(PlanningPreset.LocationSelection(request));%>
 						</div>
 					</div>
-					<div style="width: 400px; height: 200px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
+					<div style="width: 400px; height: 75px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
 						<div id="groupSelection">
 						Saved Planning Data: <br>
 							<% out.println(PlanningPreset.getSavedPlannings()); %>
-							<input type="submit" value="Load"> 	
+							<input type="submit" value="Load"><input type="submit" name = "Delete" value="Delete"> 	 	
 						</div>
 					</div>
 					<input type="submit" value="Show"> 		
