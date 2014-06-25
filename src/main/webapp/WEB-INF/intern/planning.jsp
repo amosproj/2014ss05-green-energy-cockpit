@@ -45,7 +45,7 @@
 </head>
 
 <body>
-
+	<% PlanningPreset.setValues(request); %>
 	<header>
 		<h1>AMOS PROJECT</h1>
 		<h2>Green Energy Cockpit</h2>
@@ -91,18 +91,52 @@
 							%>
 						</select>	
 						<div id="labelFrom" style="display: inline"> Percentage change:</div>
-						<input type="text" name="percentageChange" id="percentageChange" style="text-align: right">%				
-					</div>			
-					<div style="width: 200px; height: 200px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
+						<% 
+							out.println(PlanningPreset.getPercentageChange());	
+						%>
+									
+					</div>	
+					<div id="labelFrom" style="display: inline"> Precision:</div>
+						<% 
+						int precision = 1;
+							try {
+								precision = Integer.parseInt(request
+										.getParameter("selectedPrecision"));
+							} catch (NumberFormatException e) {
+								precision = 1;
+							} 
+						%>
+						<select name="selectedPrecision"  style="display: inline">
+							<%
+								for (int i = 1; i <= 3; i++) {
+									%>
+									<option value="<%=i%>"
+										<%out.print(((precision == i) ? " selected" : "") + "");%>><%=i%></option>
+									<%
+								}
+							%>
+						</select>	
+						</div>	
+					
+					
+					
+							
+					<div style="width: 200px; height: 150px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px ;">
 						<div id="groupSelection">
 							<%out.println(PlanningPreset.LocationSelection(request));%>
 						</div>
 					</div>
-					
-					<input type="submit" id="showTable" value="Show"> 		
-							
-				</form>
-				<input type="submit" id="downloadTable" value="Download table">	
+					<div style="width: 400px; height: 75px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
+						<div id="groupSelection">
+						Saved Planning Data: <br>
+							<% out.println(PlanningPreset.getSavedPlannings()); %>
+							<input type="submit" value="Load"><input type="submit" name = "Delete" value="Delete"> 	 	
+						</div>
+					</div>
+					<input type="submit" value="Show"> 		
+					<input type="submit" name = "reset" value="Reset"> 		
+				
+				<input type="submit" name ="saveInput" value="Save Planning Data">	
 			</div>
 
 			<div style="width: 850px; height: 380px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
@@ -110,7 +144,7 @@
 			<%						
 			out.println(PlanningPreset.getTable());				
 			%>
-
+			</form>
 
 			</div>
 			
