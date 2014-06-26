@@ -217,15 +217,9 @@ public class PlanningPreset {
 	
 	private static double stringNumberToDouble(String value){
 		Double result = 0.0;
-		//check if value only contains digits and ',' or '.'
-//		boolean isLetterinInput = false;
-//		for (int i = 0; i < value.length();i++){
-//			if(!(Character.isDigit(value.charAt(i)) || value.charAt(i) == ',' || value.charAt(i) == '.'));
-//			isLetterinInput=true;
-//		}
-//		if(isLetterinInput){
-////			value = "0.0";
-//		}
+		if (value == null){
+			return result;
+		}
 		if(value.contains(",")){
 			NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
 			try {
@@ -241,6 +235,9 @@ public class PlanningPreset {
 	
 	private static double stringNegativeNumberToDouble(String value){
 		Double result = 0.0;
+		if (value == null){
+			return result;
+		}
 		if(value.contains(",")){
 			NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
 			try {
@@ -259,20 +256,7 @@ public class PlanningPreset {
 		String startTime = (year-1) + ".01.01 00:00:00";
 		String endTime = year + ".01.01 00:00:00";
 		ResultSet rs = null;		
-		try{		
-			
-//			System.out.println("select sum(productiondata.amount), plant_id," 
-//		 			+ " date_trunc ('month', measure_time), product_id"
-//					+ " from controlpoints"
-//					+ " INNER JOIN productiondata"
-//					+ " ON controlpoints.controlpoints_id = productiondata.controlpoint_id"
-//					+ " where plant_id = " + plantID
-//					+ " AND product_id = " + format
-//					+ " AND measure_time >= '" + startTime
-//					+ "' AND measure_time < '" + endTime + "'"  
-//					+ " GROUP BY date_trunc, plant_id, product_id ORDER BY date_trunc asc;");
-			
-			
+		try{					
 			rs=SQL.queryToResultSet("select sum(productiondata.amount), plant_id," 
 		 			+ " date_trunc ('month', measure_time), product_id"
 					+ " from controlpoints"
@@ -347,17 +331,23 @@ public class PlanningPreset {
 			allPlanningDataList.add(i, valueList);		
 		}
 		
-		//add Sum of monthly values of Result (Column Total)
-		
+		//Add columns with conclusion values at the end of the table(Sum, avg kwh/TNF, kwh)
 		for (int i = 0; i < allPlanningDataList.size(); i++){
+			
+			//add Sum of monthly values of Result (Column Total)	
 			Double sumOfRowValues = 0.0;			
 			for (int j =3; j < allPlanningDataList.get(i).size() ; j++){
-					sumOfRowValues += allPlanningDataList.get(i).get(j);
-				
+					sumOfRowValues += allPlanningDataList.get(i).get(j);				
 			}
-
-			allPlanningDataList.get(i).add(roundToDigits(sumOfRowValues));
+			allPlanningDataList.get(i).add(15, roundToDigits(sumOfRowValues));
 			
+			//add  avg kwh/TNF
+			Double tmpAverageEnergyPerAmount = getAverageEnergyPerAmount(allPlanningDataList.get(i).get(2).intValue());
+			System.out.println("tmpAverageEnergyPerAmount = " + tmpAverageEnergyPerAmount);
+			allPlanningDataList.get(i).add(16, roundToDigits(tmpAverageEnergyPerAmount));
+			
+			//add kwh (= avg kwh/TNF * SUM)
+			allPlanningDataList.get(i).add(17, roundToDigits(tmpAverageEnergyPerAmount*sumOfRowValues));
 		}
 		return allPlanningDataList;
 	}
@@ -371,16 +361,16 @@ public class PlanningPreset {
 		if(selectedPlant != 0 && selectedYear != 0){
 			out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
 			out += "<tr>";
-			out += "<td style=\"word-break:break-all;word-wrap:break-word\" > Format </td>";
+			out += "<td style=\"word-break:break-all;word-wrap:break-word\" > </td>";
 			
 			for(int i=0;i<months.length-1;i++){
 				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
 				out += months[i];
-				out +="</td>";
+				out +="<br>[TNF]</td>";
 			}
-			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total</td>";
-			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG kwh/TNF</td>";
-			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >kwh Planning</td>";
+			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total<br>[TNF]</td>";
+			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG<br>[kWh/TNF]</td>";
+			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Energy<br>[kWh]</td>";
 			out += "</tr>";
 			
 		//Rows per Format with values
@@ -408,7 +398,7 @@ public class PlanningPreset {
 								&& currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" 
 								&& j+1 < tempValueList.size()){
 							colorOfValue = "; color: yellow\"";
-						}else if(percentageChange!= 0 && j+1 < tempValueList.size()){
+						}else if(percentageChange!= 0 && j+3 < tempValueList.size()){
 							colorOfValue = "; color: orange\"";
 						}
 						
@@ -416,7 +406,7 @@ public class PlanningPreset {
 						out += "<td style=\"word-break:break-all;word-wrap:break-word"  +colorOfValue + ">"+ tempValueList.get(j);
 						
 						//display input fields (only for monthly values)
-						if(j+1 < tempValueList.size()){
+						if(j+3 < tempValueList.size()){
 							out += "</br><input type=\"text\" ";
 							out += "name = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
 							out += "size=\"1\" maxlength=\"5\"";
@@ -425,11 +415,12 @@ public class PlanningPreset {
 							if((loadedSave == null)&& checkIfStringIsNumber(currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j)) && (!isReset) && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
 								out+= " value = \"" + currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) + "\"";
 							}
+						//if Data is loaded from saved query
 							if(loadedSave != null && loadedData.get(i).get(j) >= 0.0){
 								out+= " value = \"" + loadedData.get(i).get(j) + "\"";
 							}
 							out += "></td>";							
-						}						
+						}			
 					}					
 					out += "</tr>";
 				}
@@ -438,7 +429,7 @@ public class PlanningPreset {
 			out+="<tr>";
 			out+="<td>Sum</td>";
 			Double sumPerMonth;
-			for (int i = 3; i < 16;i++){
+			for (int i = 3; i < allData.get(0).size();i++){
 				sumPerMonth =  0.0;
 				for (int j = 0; j < allData.size();j++){
 					sumPerMonth += allData.get(j).get(i);
@@ -588,5 +579,49 @@ public class PlanningPreset {
 				e.printStackTrace();
 			}
 		}	
+	}
+
+	private static double getAverageEnergyPerAmount(int format){
+		Double result = 0.0;
+		//Query to DB
+		String startTime = (selectedYear-1) + ".01.01 00:00:00";
+		String endTime = selectedYear + ".01.01 00:00:00";
+		
+		System.out.println("select round(avg(measures.value/productiondata.amount),4) from productiondata"
+				+ " inner join measures on measures.controlpoint_id=productiondata.controlpoint_id and measures.measure_time=productiondata.measure_time"
+				+ " INNER JOIN controlpoints ON productiondata.controlpoint_id = controlpoints.controlpoints_id"
+				+ " where productiondata.measure_time >= '"
+				+ startTime
+				+ "' AND productiondata.measure_time < '"
+				+ endTime
+				+ "' AND plant_id in('"
+				+ selectedPlant
+				+ "') AND productiondata.product_id in('"
+				+ format
+				+ "')"
+				+ ";");
+
+		ResultSet rs = SQL.queryToResultSet("select round(avg(measures.value/productiondata.amount),4) from productiondata"
+		+ " inner join measures on measures.controlpoint_id=productiondata.controlpoint_id and measures.measure_time=productiondata.measure_time"
+		+ " INNER JOIN controlpoints ON productiondata.controlpoint_id = controlpoints.controlpoints_id"
+		+ " where productiondata.measure_time >= '"
+		+ startTime
+		+ "' AND productiondata.measure_time < '"
+		+ endTime
+		+ "' AND plant_id in('"
+		+ selectedPlant
+		+ "') AND productiondata.product_id in('"
+		+ format
+		+ "')"
+		+ ";");
+		
+		try {
+			while(rs.next()){
+				result = stringNumberToDouble(rs.getString(1));
+			}
+		} catch (SQLException e) {
+			System.err.println("Error at query to get average Kwh/TNF of format " + format + ". --> Set to 0.0");
+		}		
+		return result;
 	}
 }
