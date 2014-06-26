@@ -45,7 +45,7 @@
 </head>
 
 <body>
-	<% PlanningPreset.setValues(request); %>
+	<% PlanningPreset.setValues(request, session); %>
 	<header>
 		<h1>AMOS PROJECT</h1>
 		<h2>Green Energy Cockpit</h2>
@@ -126,7 +126,7 @@
 							<%out.println(PlanningPreset.LocationSelection(request));%>
 						</div>
 					</div>
-					<div style="width: 400px; height: 75px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
+					<div style="width: 600px; height: 75px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
 						<div id="groupSelection">
 						Saved Planning Data: <br>
 							<% out.println(PlanningPreset.getSavedPlannings()); %>
