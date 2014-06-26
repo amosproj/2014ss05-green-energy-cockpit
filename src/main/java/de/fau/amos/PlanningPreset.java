@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 public class PlanningPreset {
 	
@@ -17,12 +18,13 @@ public class PlanningPreset {
 	private static int percentageChange = 0;
 	private static int selectedPrecision = 1;
 	private static HttpServletRequest currentRequest = null;
+	private static HttpSession currentSession = null;
 	private static boolean isReset = false;
 	private static String loadedSave = null;
 	private static ArrayList<ArrayList<Double>> loadedData = new ArrayList<ArrayList<Double>>();
 
 	
-	public static void setValues(HttpServletRequest request){
+	public static void setValues(HttpServletRequest request, HttpSession session){
 		//Set isReset
 		if(request.getParameter("reset") != null){
 			isReset = true;
@@ -30,8 +32,9 @@ public class PlanningPreset {
 			isReset = false;
 		}
 		
-		//set current Request
+		//set current Request and Session
 		currentRequest = request;
+		currentSession = session;
 		
 		//set Year
 		String checkedYear = request.getParameter("selectYear");
@@ -73,7 +76,7 @@ public class PlanningPreset {
 			loadedSave = request.getParameter("savedData");
 			getSavedPlanningValues();
 			//get Percentage Change
-			ResultSet rs = SQL.queryToResultSet("SELECT global_value_percentage_change FROM planning_cockpit WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "';");
+			ResultSet rs = SQL.queryToResultSet("SELECT global_change FROM planning_cockpit WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "';");
 			if(rs!=null){
 				try{
 					while (rs.next()) {	
@@ -476,10 +479,10 @@ public class PlanningPreset {
 		String query = "";
 		try {
 			if(rs!=null && rs.next()){ //already exists -> update
-				query = "UPDATE planning_cockpit SET global_value_percentage_change = '" + percentageChange + "', planning_created_on = 'now'  WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "'; ";
+				query = "UPDATE planning_cockpit SET global_change = '" + percentageChange + "', planning_created_on = 'now', '" + currentSession.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME) + "'  WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "'; ";
 				System.out.println(query);
 			}else{ //Planning doesn't exist yet -> Insert Into
-				query = "INSERT INTO planning_cockpit (planning_year, plant_id, global_value_percentage_change, planning_created_on) VALUES ('" + selectedYear + "', '" + selectedPlant + "', '" + percentageChange + "', 'now');";
+				query = "INSERT INTO planning_cockpit (planning_year, plant_id, global_change, planning_created_on, saved_by_user) VALUES ('" + selectedYear + "', '" + selectedPlant + "', '" + percentageChange + "', 'now', '" + currentSession.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME) + "');";
 				System.out.println(query);
 			}
 		} catch (SQLException e) {
@@ -530,12 +533,12 @@ public class PlanningPreset {
 	public static String getSavedPlannings(){
 		//Load Data from planning_cockpit into ArrayList
 		ArrayList<ArrayList<String>> planningCockpitData = new ArrayList<ArrayList<String>>();
-		ResultSet rs = SQL.queryToResultSet("SELECT * FROM planning_cockpit WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "';");		
+		ResultSet rs = SQL.queryToResultSet("SELECT planning_year, plant_id, global_change, planning_created_on, saved_by_user  FROM planning_cockpit WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "';");		
 		if(rs!=null){
 			try{
 				while (rs.next() && rs.getString(1) != null) {	
 					ArrayList<String> tmpCockpitData = new ArrayList<String>();
-					for (int i = 0; i<4;i++){
+					for (int i = 0; i<5;i++){
 						tmpCockpitData.add(i, rs.getString(i+1));
 					}
 					planningCockpitData.add(tmpCockpitData);
@@ -550,7 +553,7 @@ public class PlanningPreset {
 		String out = "";
 		for(int i = 0; i<planningCockpitData.size(); i++){
 			try {
-				out +=  "<input type=\"radio\" name=\"savedData\" value=\"" + planningCockpitData.get(i).get(0) + "X" + planningCockpitData.get(i).get(1)+ "\"> Year: " + planningCockpitData.get(i).get(0) + "; Plant: " + getPlantNameFromID(Integer.parseInt(planningCockpitData.get(i).get(1))) + "; Saved: " + planningCockpitData.get(i).get(3).substring(0,10)+"<br>";
+				out +=  "<input type=\"radio\" name=\"savedData\" value=\"" + planningCockpitData.get(i).get(0) + "X" + planningCockpitData.get(i).get(1)+ "\"> Year: " + planningCockpitData.get(i).get(0) + "; Plant: " + getPlantNameFromID(Integer.parseInt(planningCockpitData.get(i).get(1))) + "; User: "+ planningCockpitData.get(i).get(4) + "; Saved: " + planningCockpitData.get(i).get(3).substring(0,10)+"<br>";
 			} catch (NumberFormatException e) {
 				e.printStackTrace();
 			} catch (SQLException e) {
