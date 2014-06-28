@@ -82,7 +82,7 @@
 						<div id="labelFrom" style="display: inline">Select a year:</div>
 						<select name="selectYear" id="selectYear" style="display: inline">
 							<%
-								for (int i = 2012; i <= 2014; i++) {
+								for (int i = 2012; i <= 2016; i++) {
 							%>
 							<option value="<%=i%>"
 								<%out.print(((selectedYear == i) ? " selected" : "") + "");%>><%=i%></option>
