@@ -10,7 +10,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import javax.imageio.ImageIO;
@@ -686,23 +688,99 @@ public class ChartRenderer extends HttpServlet {
 		double[] p={100,102,105,107,108,108.5,110,110.5,109,107,106,106.5};
 
 		TimeSeries planned=new TimeSeries("Planned");
-		for(int i=0;i<12;i++){
-			planned.add(new Month((i+1),year),p[i]);	
+		
+		String months="";
+		for(int i=1;i<=12;i++){
+			months+="sum(m_"+i+")";
+			if(i!=12){
+				months+=", ";
+			}
+		}
+		
+		
+		ResultSet rs=SQL.queryToResultSet(
+				
+				"select "+months+" from planning_values where planning_year='"
+						+ year+"' AND plant_id='"+plantId+"';"
+				);
+		
+		if(rs!=null){
+			try {
+				while(rs.next()){
+					for(int i=1;i<=12;i++){
+						planned.add(new Month((i),year),rs.getDouble(i));	
+					}
+					
+				}
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		collection.addSeries(planned);
 
 		TimeSeries is=new TimeSeries("Is");
-		for(int i=0;i<4;i++){
-			is.add(new Month((i+1),year),p[i]-(3+i*0.5));
+		int passedMonths=0;
+		double lastVal=0;
+		rs=SQL.queryToResultSet(
+				
+				"select * from (select round((select sum(am) from(select sum(amount)as am,date_trunc('month',measure_time)as zeit "
+				+ "from productiondata inner join controlpoints on productiondata.controlpoint_id=controlpoints.controlpoints_id "
+				+ "where productiondata.measure_time >= '"+year+"-01-01 00:00:00' AND productiondata.measure_time < '"+(year+1)+"-01-01 00:00:00' "
+				+ "AND reference_point='t' AND plant_id='"+plantId+"' group by measure_time)as wat where zeit=gruppenZeit group by zeit order by zeit),4), "
+				+ "gruppenZeit from(select sum(wert) as gruppenWert,control_point_name, zeit1 as gruppenZeit from("
+				+ "select sum(value)as wert,control_point_name,date_trunc('month',measure_time)as zeit1 from measures inner join controlpoints "
+				+ "on measures.controlpoint_id=controlpoints.controlpoints_id where measure_time >= '"+year+"-01-01 00:00:00' AND measure_time < '"
+				+ (year+1)+"-01-01 00:00:00' AND plant_id='"+plantId+"' group by measure_time,control_point_name)as data group by zeit1,control_point_name) "
+				+ "as groupedByTime group by gruppenZeit)as result order by gruppenZeit;"
+				);
+		if(rs!=null){
+			try {
+				while(rs.next()){
+					passedMonths++;
+					lastVal=rs.getDouble(1);
+					is.add(new Month((passedMonths),year),lastVal);				
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		collection.addSeries(is);
 
 		TimeSeries forecast=new TimeSeries("Forecast");
-		for(int i=3;i<12;i++){
-			forecast.add(new Month((i+1),year),p[i]-(3+i*0.5));
+		
+		if(passedMonths!=0){
+		
+			forecast.add(new Month(passedMonths,year),lastVal);
+		}
+		passedMonths++;
+		
+		double factor=calculateDifferenz(planned,is);
+		
+		for(int i=passedMonths;i<=12;i++){
+			forecast.add(new Month((i),year),planned.getValue(i-1).doubleValue()*factor);
 		}
 		collection.addSeries(forecast);
 		return collection;
+	}
+	
+	private double calculateDifferenz(TimeSeries planned,TimeSeries is){
+		double factor=0;
+		
+		int invalidValues=0;
+		for(int i=0;i<is.getItemCount();i++){
+			if(planned.getItemCount()>i&&planned.getValue(i).doubleValue()!=0){
+				factor+=is.getValue(i).doubleValue()/planned.getValue(i).doubleValue();
+			}else{
+				invalidValues++;
+			}
+		}
+		if(is.getItemCount()!=0&&is.getItemCount()-invalidValues!=0){
+				factor/=(is.getItemCount()-invalidValues);
+		}else{
+			factor=1;
+		}
+		return factor;
 	}
 
 	private JFreeChart createForecastChart(final TimeSeriesCollection collection, String time,String unit){

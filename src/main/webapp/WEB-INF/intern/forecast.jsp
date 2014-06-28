@@ -116,7 +116,7 @@
 						}
 						%>
 					</select>
-					
+					<!-- 
 					Depending on:
 					<select id="selectedMethod" name="selectedMethod" onChange="this.form.submit()">
 						<option value="0" <%out.print(((method == 0) ? " selected" : "") + "");%>>previous x months</option>
@@ -134,7 +134,7 @@
 						}
 						%>
 					</select>
-				
+				 -->
 					
 				</form>
 			</div>
