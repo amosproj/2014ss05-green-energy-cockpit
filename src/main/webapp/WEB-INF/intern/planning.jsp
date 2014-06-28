@@ -137,6 +137,7 @@
 					<input type="submit" name = "reset" value="Reset"> 		
 				
 				<input type="submit" name ="saveInput" value="Save Planning Data">	
+				<input type="submit" name ="showAllFormats" value = "Show All Formats">
 			</div>
 
 			<div style="width: 850px; height: 380px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">

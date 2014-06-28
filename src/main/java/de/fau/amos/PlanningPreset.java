@@ -20,12 +20,21 @@ public class PlanningPreset {
 	private static HttpServletRequest currentRequest = null;
 	private static HttpSession currentSession = null;
 	private static boolean isReset = false;
+	private static boolean isShowAllFormats = false;
 	private static String loadedSave = null;
 	private static ArrayList<ArrayList<Double>> loadedData = new ArrayList<ArrayList<Double>>();
 
 	
 	public static void setValues(HttpServletRequest request, HttpSession session){
-		//Set isReset
+		
+		//Set if showAllFormats was clicked
+		if(request.getParameter("showAllFormats") != null){
+			isShowAllFormats = true;
+		}else{
+			isShowAllFormats = false;
+		}
+		
+		//Set if isReset
 		if(request.getParameter("reset") != null){
 			isReset = true;
 		}else{
@@ -319,6 +328,14 @@ public class PlanningPreset {
 				}
 				//fill ArrayList with 0.0 if values are not available 
 					while(i<15){
+						
+						//check if value was inserted into input field (Only applies when Not a single panning value to the respective year, format and prod_id exists.
+						if(!isReset && currentRequest.getParameter(format + "X" + i) != null 
+								&& checkIfStringIsNumber(currentRequest.getParameter(format + "X" + i)) 
+								&& currentRequest.getParameter(format + "X" + i) != "" ){
+							formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++)));
+						}
+						//If not, add 0.0
 						formatYearValues.add(i++,0.0);
 					}
 					if (format == 4){
@@ -394,7 +411,7 @@ public class PlanningPreset {
 			ArrayList<ArrayList<Double>> allData = getPlanningData(selectedYear, selectedPlant, percentageChange);
 			for(int i = 0; i < allData.size() ;i++){
 				ArrayList<Double> tempValueList = allData.get(i);
-				if(tempValueList.get(15) != 0.0){	//display only Rows, where at least one value is available (Sum>0)
+				if(isShowAllFormats || tempValueList.get(15) != 0.0){	//display only Rows, where at least one value is available (Sum>0)
 					out += "<tr>";				
 					try {
 						out += "<td style=\"word-break:break-all;word-wrap:break-word\" >"+ getProductNameFromID(tempValueList.get(2).intValue());
@@ -426,7 +443,7 @@ public class PlanningPreset {
 						if(j+3 < tempValueList.size()){
 							out += "</br><input type=\"text\" ";
 							out += "name = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
-							out += "size=\"1\" maxlength=\"5\"";
+							out += "size=\"1\" maxlength=\"8\"";
 							
 						//insert values from request
 							if((loadedSave == null)&& checkIfStringIsNumber(currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j)) && (!isReset) && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
