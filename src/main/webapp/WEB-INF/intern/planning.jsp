@@ -121,25 +121,24 @@
 					
 					
 							
-					<div style="width: 200px; height: 150px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px ;">
+					<div style="width: 200px; height: 150px; float:left;margin:10px 25px 0px; overflow: auto; border-width: 1px; border-style: solid; border-color: black;border-radius:10px; padding: 5px ;">
 						<div id="groupSelection">
 							<%out.println(PlanningPreset.LocationSelection(request));%>
 						</div>
 					</div>
-					<div style="width: 600px; height: 75px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
+					<div style="width: 560px; height: 80px;margin-top:10px; overflow: auto; border-width: 1px; border-style: solid; border-color: black;border-radius:10px; padding: 5px;">
 						<div id="groupSelection">
-						Saved Planning Data: <br>
+							Saved Planning Data: <br>
 							<% out.println(PlanningPreset.getSavedPlannings()); %>
 							<input type="submit" value="Load"><input type="submit" name = "Delete" value="Delete"> 	 	
 						</div>
 					</div>
-					<input type="submit" value="Show"> 		
-					<input type="submit" name = "reset" value="Reset"> 		
-				
-				<input type="submit" name ="saveInput" value="Save Planning Data">	
+					<input class="buttonDesign" style="font-size:24px; margin:20px 143px 10px;" type="submit" value="Show"> 		
+					<input class="buttonDesign" style="margin:20px 5px 10px;" type="submit" name = "reset" value="Reset"> 					
+				    <input class="buttonDesign" style="margin:20px 5px 10px;" type="submit" name ="saveInput" value="Save Planning Data">	
 			</div>
 
-			<div style="width: 850px; height: 380px; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
+			<div style="width: 850px; height: 380px; overflow: auto; padding: 5px;padding-bottom:10px;">
 			
 			<%						
 			out.println(PlanningPreset.getTable());				

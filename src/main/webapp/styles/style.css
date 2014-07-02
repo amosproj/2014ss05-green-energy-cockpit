@@ -225,7 +225,8 @@ nav a{
 }
 .buttonDesign{
 	background-image:url(../images/background_image.fw.png);
-	border-radius: 3px;
+	border-radius: 10px;
 	color: white;
 	box-shadow: black 1px 1px 5px;
+	padding:7px;
 }
