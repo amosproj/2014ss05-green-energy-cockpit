@@ -1,6 +1,12 @@
 package de.fau.amos;
 
+import java.util.Calendar;
+
 public class TimestampConversion {
+	
+	public static String convertTimestamp(Calendar c){
+		return convertTimestamp(c.get(Calendar.MINUTE),c.get(Calendar.HOUR_OF_DAY),c.get(Calendar.DATE),c.get(Calendar.MONTH),c.get(Calendar.YEAR));
+	}
 	
 	public static String convertTimestamp(int minute,int hour,int day,int month,int year){
 		String strYear;
