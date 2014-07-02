@@ -82,7 +82,7 @@
 						<div id="labelFrom" style="display: inline">Select a year:</div>
 						<select name="selectYear" id="selectYear" style="display: inline">
 							<%
-								for (int i = 2012; i <= 2014; i++) {
+								for (int i = 2012; i <= 2016; i++) {
 							%>
 							<option value="<%=i%>"
 								<%out.print(((selectedYear == i) ? " selected" : "") + "");%>><%=i%></option>
@@ -133,12 +133,13 @@
 							<input type="submit" value="Load"><input type="submit" name = "Delete" value="Delete"> 	 	
 						</div>
 					</div>
-					<input class="buttonDesign" style="font-size:24px; margin:20px 143px 10px;" type="submit" value="Show"> 		
+					<input class="buttonDesign" style="font-size:24px; margin:20px 70px 10px;" type="submit" value="Show"> 		
 					<input class="buttonDesign" style="margin:20px 5px 10px;" type="submit" name = "reset" value="Reset"> 					
-				    <input class="buttonDesign" style="margin:20px 5px 10px;" type="submit" name ="saveInput" value="Save Planning Data">	
+				    <input class="buttonDesign" style="margin:20px 5px 10px;" type="submit" name ="saveInput" value="Save Planning Data">				
+					<input class="buttonDesign" style="margin:20px 5px 10px;" type="submit" name ="showAllFormats" value = "Show All Formats">
 			</div>
 
-			<div style="width: 850px; height: 380px; overflow: auto; padding: 5px;padding-bottom:10px;">
+			<div style="width: 850px; height: 430px; overflow: auto; padding: 5px;padding-bottom:10px;">
 			
 			<%						
 			out.println(PlanningPreset.getTable());				

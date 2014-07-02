@@ -20,12 +20,21 @@ public class PlanningPreset {
 	private static HttpServletRequest currentRequest = null;
 	private static HttpSession currentSession = null;
 	private static boolean isReset = false;
+	private static boolean isShowAllFormats = false;
 	private static String loadedSave = null;
 	private static ArrayList<ArrayList<Double>> loadedData = new ArrayList<ArrayList<Double>>();
 
 	
 	public static void setValues(HttpServletRequest request, HttpSession session){
-		//Set isReset
+		
+		//Set if showAllFormats was clicked
+		if(request.getParameter("showAllFormats") != null){
+			isShowAllFormats = true;
+		}else{
+			isShowAllFormats = false;
+		}
+		
+		//Set if isReset
 		if(request.getParameter("reset") != null){
 			isReset = true;
 		}else{
@@ -88,7 +97,7 @@ public class PlanningPreset {
 				}
 			}	
 		}
-		
+		System.out.println("LOADED Save:" + loadedSave);
 		//if isDelete
 		if(request.getParameter("Delete") != null){
 			deleteSaveFromDB();
@@ -239,6 +248,18 @@ public class PlanningPreset {
 		String endTime = year + ".01.01 00:00:00";
 		ResultSet rs = null;		
 		try{					
+			System.out.println("select sum(productiondata.amount), plant_id," 
+		 			+ " date_trunc ('month', measure_time), product_id"
+					+ " from controlpoints"
+					+ " INNER JOIN productiondata"
+					+ " ON controlpoints.controlpoints_id = productiondata.controlpoint_id"
+					+ " where plant_id = " + plantID
+					+ " AND product_id = " + format
+					+ " AND measure_time >= '" + startTime
+					+ "' AND measure_time < '" + endTime + "'"  
+					+ " GROUP BY date_trunc, plant_id, product_id ORDER BY date_trunc asc;");
+			
+			
 			rs=SQL.queryToResultSet("select sum(productiondata.amount), plant_id," 
 		 			+ " date_trunc ('month', measure_time), product_id"
 					+ " from controlpoints"
@@ -268,7 +289,9 @@ public class PlanningPreset {
 				if (rs.next()) {						
 					do{	
 						//if value is modified manually in input field and is a number
-						if(!isReset && currentRequest.getParameter(format + "X" + i) != null&& checkIfStringIsNumber(currentRequest.getParameter(format + "X" + i)) && currentRequest.getParameter(format + "X" + i) != "" ){
+						if(!isReset && currentRequest.getParameter(format + "X" + i) != null 
+								&& checkIfStringIsNumber(currentRequest.getParameter(format + "X" + i)) 
+								&& currentRequest.getParameter(format + "X" + i) != "" ){
 							formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++)));
 							
 						}else{ //if value is empty in input field --> Value from Previous year
@@ -281,15 +304,24 @@ public class PlanningPreset {
 						}
 					}while(rs.next());
 					
-				}else{ //fill ArrayList with 0.0 if values are not available 
+				}
+				//fill ArrayList with 0.0 if values are not available 
 					while(i<15){
+						
+						//check if value was inserted into input field (Only applies when Not a single panning value to the respective year, format and prod_id exists.
+						if(!isReset && currentRequest.getParameter(format + "X" + i) != null 
+								&& checkIfStringIsNumber(currentRequest.getParameter(format + "X" + i)) 
+								&& currentRequest.getParameter(format + "X" + i) != "" ){
+							formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++)));
+						}
+						//If not, add 0.0
 						formatYearValues.add(i++,0.0);
 					}
 					if (format == 4){
 						for (int j = 0; j<  formatYearValues.size();j++){
 						}
 					}
-				}
+				
 			}catch (SQLException e) {
 				System.err.println("SQL Exception at creation of Arraylist");
 				e.printStackTrace();
@@ -325,7 +357,6 @@ public class PlanningPreset {
 			
 			//add  avg kwh/TNF
 			Double tmpAverageEnergyPerAmount = getAverageEnergyPerAmount(allPlanningDataList.get(i).get(2).intValue());
-			System.out.println("tmpAverageEnergyPerAmount = " + tmpAverageEnergyPerAmount);
 			allPlanningDataList.get(i).add(16, roundToDigits(tmpAverageEnergyPerAmount));
 			
 			//add kwh (= avg kwh/TNF * SUM)
@@ -341,7 +372,7 @@ public class PlanningPreset {
 		
 		//First Row with titles
 		if(selectedPlant != 0 && selectedYear != 0){
-			out += "<div style=\"overflow-x:auto;margin:20px;\">";
+			out += "<div style=\"overflow-x:auto;margin:20px;height:370px;\">";
 			out += "<table style=\"border:1px solid black;border-radius:2px;\" cellpadding=\"7\" rules=\"all\" id= \"dataTable\" >";
 			out += "<tr>";
 			out += "<td style=\"word-break:keep-all\" > </td>";
@@ -360,7 +391,7 @@ public class PlanningPreset {
 			ArrayList<ArrayList<Double>> allData = getPlanningData(selectedYear, selectedPlant, percentageChange);
 			for(int i = 0; i < allData.size() ;i++){
 				ArrayList<Double> tempValueList = allData.get(i);
-				if(tempValueList.get(15) != 0.0){	//display only Rows, where at least one value is available (Sum>0)
+				if(isShowAllFormats || tempValueList.get(15) != 0.0){	//display only Rows, where at least one value is available (Sum>0)
 					out += "<tr>";				
 					try {
 						out += "<td style=\"word-break:keep-all\" ><b>"+ getProductNameFromID(tempValueList.get(2).intValue());
@@ -392,7 +423,7 @@ public class PlanningPreset {
 						if(j+3 < tempValueList.size()){
 							out += "</br><input type=\"text\" ";
 							out += "name = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
-							out += "size=\"1\" maxlength=\"5\"";
+							out += "size=\"1\" maxlength=\"8\"";
 							
 						//insert values from request
 							if((loadedSave == null)&& checkIfStringIsNumber(currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j)) && (!isReset) && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
@@ -441,8 +472,10 @@ public class PlanningPreset {
 	}
 
 	private static void deleteSaveFromDB(){
+		//Delete Information about saved planning data
 		String query = "DELETE FROM planning_cockpit WHERE planning_year = '" + selectedYear 
 				+ "' AND plant_id = '" + selectedPlant + "';";
+		//Delete values of saved planning data
 		String query2 = "DELETE FROM planning_values WHERE planning_year = '" + selectedYear 
 				+ "' AND plant_id = '" + selectedPlant + "';";
 		System.out.println(query);
@@ -536,7 +569,7 @@ public class PlanningPreset {
 		String out = "";
 		for(int i = 0; i<planningCockpitData.size(); i++){
 			try {
-				out +=  "<input type=\"radio\" name=\"savedData\" value=\"" + planningCockpitData.get(i).get(0) + "X" + planningCockpitData.get(i).get(1)+ "\"> Year: " + planningCockpitData.get(i).get(0) + "; Plant: " + getPlantNameFromID(Integer.parseInt(planningCockpitData.get(i).get(1))) + "; User: "+ planningCockpitData.get(i).get(4) + "; Saved: " + planningCockpitData.get(i).get(3).substring(0,10)+"<br>";
+				out +=  "<input type=\"radio\" name=\"savedData\" value=\"" + planningCockpitData.get(i).get(0) + "X" + planningCockpitData.get(i).get(1)+ planningCockpitData.get(i).get(3) + "\"> Year: " + planningCockpitData.get(i).get(0) + "; Plant: " + getPlantNameFromID(Integer.parseInt(planningCockpitData.get(i).get(1))) + "; User: "+ planningCockpitData.get(i).get(4) + "; Saved: " + planningCockpitData.get(i).get(3).substring(0,10)+"<br>";
 			} catch (NumberFormatException e) {
 				e.printStackTrace();
 			} catch (SQLException e) {
@@ -548,8 +581,7 @@ public class PlanningPreset {
 
 	private static void getSavedPlanningValues(){
 		//Get Data from Database
-		System.out.println("TESTPOINT: " + "SELECT * FROM planning_values WHERE planning_year = '" + loadedSave.substring(0,4) + "' AND plant_id = '" + loadedSave.substring(5) + "';");
-		ResultSet rs = SQL.queryToResultSet("SELECT * FROM planning_values WHERE planning_year = '" + loadedSave.substring(0,4) + "' AND plant_id = '" + loadedSave.substring(5) + "';");
+		ResultSet rs = SQL.queryToResultSet("SELECT * FROM planning_values WHERE planning_year = '" + loadedSave.substring(0,4) + "' AND plant_id = '" + loadedSave.substring(5,6) + "';");
 		if(rs!=null){
 			try{
 				int j = 0;
@@ -573,19 +605,19 @@ public class PlanningPreset {
 		String startTime = (selectedYear-1) + ".01.01 00:00:00";
 		String endTime = selectedYear + ".01.01 00:00:00";
 		
-		System.out.println("select round(avg(measures.value/productiondata.amount),4) from productiondata"
-				+ " inner join measures on measures.controlpoint_id=productiondata.controlpoint_id and measures.measure_time=productiondata.measure_time"
-				+ " INNER JOIN controlpoints ON productiondata.controlpoint_id = controlpoints.controlpoints_id"
-				+ " where productiondata.measure_time >= '"
-				+ startTime
-				+ "' AND productiondata.measure_time < '"
-				+ endTime
-				+ "' AND plant_id in('"
-				+ selectedPlant
-				+ "') AND productiondata.product_id in('"
-				+ format
-				+ "')"
-				+ ";");
+//		System.out.println("select round(avg(measures.value/productiondata.amount),4) from productiondata"
+//				+ " inner join measures on measures.controlpoint_id=productiondata.controlpoint_id and measures.measure_time=productiondata.measure_time"
+//				+ " INNER JOIN controlpoints ON productiondata.controlpoint_id = controlpoints.controlpoints_id"
+//				+ " where productiondata.measure_time >= '"
+//				+ startTime
+//				+ "' AND productiondata.measure_time < '"
+//				+ endTime
+//				+ "' AND plant_id in('"
+//				+ selectedPlant
+//				+ "') AND productiondata.product_id in('"
+//				+ format
+//				+ "')"
+//				+ ";");
 
 		ResultSet rs = SQL.queryToResultSet("select round(avg(measures.value/productiondata.amount),4) from productiondata"
 		+ " inner join measures on measures.controlpoint_id=productiondata.controlpoint_id and measures.measure_time=productiondata.measure_time"
