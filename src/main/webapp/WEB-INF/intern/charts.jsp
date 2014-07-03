@@ -22,7 +22,6 @@
 	pageEncoding="ISO-8859-1"%>
 <%@ page import="de.fau.amos.*"%>
 <%@ page import="java.util.*"%>
-
 <%
 	User.init(getServletConfig());
 
@@ -257,6 +256,13 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 				} catch (NumberFormatException e) {
 				}
 				
+				boolean generateBookmark=false;
+				String sBook=request.getParameter("generateBookmark");
+				if(sBook!=null&&sBook.equals("true")){
+					generateBookmark=true;
+					System.out.println("generate bookmark!!");
+				}
+				
 				String sessionID=request.getParameter("sessionID");
 				if(sessionID==null||sessionID.trim().length()==0){
 					do{
@@ -388,6 +394,18 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 
 					<input type="button" id="showChart" class="buttonDesign" value="Show" onclick="javascript:setValues();this.form.submit()">
 					
+					<input type="button" id="showChart" class="buttonDesign" value="Generate Bookmark" onclick="javascript:generateBookmarkFunc()">
+					<input type="hidden" id="generateBookmark" name="generateBookmark" value="false">
+					
+					<%
+					if(generateBookmark){
+						%>
+						<input type="text" name=generatedBookmark value="<%=BookmarkGenerator.createBookmark(request,(String)session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME)) %>" readonly>
+					<%
+					}
+					%>
+					
+					
 					<input type="hidden" name="numberOfLocationGroups" id="numberOfLocationGroups" value="<%=numberOfLocationGroups%>">
 					<div style="width: 200px; height: <%out.print(chartType==1?"500px":"244px"); %>; overflow: auto; border-width: 1px; border-style: solid; border-color: black; padding: 5px;">
 						<div id="groupSelection">
@@ -428,6 +446,10 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 			<script type="text/javascript">
 				function setValues() {
 					document.getElementById("double").value = 'true';
+				}
+				function generateBookmarkFunc(){
+					document.getElementById("generateBookmark").value='true';
+					document.forms["selectionForm"].submit();	
 				}
 			</script>
 	

@@ -96,11 +96,8 @@ public class PlanningPreset {
 					e.printStackTrace();
 				}
 			}	
-		}else{
-			loadedSave = null;
 		}
 		System.out.println("LOADED Save:" + loadedSave);
-		
 		//if isDelete
 		if(request.getParameter("Delete") != null){
 			deleteSaveFromDB();
@@ -152,22 +149,15 @@ public class PlanningPreset {
 			value = 0.0;
 		}
 		return value;
-	}
-		
-	public static ArrayList<String> getPlants(){
-		ArrayList<ArrayList<String>> p =SQL.query("SELECT plants_id,plant_name FROM plants ORDER BY plants_id;");
-		ArrayList<String> plants = new ArrayList<String>();
-		
-		for(int i = 1; i<p.size();i++){
-			plants.add(p.get(i).get(1));
-		}
-		return plants;
-	}
+	}		
 	
 	private static ArrayList<Integer> getAllFormats(){		
 		ArrayList<Integer> allFormatsList = new ArrayList<Integer>();
 		ResultSet rs = null;	
+		try{
 			rs = SQL.queryToResultSet("SELECT products_id from products;");
+		}
+		finally{}
 		if(rs!=null){
 			try{
 				while (rs.next()) {		
@@ -179,17 +169,6 @@ public class PlanningPreset {
 			}
 		}
 		return allFormatsList;
-	}
-	
-	public static ArrayList<String> getProductNames(){		
-		ArrayList<ArrayList<String>> pn = SQL.query("SELECT product_name FROM products;");
-		
-		ArrayList<String> products = new ArrayList<String>();
-		
-		for(int i=1; i<pn.size();i++){
-			products.add(pn.get(i).get(0));
-		}	
-		return products;
 	}
 
 	public static String getProductNameFromID(int productID) throws SQLException{
@@ -329,14 +308,17 @@ public class PlanningPreset {
 				//fill ArrayList with 0.0 if values are not available 
 					while(i<15){
 						
-						//check if value was inserted into input field (This section only applies when Not a single panning value to the respective year, format and prod_id exists.
+						//check if value was inserted into input field (Only applies when Not a single panning value to the respective year, format and prod_id exists.
 						if(!isReset && currentRequest.getParameter(format + "X" + i) != null 
 								&& checkIfStringIsNumber(currentRequest.getParameter(format + "X" + i)) 
 								&& currentRequest.getParameter(format + "X" + i) != "" ){
 							formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++)));
-						}else{
+						}
 						//If not, add 0.0
 						formatYearValues.add(i++,0.0);
+					}
+					if (format == 4){
+						for (int j = 0; j<  formatYearValues.size();j++){
 						}
 					}
 				
@@ -371,7 +353,6 @@ public class PlanningPreset {
 			for (int j =3; j < allPlanningDataList.get(i).size() ; j++){
 					sumOfRowValues += allPlanningDataList.get(i).get(j);				
 			}
-			System.out.println("SUM " + roundToDigits(sumOfRowValues));
 			allPlanningDataList.get(i).add(15, roundToDigits(sumOfRowValues));
 			
 			//add  avg kwh/TNF
@@ -385,50 +366,41 @@ public class PlanningPreset {
 	}
 
 	public static String getTable(){
-		//DEBUG
-		for (int i = 0; i<loadedData.size();i++){
-			for(int j = 0; j<loadedData.get(i).size(); j++){
-				System.out.println("Loaded Data: i=" + i + "; j= " + j + "; Value: " + loadedData.get(i).get(j));
-			}
-		}
 		
-		String[] months = new DateFormatSymbols(Locale.ENGLISH).getShortMonths();
+		String[] months = new DateFormatSymbols(Locale.ENGLISH).getMonths();
 		String out = " ";
 		
 		//First Row with titles
 		if(selectedPlant != 0 && selectedYear != 0){
-			out += "<table border cellpadding=\"3\" rules=\"all\" id= \"dataTable\" >";
+			out += "<div style=\"overflow-x:auto;margin:20px;height:370px;\">";
+			out += "<table style=\"border:1px solid black;border-radius:2px;\" cellpadding=\"7\" rules=\"all\" id= \"dataTable\" >";
 			out += "<tr>";
-			out += "<td style=\"word-break:break-all;word-wrap:break-word\" > </td>";
+			out += "<td style=\"word-break:keep-all\" > </td>";
 			
 			for(int i=0;i<months.length-1;i++){
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >";
+				out += "<td style=\"text-align:center;word-break:keep-all\" ><b>";
 				out += months[i];
-				out +="<br>[TNF]</td>";
+				out +="<br>[TNF]</b></td>";
 			}
-			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Total<br>[TNF]</td>";
-			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >AVG<br>[kWh/TNF]</td>";
-			out += "<td style=\"word-break:break-all;word-wrap:break-word\" >Energy<br>[kWh]</td>";
+			out += "<td style=\"text-align:center;word-break:keep-all\" ><b>Total<br>[TNF]</b></td>";
+			out += "<td style=\"text-align:center;word-break:keep-all\" ><b>AVG<br>[kWh/TNF]</b></td>";
+			out += "<td style=\"text-align:center;word-break:keep-all\" ><b>Energy<br>[kWh]</b></td>";
 			out += "</tr>";
 			
 		//Rows per Format with values
 			ArrayList<ArrayList<Double>> allData = getPlanningData(selectedYear, selectedPlant, percentageChange);
 			for(int i = 0; i < allData.size() ;i++){
 				ArrayList<Double> tempValueList = allData.get(i);
-				double tmpFormatNumber = -1;
-				if(loadedSave != null && i < loadedData.size()){
-					tmpFormatNumber = loadedData.get(i).get(2);
-				}
-				if(isShowAllFormats || tempValueList.get(15) != 0.0 || tmpFormatNumber == (double)i){	//display only Rows, where at least one value is available (Sum>0) OR of Formats that have been added manually due to lack of previous year values (of this respective format)
+				if(isShowAllFormats || tempValueList.get(15) != 0.0){	//display only Rows, where at least one value is available (Sum>0)
 					out += "<tr>";				
 					try {
-						out += "<td style=\"word-break:break-all;word-wrap:break-word\" >"+ getProductNameFromID(tempValueList.get(2).intValue());
-						//add percentage Sign to Format Field
+						out += "<td style=\"word-break:keep-all\" ><b>"+ getProductNameFromID(tempValueList.get(2).intValue());
+						//add percentage to Format Field
 						if(percentageChange != 0){
-							out += "</br>"+ (percentageChange>0?"+":"") + percentageChange + "%";
+							out += "</br>"+ (percentageChange>0?"+":"") + percentageChange + "%</b>";
 						}
 					} catch (SQLException e) {
-						out += "<td style=\"word-break:break-all;word-wrap:break-word\" >" + tempValueList.get(2).intValue();
+						out += "<td style=\"word-break:keep-all\" >" + tempValueList.get(2).intValue();
 						e.printStackTrace();
 					}
 					for(int j = 3; j < tempValueList.size(); j++){
@@ -445,7 +417,7 @@ public class PlanningPreset {
 						}
 						
 						//display value
-						out += "<td style=\"word-break:break-all;word-wrap:break-word"  +colorOfValue + ">"+ tempValueList.get(j);
+						out += "<td style=\"word-break:keep-all;text-align:center"  +colorOfValue + ">"+ tempValueList.get(j);
 						
 						//display input fields (only for monthly values)
 						if(j+3 < tempValueList.size()){
@@ -457,7 +429,7 @@ public class PlanningPreset {
 							if((loadedSave == null)&& checkIfStringIsNumber(currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j)) && (!isReset) && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
 								out+= " value = \"" + currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) + "\"";
 							}
-						//if Data is loaded from planning_value
+						//if Data is loaded from saved query
 							if(loadedSave != null && loadedData.get(i).get(j) >= 0.0){
 								out+= " value = \"" + loadedData.get(i).get(j) + "\"";
 							}
@@ -469,19 +441,21 @@ public class PlanningPreset {
 			}
 			//add Row with Sum Y-Values for each Month
 			out+="<tr>";
-			out+="<td>Sum</td>";
+			out+="<td style=\"word-break:keep-all;text-align:center\"><b>Sum</b></td>";
 			Double sumPerMonth;
-			if(allData.size()>0){
 			for (int i = 3; i < allData.get(0).size();i++){
 				sumPerMonth =  0.0;
 				for (int j = 0; j < allData.size();j++){
 					sumPerMonth += allData.get(j).get(i);
 				}
 				sumPerMonth = roundToDigits(sumPerMonth);
-				out += "<td style=\"word-break:break-all;word-wrap:break-word\" >"+ sumPerMonth + "</td>";
-			}}
+				out += "<td style=\"word-break:break-all;word-wrap:break-word;text-align:center\" >"+ sumPerMonth + "</td>";
+			}
 			
 			out+="</tr>";
+			out+="</table>";
+			out+="</div>";
+			
 		}	
 		loadedSave = null;
 		return out;
@@ -519,9 +493,8 @@ public class PlanningPreset {
 		rs = SQL.queryToResultSet(check);
 		System.out.println("Check: " + check);
 		String query = "";
-		if(rs!= null){
 		try {
-			if(rs.next()){ //already exists -> update
+			if(rs!=null && rs.next()){ //already exists -> update
 				query = "UPDATE planning_cockpit SET global_change = '" + percentageChange + "', planning_created_on = 'now', '" + currentSession.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME) + "'  WHERE planning_year = '" + selectedYear + "' AND plant_id = '" + selectedPlant + "'; ";
 				System.out.println(query);
 			}else{ //Planning doesn't exist yet -> Insert Into
@@ -530,7 +503,6 @@ public class PlanningPreset {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}
 		}
 		SQL.execute(query);
 		
@@ -632,6 +604,20 @@ public class PlanningPreset {
 		//Query to DB
 		String startTime = (selectedYear-1) + ".01.01 00:00:00";
 		String endTime = selectedYear + ".01.01 00:00:00";
+		
+//		System.out.println("select round(avg(measures.value/productiondata.amount),4) from productiondata"
+//				+ " inner join measures on measures.controlpoint_id=productiondata.controlpoint_id and measures.measure_time=productiondata.measure_time"
+//				+ " INNER JOIN controlpoints ON productiondata.controlpoint_id = controlpoints.controlpoints_id"
+//				+ " where productiondata.measure_time >= '"
+//				+ startTime
+//				+ "' AND productiondata.measure_time < '"
+//				+ endTime
+//				+ "' AND plant_id in('"
+//				+ selectedPlant
+//				+ "') AND productiondata.product_id in('"
+//				+ format
+//				+ "')"
+//				+ ";");
 
 		ResultSet rs = SQL.queryToResultSet("select round(avg(measures.value/productiondata.amount),4) from productiondata"
 		+ " inner join measures on measures.controlpoint_id=productiondata.controlpoint_id and measures.measure_time=productiondata.measure_time"
@@ -646,18 +632,14 @@ public class PlanningPreset {
 		+ format
 		+ "')"
 		+ ";");
-		if(rs != null){
-			try {
-
-				while (rs.next()) {
-					result = stringNumberToDouble(rs.getString(1));
-				}
-			} catch (SQLException e) {
-				System.err
-						.println("Error at query to get average Kwh/TNF of format "
-								+ format + ". --> Set to 0.0");
+		
+		try {
+			while(rs.next()){
+				result = stringNumberToDouble(rs.getString(1));
 			}
-		}
+		} catch (SQLException e) {
+			System.err.println("Error at query to get average Kwh/TNF of format " + format + ". --> Set to 0.0");
+		}		
 		return result;
 	}
 }
