@@ -10,9 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 
 import javax.imageio.ImageIO;
@@ -238,24 +236,24 @@ public class ChartRenderer extends HttpServlet {
 									Integer.parseInt(rs.getString(2).substring(8,10)),
 									Integer.parseInt(rs.getString(2).substring(5,7)),
 									Integer.parseInt(rs.getString(2).substring(0,4))
-									), rs.getDouble(1)/1000);					
+									), rs.getDouble(1));					
 							break;
 						case "day":
 							series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
 									Integer.parseInt(rs.getString(2).substring(5,7)),
 									Integer.parseInt(rs.getString(2).substring(0,4))
-									), rs.getDouble(1)/1000);					
+									), rs.getDouble(1));					
 							break;
 
 						case "month":
 							series.add(new Month(Integer.parseInt(rs.getString(2).substring(5,7)),
 									Integer.parseInt(rs.getString(2).substring(0,4))
-									), rs.getDouble(1)/1000);					
+									), rs.getDouble(1));					
 							break;
 
 						case "year":
 							series.add(new Year(Integer.parseInt(rs.getString(2).substring(0,4))
-									), rs.getDouble(1)/1000);					
+									), rs.getDouble(1));					
 							break;
 
 							//default: day
@@ -263,7 +261,7 @@ public class ChartRenderer extends HttpServlet {
 							series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
 									Integer.parseInt(rs.getString(2).substring(5,7)),
 									Integer.parseInt(rs.getString(2).substring(0,4))
-									), rs.getDouble(1)/1000);					
+									), rs.getDouble(1));					
 
 						}
 					}
@@ -685,9 +683,35 @@ public class ChartRenderer extends HttpServlet {
 
 		TimeSeriesCollection collection=new TimeSeriesCollection();
 
-		double[] p={100,102,105,107,108,108.5,110,110.5,109,107,106,106.5};
-
+		
+		/*
+		 * get planned tnf
+		 */
 		TimeSeries planned=new TimeSeries("Planned");
+		
+		double lastYearKwhPerTnf=0;
+		ResultSet rs=SQL.queryToResultSet(
+				"select round((select sum(value)from measures where date_trunc('year',measure_time)='"
+				+ (year-1)
+				+ "-1-1')/(select sum(amount)from productiondata "
+				+ "inner join controlpoints on productiondata.controlpoint_id=controlpoints.controlpoints_id "
+				+ "where date_trunc('year',measure_time)='"
+				+ (year-1)
+				+ "-1-1' AND plant_id='"
+				+ plantId
+				+ "'),4);"
+				);
+		
+		if(rs!=null){
+			try {
+				if(rs.next()){
+					lastYearKwhPerTnf=rs.getDouble(1);
+				}
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 		
 		String months="";
 		for(int i=1;i<=12;i++){
@@ -697,8 +721,7 @@ public class ChartRenderer extends HttpServlet {
 			}
 		}
 		
-		
-		ResultSet rs=SQL.queryToResultSet(
+		rs=SQL.queryToResultSet(
 				
 				"select "+months+" from planning_values where planning_year='"
 						+ year+"' AND plant_id='"+plantId+"';"
@@ -708,7 +731,7 @@ public class ChartRenderer extends HttpServlet {
 			try {
 				while(rs.next()){
 					for(int i=1;i<=12;i++){
-						planned.add(new Month((i),year),rs.getDouble(i));	
+						planned.add(new Month((i),year),rs.getDouble(i)/(lastYearKwhPerTnf!=0?lastYearKwhPerTnf:1));	
 					}
 					
 				}
@@ -738,7 +761,7 @@ public class ChartRenderer extends HttpServlet {
 			try {
 				while(rs.next()){
 					passedMonths++;
-					lastVal=rs.getDouble(1);
+					lastVal=rs.getDouble(1)/(lastYearKwhPerTnf!=0?lastYearKwhPerTnf:1);
 					is.add(new Month((passedMonths),year),lastVal);				
 				}
 			} catch (SQLException e) {
