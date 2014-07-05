@@ -11,13 +11,17 @@ public class BookmarkGenerator {
 	public static final String PAIR_SEPARATOR="<-##->";
 	public static final String KEY_SEPARATOR=">-##-<";
 	
-	
+	/**
+	 * created a bookmark and stores it in the database. Bookmark contains all needed request parameters to
+	 * call the requested page again with the given settings.
+	 * 
+	 * @param request original request that called the page the user wants to bookmark
+	 * @param username the username of the user bookmarking the page
+	 * @return bookmarkurl or "FAILED" if bookmarking failed
+	 */
 	public static String createBookmark(HttpServletRequest request,String username){
 		
-//		System.out.println("===========================");
-//		System.out.println("generate bookmark");
 		if(request==null){
-//			System.out.println("no request!");
 			return "FAILED";
 		}
 		
@@ -26,6 +30,8 @@ public class BookmarkGenerator {
 		Enumeration<String> en=request.getParameterNames();
 		while(en.hasMoreElements()){
 			String key=en.nextElement();
+			
+			//don't save parameter "generateBookmark", it's for generating the bookmark
 			if(!key.equals("generateBookmark")){
 //				System.out.println("["+key+"]: ["+request.getParameter(key)+"]");
 				params+=key+KEY_SEPARATOR+request.getParameter(key)+PAIR_SEPARATOR;
@@ -49,6 +55,7 @@ public class BookmarkGenerator {
 			link=link.substring(0,link.length()-1);
 		}
 		link+="/bookmark";
+		
 		//get id for bookmarklink
 		ArrayList<ArrayList<String>>arr=SQL.query("SELECT nextval('bookmarks_bookmarks_id_seq');");
 		if(arr==null){

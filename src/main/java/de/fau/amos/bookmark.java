@@ -31,11 +31,15 @@ public class bookmark extends HttpServlet {
 	}
 
 	/**
+	 * generates a dummy page with hidden inputs to build a request matching the bookmarked page and redirct to it
+	 * 
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String id=request.getParameter("id");
-		System.out.println("called bookmark with id "+id);
+//		System.out.println("called bookmark with id "+id);
+		
+		//if no id is passed redirect to startpage
 		if(id!=null&&id.length()>0){
 			ResultSet rs=SQL.queryToResultSet("SELECT * from bookmarks where bookmarks_id='"+id+"';");
 			
@@ -62,7 +66,9 @@ public class bookmark extends HttpServlet {
 					    //System.out.println("params String: "+params);
 					    String[] pairs=params.split(BookmarkGenerator.PAIR_SEPARATOR);
 					    for(int i=0;i<pairs.length;i++){
+					    	
 					    	//System.out.println("work with "+pairs[i]);
+					   
 					    	String[] keyValue=pairs[i].split(BookmarkGenerator.KEY_SEPARATOR);
 					    	//System.out.println("split to "+keyValue.length+" elements");
 					    	//for(int j=0;j<keyValue.length;j++){
