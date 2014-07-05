@@ -108,11 +108,17 @@
 						%>
 						<select name="selectedPrecision"  style="display: inline">
 							<%
-								for (int i = 1; i <= 3; i++) {
+								for (int i = -3; i <= 3 ; i++) {
+									if(i==-3 || i>0){
 									%>
+									
 									<option value="<%=i%>"
-										<%out.print(((precision == i) ? " selected" : "") + "");%>><%=i%></option>
+										<%
+
+										out.print(((precision == i) ? " selected" : "") + "");%>><%=i%></option>
+										
 									<%
+									}
 								}
 							%>
 						</select>	

@@ -23,9 +23,29 @@ public class PlanningPreset {
 	private static boolean isShowAllFormats = false;
 	private static String loadedSave = null;
 	private static ArrayList<ArrayList<Double>> loadedData = new ArrayList<ArrayList<Double>>();
+	private static ArrayList<Integer> allFormats = new ArrayList<Integer>();
 
 	
 	public static void setValues(HttpServletRequest request, HttpSession session){
+		
+		
+		//if isReset
+		if(request.getParameter("reset") != null){
+			isReset = true;
+			loadedData.clear();
+			selectedPlant = 0;
+			selectedYear = 0;
+			percentageChange = 0;
+			selectedPrecision = 1;
+			loadedSave = null;
+			isShowAllFormats = false;
+			loadedData.clear();
+		}else{
+			isReset = false;
+		}
+		
+		//Fill ArrayList with all Formats
+		allFormats = getAllFormats();
 		
 		//Set if showAllFormats was clicked
 		if(request.getParameter("showAllFormats") != null){
@@ -34,12 +54,7 @@ public class PlanningPreset {
 			isShowAllFormats = false;
 		}
 		
-		//Set if isReset
-		if(request.getParameter("reset") != null){
-			isReset = true;
-		}else{
-			isReset = false;
-		}
+
 		
 		//set current Request and Session
 		currentRequest = request;
@@ -89,15 +104,19 @@ public class PlanningPreset {
 			if(rs!=null){
 				try{
 					while (rs.next()) {	
-						percentageChange = (int)stringNegativeNumberToDouble(rs.getString(1));
+						percentageChange = (int)stringNegativeNumberToDouble(rs.getString(1),true);
 					}
 				} catch (SQLException e) {
 					System.err.println("SQL Exception when querying Data from planning_cockpit");
 					e.printStackTrace();
 				}
 			}	
+			System.out.println("LOADED Save:" + loadedSave);
+		}else{
+			loadedSave = null;
 		}
-		System.out.println("LOADED Save:" + loadedSave);
+
+		
 		//if isDelete
 		if(request.getParameter("Delete") != null){
 			deleteSaveFromDB();
@@ -119,6 +138,15 @@ public class PlanningPreset {
 		return out;
 	}
 
+	private static boolean checkIfFormatExistsInSave(double format){
+		for(int i = 0; i<loadedData.size(); i++){
+			if(loadedData.get(i).get(2) == format){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private static boolean checkIfStringIsNumber(String checkString){
 		if(checkString == null){
 			return false;
@@ -140,7 +168,16 @@ public class PlanningPreset {
 	}
 	
 	private static Double roundToDigits(double value){
-		double factor = Math.pow(10, selectedPrecision);
+		if(selectedPrecision > 0){
+			double factor = Math.pow(10, selectedPrecision);
+			return ((double)Math.round(value * factor)) / factor;
+		}else{
+			return ((double)Math.round(value/100)) / 10;
+		}
+	}
+	
+	private static Double roundToDigits(double value, boolean onlyRound){
+		double factor = Math.pow(10, selectedPrecision>0?selectedPrecision:1);
 		return ((double)Math.round(value * factor)) / factor;
 	}
 	
@@ -206,7 +243,7 @@ public class PlanningPreset {
 		return result;
 	}	
 	
-	private static double stringNumberToDouble(String value){
+	private static double stringNumberToDouble(String value, boolean onlyRound){
 		Double result = 0.0;
 		if (value == null){
 			return result;
@@ -214,31 +251,55 @@ public class PlanningPreset {
 		if(value.contains(",")){
 			NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
 			try {
-				result = modifyIfNegativeValueToZero(roundToDigits((nf_in.parse(value)).doubleValue()));
+				if(onlyRound){
+					result = modifyIfNegativeValueToZero(roundToDigits((nf_in.parse(value)).doubleValue(), true));
+				}else{
+					result = modifyIfNegativeValueToZero(roundToDigits((nf_in.parse(value)).doubleValue()));
+				}
+				
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
 		}else{
-			result = modifyIfNegativeValueToZero(roundToDigits(Double.parseDouble(value)));
+			if(onlyRound){
+				result = modifyIfNegativeValueToZero(roundToDigits(Double.parseDouble(value),true));
+			}else{
+				result = modifyIfNegativeValueToZero(roundToDigits(Double.parseDouble(value)));
+			}
 		}		
 		return result;
 	}	
 	
-	private static double stringNegativeNumberToDouble(String value){
+	private static double stringNegativeNumberToDouble(String value, boolean onlyRound){
 		Double result = 0.0;
 		if (value == null){
 			return result;
 		}
-		if(value.contains(",")){
-			NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
-			try {
-				result = roundToDigits((nf_in.parse(value)).doubleValue());
-			} catch (ParseException e) {
-				e.printStackTrace();
+		if(onlyRound){
+			if(value.contains(",")){
+				NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
+				try {
+					result = roundToDigits((nf_in.parse(value)).doubleValue(),true);
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+			}else{
+				result = roundToDigits(Double.parseDouble(value),true);
 			}
 		}else{
-			result = roundToDigits(Double.parseDouble(value));
-		}		
+			if(onlyRound){
+				if(value.contains(",")){
+					NumberFormat nf_in = NumberFormat.getNumberInstance(Locale.GERMANY);
+					try {
+						result = roundToDigits((nf_in.parse(value)).doubleValue());
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				}else{
+					result = roundToDigits(Double.parseDouble(value));
+				}
+			}
+		}
 		return result;
 	}
 	
@@ -292,11 +353,15 @@ public class PlanningPreset {
 						if(!isReset && currentRequest.getParameter(format + "X" + i) != null 
 								&& checkIfStringIsNumber(currentRequest.getParameter(format + "X" + i)) 
 								&& currentRequest.getParameter(format + "X" + i) != "" ){
-							formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++)));
-							
-						}else{ //if value is empty in input field --> Value from Previous year
+							if(selectedPrecision > 0){
+								formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++), false));
+							}else{
+								formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++), true));
+							}
+						//if value is empty in input field --> Value from Previous year
+						}else{ 
 							//check if month is correct, otherwise add 0.0
-							while((double)(i-2) < stringNumberToDouble(rs.getString(3).substring(5,7))){
+							while((double)(i-2) < stringNumberToDouble(rs.getString(3).substring(5,7),false)){
 								formatYearValues.add(i++, 0.0);
 							}							
 							formatYearValues.add(i++,roundToDigits(rs.getDouble(1)*globalPercentageFactor));
@@ -312,13 +377,14 @@ public class PlanningPreset {
 						if(!isReset && currentRequest.getParameter(format + "X" + i) != null 
 								&& checkIfStringIsNumber(currentRequest.getParameter(format + "X" + i)) 
 								&& currentRequest.getParameter(format + "X" + i) != "" ){
-							formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++)));
-						}
+							if(selectedPrecision > 0){
+								formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++), false));
+							}else{
+								formatYearValues.add(i,stringNumberToDouble(currentRequest.getParameter(format + "X" + i++), true));
+							}
+						}else{
 						//If not, add 0.0
 						formatYearValues.add(i++,0.0);
-					}
-					if (format == 4){
-						for (int j = 0; j<  formatYearValues.size();j++){
 						}
 					}
 				
@@ -336,7 +402,7 @@ public class PlanningPreset {
 
 		
 		//get all formats (product_id) and save in ArrayList
-		ArrayList<Integer> allFormatsList = getAllFormats();
+		ArrayList<Integer> allFormatsList = allFormats;
 		
 		//create for each Format an ArrayList with monthly values (plus year, plant, productID in first three cells)
 		for (int i = 0; i < allFormatsList.size();i++){
@@ -353,14 +419,14 @@ public class PlanningPreset {
 			for (int j =3; j < allPlanningDataList.get(i).size() ; j++){
 					sumOfRowValues += allPlanningDataList.get(i).get(j);				
 			}
-			allPlanningDataList.get(i).add(15, roundToDigits(sumOfRowValues));
+				allPlanningDataList.get(i).add(15, roundToDigits(sumOfRowValues, true));
 			
 			//add  avg kwh/TNF
 			Double tmpAverageEnergyPerAmount = getAverageEnergyPerAmount(allPlanningDataList.get(i).get(2).intValue());
-			allPlanningDataList.get(i).add(16, roundToDigits(tmpAverageEnergyPerAmount));
+				allPlanningDataList.get(i).add(16, roundToDigits(tmpAverageEnergyPerAmount, true));
 			
-			//add kwh (= avg kwh/TNF * SUM)
-			allPlanningDataList.get(i).add(17, roundToDigits(tmpAverageEnergyPerAmount*sumOfRowValues));
+			//add kwh (= avg kwh/TNF * SUM) 
+				allPlanningDataList.get(i).add(17, roundToDigits(tmpAverageEnergyPerAmount*sumOfRowValues, true));
 		}
 		return allPlanningDataList;
 	}
@@ -380,18 +446,20 @@ public class PlanningPreset {
 			for(int i=0;i<months.length-1;i++){
 				out += "<td style=\"text-align:center;word-break:keep-all\" ><b>";
 				out += months[i];
-				out +="<br>[TNF]</b></td>";
+				out +=selectedPrecision>=0?"<br>[TNF]</b></td>":"<br>[MNF]</b></td>";
 			}
-			out += "<td style=\"text-align:center;word-break:keep-all\" ><b>Total<br>[TNF]</b></td>";
-			out += "<td style=\"text-align:center;word-break:keep-all\" ><b>AVG<br>[kWh/TNF]</b></td>";
-			out += "<td style=\"text-align:center;word-break:keep-all\" ><b>Energy<br>[kWh]</b></td>";
+			out += "<td style=\"text-align:center;word-break:keep-all\" ><b>Total<br>" + (selectedPrecision==-3?"[MNF]</b></td>":"[TNF]</b></td>");
+			out += "<td style=\"text-align:center;word-break:keep-all\" ><b>AVG<br>"+ (selectedPrecision==-3?"[MWh/MNF]</b></td>":"[TNF/kWh]</b></td>");
+			out += "<td style=\"text-align:center;word-break:keep-all\" ><b>Energy<br>" + (selectedPrecision==-3?"[MWh]</b></td>":"[kWh]</b></td>");
 			out += "</tr>";
 			
 		//Rows per Format with values
 			ArrayList<ArrayList<Double>> allData = getPlanningData(selectedYear, selectedPlant, percentageChange);
 			for(int i = 0; i < allData.size() ;i++){
 				ArrayList<Double> tempValueList = allData.get(i);
-				if(isShowAllFormats || tempValueList.get(15) != 0.0){	//display only Rows, where at least one value is available (Sum>0)
+				
+				//display only Rows, where at least one value is available (Sum>0) OR Where values were saved to additional format when loading data
+				if(isShowAllFormats || tempValueList.get(15) != 0.0 || (loadedSave != null && checkIfFormatExistsInSave(tempValueList.get(2)))){	
 					out += "<tr>";				
 					try {
 						out += "<td style=\"word-break:keep-all\" ><b>"+ getProductNameFromID(tempValueList.get(2).intValue());
@@ -422,16 +490,25 @@ public class PlanningPreset {
 						//display input fields (only for monthly values)
 						if(j+3 < tempValueList.size()){
 							out += "</br><input type=\"text\" ";
-							out += "name = \"" + tempValueList.get(2).intValue() + "X" + j + "\" ";
+							out += "name = \"" + (tempValueList.get(2).intValue()) + "X" + j + "\" ";
 							out += "size=\"1\" maxlength=\"8\"";
 							
 						//insert values from request
 							if((loadedSave == null)&& checkIfStringIsNumber(currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j)) && (!isReset) && currentRequest != null && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) !="" && currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) != null){
-								out+= " value = \"" + currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j) + "\"";
+								out+= " value = \"" + (selectedPrecision == -3?stringNumberToDouble(currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j),true):currentRequest.getParameter(tempValueList.get(2).intValue() + "X" + j)) + "\"";
 							}
 						//if Data is loaded from saved query
-							if(loadedSave != null && loadedData.get(i).get(j) >= 0.0){
-								out+= " value = \"" + loadedData.get(i).get(j) + "\"";
+							if (loadedSave != null && checkIfFormatExistsInSave(tempValueList.get(2))){
+								//find format
+								int formatIndex = -1;
+								for(int counter = 0; counter < loadedData.size(); counter++){
+									if(loadedData.get(counter).get(2).equals(tempValueList.get(2))){
+										formatIndex = counter;
+									}
+								}
+								if (formatIndex >= 0 && loadedData.get(formatIndex).get(j) >0){
+									out+= " value = \"" + roundToDigits(loadedData.get(formatIndex).get(j)) + "\"";
+								}	
 							}
 							out += "></td>";							
 						}			
@@ -439,18 +516,28 @@ public class PlanningPreset {
 					out += "</tr>";
 				}
 			}
+			
 			//add Row with Sum Y-Values for each Month
 			out+="<tr>";
 			out+="<td style=\"word-break:keep-all;text-align:center\"><b>Sum</b></td>";
 			Double sumPerMonth;
+			Double avgKwh;
 			for (int i = 3; i < allData.get(0).size();i++){
-				sumPerMonth =  0.0;
-				for (int j = 0; j < allData.size();j++){
+				if(i == 16){
+					avgKwh = 0.0;
+					for (int j = 0; j < allData.size();j++){
+						avgKwh += allData.get(j).get(16);
+					}
+					out += "<td style=\"word-break:break-all;word-wrap:break-word;text-align:center\" > </td>";
+				}else{
+					sumPerMonth =  0.0;
+					for (int j = 0; j < allData.size();j++){
 					sumPerMonth += allData.get(j).get(i);
+					}
+					sumPerMonth = roundToDigits(sumPerMonth, true);
+					out += "<td style=\"word-break:break-all;word-wrap:break-word;text-align:center\" >"+ sumPerMonth + "</td>";
 				}
-				sumPerMonth = roundToDigits(sumPerMonth);
-				out += "<td style=\"word-break:break-all;word-wrap:break-word;text-align:center\" >"+ sumPerMonth + "</td>";
-			}
+				}
 			
 			out+="</tr>";
 			out+="</table>";
@@ -513,8 +600,7 @@ public class PlanningPreset {
 		SQL.execute(delQuery);
 		
 		//Create ArrayList<ArrayList<Double>> with all values from the browser- input field
-		ArrayList<ArrayList<Double>> allInsertedData = new ArrayList<ArrayList<Double>>();
-		ArrayList<Integer> allFormats = getAllFormats();		
+		ArrayList<ArrayList<Double>> allInsertedData = new ArrayList<ArrayList<Double>>();	
 		for (int i = 0; i<allFormats.size(); i++){
 			//Check if Format id displayed
 				if(currentRequest.getParameter(allFormats.get(i) + "X" + 3) != null){ 	
@@ -523,10 +609,10 @@ public class PlanningPreset {
 					tempValues.add(0, (double)allFormats.get(i));
 					for(int j = 3; j<15;j++){
 						//Check if a value was entered into the input field, otherwise set the value to -3.0
-						Double tempDouble = currentRequest.getParameter(allFormats.get(i) + "X" + j) == ""? -3.0:stringNumberToDouble(currentRequest.getParameter(allFormats.get(i) + "X" + j));
+						Double tempDouble = currentRequest.getParameter(allFormats.get(i) + "X" + j) == ""? -3.0:(selectedPrecision > 0? stringNumberToDouble(currentRequest.getParameter(allFormats.get(i) + "X" + j), true):stringNumberToDouble(currentRequest.getParameter(allFormats.get(i) + "X" + j), true)*1000);
 						tempValues.add(j-2, tempDouble);
 					}
-					allInsertedData.add(i, tempValues);
+					allInsertedData.add(tempValues);
 			}
 		}
 		
@@ -582,13 +668,19 @@ public class PlanningPreset {
 	private static void getSavedPlanningValues(){
 		//Get Data from Database
 		ResultSet rs = SQL.queryToResultSet("SELECT * FROM planning_values WHERE planning_year = '" + loadedSave.substring(0,4) + "' AND plant_id = '" + loadedSave.substring(5,6) + "';");
+		System.out.println("TESTPOINT1: " + "SELECT * FROM planning_values WHERE planning_year = '" + loadedSave.substring(0,4) + "' AND plant_id = '" + loadedSave.substring(5,6) + "';");
 		if(rs!=null){
 			try{
 				int j = 0;
 				while (rs.next()) {	
 					ArrayList<Double> tmpLoadData = new ArrayList<Double>();
 					for (int i = 0; i<15;i++){
-						tmpLoadData.add(i, stringNegativeNumberToDouble(rs.getString(i+1)));
+						//if precision is -3, do not change value of year, plant and format
+						if(selectedPrecision <0 && i<3){
+							tmpLoadData.add(i, stringNegativeNumberToDouble(rs.getString(i+1),true));
+						}else{
+							tmpLoadData.add(i, stringNegativeNumberToDouble(rs.getString(i+1),true));
+						}
 					}
 					loadedData.add(j++,tmpLoadData);
 				}
@@ -597,6 +689,12 @@ public class PlanningPreset {
 				e.printStackTrace();
 			}
 		}	
+		for(int x = 0; x< loadedData.size(); x++){
+			for(int y = 0; y< loadedData.get(x).size();y++){
+				System.out.print(loadedData.get(x).get(y) + "...");
+			}
+			System.out.println();
+		}
 	}
 
 	private static double getAverageEnergyPerAmount(int format){
@@ -635,7 +733,7 @@ public class PlanningPreset {
 		
 		try {
 			while(rs.next()){
-				result = stringNumberToDouble(rs.getString(1));
+				result = stringNumberToDouble(rs.getString(1),true);
 			}
 		} catch (SQLException e) {
 			System.err.println("Error at query to get average Kwh/TNF of format " + format + ". --> Set to 0.0");
