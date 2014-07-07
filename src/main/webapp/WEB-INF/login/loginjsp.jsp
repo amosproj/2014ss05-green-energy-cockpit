@@ -35,36 +35,38 @@
 </head>
 <body>
 <%  
-System.out.println("called login.jsp");
+
+//call User.exists with Username and password to check if user and password match
 int ret=User.exists(request.getParameter(Const.RequestParameters.LOGIN_USERNAME),request.getParameter(Const.RequestParameters.LOGIN_PASSWORD));
 switch(ret){
 case Const.UserReturns.SUCCESS:
+	//credentials valid -> reditrect to internal main-page
 	session.setAttribute(Const.SessionAttributs.LoginState.NAME,Const.SessionAttributs.LoginState.Valeus.LOGGED_IN);
 	session.setAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME,request.getParameter(Const.RequestParameters.LOGIN_USERNAME));
-	System.out.println("login successfull -> forward from login.jsp");
 
 	response.sendRedirect(request.getContextPath()+Const.URL.INTERN_HOME);
 	break;
 case Const.UserReturns.USERNAME_INVALID:
 case Const.UserReturns.USERNAME_UNKNOWN:
+	//username unknown -> redirect to loginpage
 	session.setAttribute(Const.SessionAttributs.LoginState.NAME,Const.SessionAttributs.LoginState.Valeus.USERNAME_UNKNOWN);
 	response.sendRedirect(request.getContextPath()+Const.URL.LOGIN_PAGE);
 	break;
 case Const.UserReturns.PASSWORD_INVALID:
 case Const.UserReturns.PASSWORD_WRONG:
+	//password wrong -> redirect to loginpage
 	session.setAttribute(Const.SessionAttributs.LoginState.NAME,Const.SessionAttributs.LoginState.Valeus.PASSWORD_WRONG);
 	response.sendRedirect(request.getContextPath()+Const.URL.LOGIN_PAGE);
 	break;
 case Const.UserReturns.FAILED:
+	//User.java can't check user name -> internal error -> redirect to loginpage
 	session.setAttribute(Const.SessionAttributs.LoginState.NAME,Const.SessionAttributs.LoginState.Valeus.FAILURE);
 	response.sendRedirect(request.getContextPath()+Const.URL.LOGIN_PAGE);
 	break;
 
 
 }
-out.println(""+User.exists(request.getParameter("username"),request.getParameter("password")));
 %>
 
-<%//session.setAttribute("loggedin","something"); %>
 </body>
 </html>

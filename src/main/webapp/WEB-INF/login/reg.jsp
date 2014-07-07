@@ -22,7 +22,6 @@
 <%@ page import="de.fau.amos.*"%>
 <!DOCTYPE html>
 <html>
-<%System.out.println("called regpage"); %>
 <%User.init(getServletConfig()); %>
 <head>
 <title>AMOS project 5 register page</title>
@@ -39,54 +38,77 @@
 	<div id="completeContentBox">
 
 	<% 
-		System.out.println("regjsp");
 		
 		session.removeAttribute(Const.SessionAttributs.LoginState.NAME);
 		
 		String username="";
+		
+		//registration is a multistepprogress -> need a variable to store current state
 		String regState=(String)session.getAttribute(Const.SessionAttributs.RegistrationState.NAME);
-		System.out.println("got regstate "+regState);
-		if(regState==null){ %>
+
+		if(regState==null){ 
+			//registration has not started -> introduce user
+		%>
 			<div id="welcomeMsgBox">
 				In order to get access to this site you need to be registred.
 			</div>
-	<%	}else if(regState.equals(""+Const.UserReturns.FAILED)){ %>
+		<%	
+		}else if(regState.equals(""+Const.UserReturns.FAILED)){ 
+			//registration failed -> inform user
+		%>
 			<div id="errorMsgBox">
 				Systemfailure! Contact Systemadministrator or try again		
 			</div>
-	<%	}else if(regState.equals(""+Const.UserReturns.USERNAME_EXISTS)){ %>
+		<%	
+		}else if(regState.equals(""+Const.UserReturns.USERNAME_EXISTS)){ 
+			//username allready in use, can't register user with this name
+		%>
 			<div id="errorMsgBox">
 				Username already in use!		
 			</div>
-	<%	}else if(regState.equals(""+Const.UserReturns.USERNAME_INVALID)){ %>
+		<%	
+		}else if(regState.equals(""+Const.UserReturns.USERNAME_INVALID)){ 
+			//username contains invalid characters
+		%>
 			<div id="errorMsgBox">
 				Username invalid! You may only use letters and numbers [a-z,A-Z,0-9]		
 			</div>
-	<%	}else if(regState.equals(""+Const.SessionAttributs.RegistrationState.PASSWORD_MISSMATCH)){ 
-			username=(String)session.getAttribute(Const.SessionAttributs.RegistrationUsername.NAME); %>
+		<%	
+		}else if(regState.equals(""+Const.SessionAttributs.RegistrationState.PASSWORD_MISSMATCH)){ 
+			username=(String)session.getAttribute(Const.SessionAttributs.RegistrationUsername.NAME); 
+			//passwordfields contain different passwords
+		%>
 			<div id="errorMsgBox">
 				Passwords don't match!		
 			</div>
-	<%	}else if(regState.equals(""+Const.UserReturns.SUCCESS)){ %>
+		<%
+		}else if(regState.equals(""+Const.UserReturns.SUCCESS)){ 
+			//registration complete -> inform user
+		%>
 			<div id="welcomeMsgBox">
 				Account successfully created! You can now go back and login		
 			</div>
-	<%	}else{ %>
+		<%	
+		}else{ 
+			//unknown step -> asume no steps were taken yet -> start with registrationinformation
+		%>
 			<div id="welcomeMsgBox">
 				In order to get access to this site you need to be registred.
 			</div>
-	<%	}
-		session.removeAttribute(Const.SessionAttributs.RegistrationUsername.NAME); %>
+		<%	
+		}
+		session.removeAttribute(Const.SessionAttributs.RegistrationUsername.NAME); 
+		%>
 
 		<div id="regBox">
 			Create a new Account. <br>
 			<form method="post" action="regJsp">
 				<fieldset>
-					<label for "regName">Name: </label>
+					<label for="<%= Const.RequestParameters.REGISTER_USERNAME %>">Name: </label>
 					<input type="text" name="<%= Const.RequestParameters.REGISTER_USERNAME %>" id="regName"><br>
-					<label for "regPassword">Password: </label>
+					<label for="<%= Const.RequestParameters.REGISTER_PASSWORD_1 %>">Password: </label>
 					<input type="password" name="<%= Const.RequestParameters.REGISTER_PASSWORD_1 %>" id="regPassword"><br>
-					<label for "regPassword2">Confirm Password: </label>
+					<label for="<%= Const.RequestParameters.REGISTER_PASSWORD_2 %>">Confirm Password: </label>
 					<input type="password" name="<%= Const.RequestParameters.REGISTER_PASSWORD_2 %>" id="regPassword2">
 				</fieldset>
 				<fieldset id= "RegisterButtonField">

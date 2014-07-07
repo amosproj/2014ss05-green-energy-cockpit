@@ -30,16 +30,26 @@
 
 <%
 
-System.out.println("called file "+request.getRequestURL());
+//this file is a nondisplayable webpage.
+//when called it forwards depending on the request call -> it's a handler
+
+
+System.out.println("[file.jsp]: called file with ["+request.getRequestURL()+"]");
 
 String pathinfo=request.getPathInfo();
 if(pathinfo==null){
+	//called file.jsp with no more information -> call invalid
 	response.sendRedirect(request.getContextPath());	
 }else if(pathinfo.startsWith("/upload")){
+	//want to upload something -> forward to FileUpload.java
+	//replace "upload" with "FileUpload" to get access to FileUpload and don't loose information
 	request.getRequestDispatcher("/FileUpload"+pathinfo.replace("/upload","")).forward(request,response);
 }else if(pathinfo.equals("/download")){
-	System.out.println("want to download");
+	//want to download something -> forward to FileDownload.java
 	request.getRequestDispatcher("/FileDownload").forward(request,response);
+}else{
+	//called file.jsp with invalid information
+	response.sendRedirect(request.getContextPath());
 }
 
 
