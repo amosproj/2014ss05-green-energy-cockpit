@@ -26,51 +26,53 @@
 <body>
 <%
 
-	System.out.println("called publicLogin "+request.getPathInfo());
+	//this page is a nondisplayable webpage.
+	//it is a handler for login
+
+	System.out.println("[login.jsp] called loginHandler ["+request.getPathInfo()+"]");
 
 	String pathInfo=request.getPathInfo();
 	if(pathInfo==null){
+		//no valid information -> redirect to main-page
 		response.sendRedirect(request.getContextPath());
 	}else if(pathInfo.equals("/reg")){		
+		//regstration handler
 		request.getRequestDispatcher(Const.URL.REGISTRTION_PAGE).forward(request,response);		
 	}else if(pathInfo.equals("/regJsp")){		
+		//registration frontend
 		request.getRequestDispatcher(Const.URL.REGISTRATION_JSP).forward(request,response);
 	}else if(pathInfo.equals("/change")){
-		
+		//change password hangler
+		//not implemented yet
 	}else if(pathInfo.equals("/changeJsp")){		
-		
+		//change password frontend
+		//not implemented yet
 	}else if(pathInfo.equals("/logout")){
-		System.out.println("logout");
+		//logout -> set session to "not being logged in" -> remove username from session -> redirect to main-page
 		session.removeAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME);
 		session.removeAttribute(Const.SessionAttributs.LoginState.NAME);
 		response.sendRedirect(request.getContextPath()+Const.URL.LOGIN_PAGE);
 	}else if(pathInfo.equals("/login")){
+		//user wants to login
 		
-		System.out.println("want to login");
 		//is a user logged in to this session?
 		if((Const.SessionAttributs.LoginState.Valeus.LOGGED_IN.equals(session.getAttribute(Const.SessionAttributs.LoginState.NAME)))
 			&&(request.getParameter(Const.RequestParameters.LOGIN_USERNAME).equals(session.getAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME)))){
-			//user is logged in -> can forward
-			//System.out.println("if1 (session valid) want to load "+request.getRequestURL());
-			System.out.println("allready logged in");
+			//user is allready logged in -> can forward to internal main-page
 			response.sendRedirect(request.getContextPath()+Const.URL.INTERN_HOME);
-			//request.getRequestDispatcher(request.getContextPath()+"/intern/forward").forward(request,response);
-				//request.getRequestDispatcher("/WEB-INF/intern"+forwardURL).forward(request,response);
 		}else{
 			//no user logged in
 			if(request.getParameter(Const.RequestParameters.COMING_FROM_LOGINPAGE)!=null){
 				//coming from loginPage -> forward to login.jsp
-				System.out.println("coming from index");
 				request.getRequestDispatcher(Const.URL.LOGIN_JSP).forward(request,response);
 			}else{
-				System.out.println("coming form nowhere");
+				//don't know from where the user called this page
+				
 				//forward to loginPage
 				session.removeAttribute(Const.SessionAttributs.LOGGED_IN_USERNAME);
 				session.removeAttribute(Const.SessionAttributs.LoginState.NAME);
 				request.getRequestDispatcher(request.getContextPath()+Const.URL.LOGIN_PAGE).forward(request,response);
 			}
-			
-			
 		}
 	}
 %>

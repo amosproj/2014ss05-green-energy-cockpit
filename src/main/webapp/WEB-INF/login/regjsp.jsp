@@ -30,10 +30,16 @@
 <body>
 
 <%
-	System.out.println("regjspjsp");
+	
+	//this file is a nondisplayable webpage.
+	//it is the registration handler
+	
+	//information about user that wants to register is stored in request
 	String user=request.getParameter(Const.RequestParameters.REGISTER_USERNAME);
 	String pwd1=request.getParameter(Const.RequestParameters.REGISTER_PASSWORD_1);
 	String pwd2=request.getParameter(Const.RequestParameters.REGISTER_PASSWORD_2);
+	
+	//passwords don't match -> redirect to registration frontend
 	if(pwd2==null||!pwd2.equals(pwd1)){
 		if(user==null){
 			user="";
@@ -42,7 +48,12 @@
 		session.setAttribute(Const.SessionAttributs.RegistrationState.NAME,""+Const.SessionAttributs.RegistrationState.PASSWORD_MISSMATCH);
 		request.getRequestDispatcher("reg.jsp").forward(request,response);	
 	}else{
+		
+		//User.java handels registration. Returnvalue of User.add can be used to get Information about success
 		int ret=User.add(user,pwd1);
+		
+		//redirect to registration frontend and pass returnvalue
+		//if username allready exists, send it, too
 		switch(ret){
 		case Const.UserReturns.USERNAME_EXISTS:
 			session.setAttribute(Const.SessionAttributs.RegistrationUsername.NAME,user);
@@ -52,7 +63,6 @@
 		case Const.UserReturns.USERNAME_INVALID:
 		case Const.UserReturns.SUCCESS:
 			session.setAttribute(Const.SessionAttributs.RegistrationState.NAME,""+ret);
-			System.out.println("set session to "+ret);
 			request.getRequestDispatcher("reg.jsp").forward(request,response);
 			break;
 		}	

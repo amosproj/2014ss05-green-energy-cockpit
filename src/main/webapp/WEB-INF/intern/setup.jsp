@@ -59,34 +59,42 @@
 		
 		
 			<script>
-	
 			$(document).ready(
+				//change setup for products or plants
 				function() {
-					$("#setupPlants").click(function() {		
+					$("#setupPlants").click(function() {
+						//clicked on "setup pants"
 						$("#plants").show();
 						$("#products").hide();
 					}),
 					$("#setupProducts").click(function() {		
+						//clicked on "setup products"
 						$("#products").show();
 						$("#plants").hide();
-					})
+					});
 					
 				}
 			)
 				
 			
 			</script>
-			<%boolean showProducts="show".equals(request.getParameter("showProducts"));
+			<%
+			//flag for saving which setup has to be displayed (products or plants) - saved as parameter in request
+			boolean showProducts="show".equals(request.getParameter("showProducts"));
 			String addedProductSessionAttr=(session.getAttribute("addedNewProduct")!=null?(String)session.getAttribute("addedNewProduct"):"");
 			if(addedProductSessionAttr!=null&&addedProductSessionAttr.equals("true")){
 				showProducts=true;
 			}
 			session.removeAttribute("addedNewProduct");
 			%>
+			
+			<!-- products section -->			
 			<div id="products" <% if(!showProducts){out.println("style=\"display: none;\"");}%>>
 				
 				<%
 
+				//if new products are added, the information on the products are added to the request and the page will be called again
+				
 				//check parameters for adding a new Product
 				String prodName=request.getParameter("prodName");
 				String prodShortName=request.getParameter("prodShortName");
@@ -100,31 +108,30 @@
 					
 				}
 				
-				System.out.println("Heres the result:");
-				System.out.println("Name: "+prodName+"; shortName:"+prodShortName+"; tnf:"+tnf);
-
+				//now step through variables for new product and check if they are valid
+				
 				//parameters are correct/complete
 				boolean newProductIsOk=true;
 				
-				//check for product name
+				//check product name
 				if(prodName==null||prodName.length()==0){
 					newProductIsOk=false;
-
-				//check for product shortName
 				}
+				
+				//check product shortName
 				if(prodShortName==null||prodShortName.length()==0){
-					newProductIsOk=false;
-					
-				//check for tnfvalue
+					newProductIsOk=false;	
 				}
+				
+				//check tnfvalue
 				if(tnf==-1){
 					newProductIsOk=false;					
 				}
 				
-				//query products
+				//query known products
 				ArrayList<ArrayList<String>> products=SQL.query("SELECT * FROM products;");
 
-				//no plants found, create tabel
+				//if table "products" doesn't exist yet, no products were found -> create tabel
 				if(products==null){
 					String command=
 						"CREATE TABLE products (products_id serial primary key, "+ 
@@ -132,13 +139,15 @@
 						")";			
 					SQL.execute(command);			
 	
+					//query again, to get an empty ArrayList
 					products=SQL.query("SELECT * FROM products;");
 				}
 					
-				//parameters for new product are ok, check for existing product
+				//passed product has valid parameters, check for existing product
 				if(newProductIsOk){
 					boolean prodExists=false;
 					
+					//step through known products (line 0 contains headers, skip this line)
 					for(int i=1;i<products.size();i++){
 						if(products.get(i).size()>=4){
 							if(prodName.equals(products.get(i).get(1))||
@@ -170,39 +179,43 @@
 
 				
 				%>
-				
-				<table border rules="all" id="productTable" >
+				<form method="post" action="">
+					
+				<table style="border:1px solid black;border-radius:2px;"  id="productTable" >
 					<tr>
 						<td>
 							Product
 						</td>
 						<td>
-							Shorname
+							Shortname
 						</td>
 						<td>
 							equivalent pieces to 1 TNF
 						</td>
 					</tr>
-					<tr>
-						<form method="post" action="">
+						<tr>
 							<td><input type="text" name="prodName"></td>
 							<td><input type="text" name="prodShortName"></td>
 							<td><input type="text" name="prodTnf"></td>
+							<td>
 							<input type="hidden" name="addProduct">
 							<input type="hidden" name="showProducts" value="show">
-							<td><input type="submit" value="Add product"></td>
-						</form>
+							<input type="submit" value="Add product"></td>
 					</tr>				
 					<%for(int i=1;i<products.size();i++){ 
 						out.println("<tr><td>"+products.get(i).get(1)+"</td><td>"+products.get(i).get(2)+"</td><td>"+products.get(i).get(3)+"</td></tr>\n");
 					} %>
 				</table>				
-				
+					</form>
+					
 			</div>
+			
+			<!-- plants section -->			
 			<div id="plants" <%if(showProducts){out.println("style=\"display: none;\"");}%>>
 		
 			<%
 			
+			//store known plants
 			ArrayList<ArrayList<String>> plants=SQL.query("SELECT * FROM plants;");
 
 			if(plants==null){
@@ -212,6 +225,7 @@
 				response.sendRedirect("");
 			}
 			
+			//selected plant
 			int selected=0;
 			try{
 				selected=Integer.parseInt(request.getParameter("selName"));
@@ -220,6 +234,7 @@
 			}
 			
 			
+			//controlPoints for selected plant
 			ArrayList<ArrayList<String>> controlPoints=null;
 			
 			if(selected>0||selected==-1){
@@ -229,9 +244,7 @@
 				}else if(selected==-1){
 					getControlPoints+=" where plant_id=plants_id;";
 				}
-				//String getControlPoints="Select * from plants,controlpoints where plant_id="+selected+";";
-				//controlPoints=SQL.query("SELECT * FROM controlpoints;");
-				System.out.println("get from db: "+getControlPoints);
+			
 				controlPoints=SQL.query(getControlPoints);
 				if(controlPoints==null){
 					String command=
@@ -255,7 +268,6 @@
 				}else{
 					for(int i=0;i<plants.size();i++){
 						if(plants.get(i).get(1).equals(plantName)){
-							//TODO add label or sth to mark as error
 							%>
 			Plantname allready in use!
 			<%
@@ -282,7 +294,6 @@
 				}else{
 					for(int i=0;i<controlPoints.size();i++){
 						if(controlPoints.get(i).get(1).equals(controlPointName)){
-							//TODO add label or sth to mark as error
 							%>
 			Control point name allready in use!
 			<%
