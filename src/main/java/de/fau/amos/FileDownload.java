@@ -38,7 +38,7 @@ public class FileDownload extends HttpServlet {
 		
 		String fileName=request.getParameter("downloadFileName");
 		
-		//TODO change this later
+		//creates a file containing the values of the requested SQL query 
 		System.out.println("create file "+fileName+"");
 		ArrayList<ArrayList<String>>data=SQL.query("select * from plants");
 		createCsvFile(data,fileName); 
@@ -69,13 +69,16 @@ public class FileDownload extends HttpServlet {
 
 	}
 
-	
+	//Creates a .csv file containing the data of the passed "ArrayList<ArrayList<String>> data" and saves it into the "userdir.location" directory
 	private static void createCsvFile(ArrayList<ArrayList<String>> data, String fileName){
 		
 		try{
 			String lines = "";
+			
+			//using Buffered Writer to write a file into the "userdir.location" directory
 			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(System.getProperty("userdir.location"), fileName)));
 			
+			//every single value will be written down into the file separated by a semicolon
 			for(int i=0;i<data.size();i++){
 				for(int j=0;j<data.get(i).size();j++){
 					lines = data.get(i).get(j) + "; ";

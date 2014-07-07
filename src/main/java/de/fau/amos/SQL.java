@@ -18,8 +18,6 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-
-
 package de.fau.amos;
 
 import java.sql.Connection;
@@ -30,12 +28,21 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+
+/**
+ * SQL.java is an important class, which handles the PostgreSQL database requests. 
+ * It builds up the connection to the chosen database and is able to add new tables (respectively to show/change/delete).
+ *
+ */
 public class SQL{
+	
+
 
 	private static Connection c;
 	private static boolean debug=false;
 //	private static boolean debug=true;
 
+	//prints a message according to debug 
 	private static void print(String msg){
 		if(debug){
 			System.out.println(msg);
@@ -63,6 +70,7 @@ public class SQL{
 
 	}
 
+	//shows the columns from the required table "tableName" with its ID "id"
 	public static String getValueOfFieldWithId(String tableName,String column,String id){
 		String out="";
 		
@@ -93,6 +101,7 @@ public class SQL{
 		return out;
 	}
 	
+	//Fills up an ArrayList<ArrayList<String>> with the data of the SQL query (passed by the parameter)
 	public static ArrayList<ArrayList<String>> query(String command){
 		ArrayList<ArrayList<String>> data=new ArrayList<ArrayList<String>>();
 
@@ -117,14 +126,16 @@ public class SQL{
 				ResultSet rs = stmt.executeQuery(command);
 				ResultSetMetaData rsmd = rs.getMetaData();
 
-
+				//add the queried column names into an ArrayList<String>
 				ArrayList<String> row=new ArrayList<String>();
 				for(int i=1;i<=rsmd.getColumnCount();i++){
 					row.add(rsmd.getColumnName(i));
 				}
-
+				
+				//fill up the first row with the column names 
 				data.add(row);
-
+				
+				//next step; fill up the following rows with values of the columns
 				while ( rs.next() ) {	
 
 					row=new ArrayList<String>();
@@ -179,6 +190,7 @@ public class SQL{
 
 	}
 
+	//creates a new table "tableName" with several chosen columns "String[] columns" in the database
 	public static void createTable(String tableName,String[] columns){
 		Statement stmt = null;
 		try {
@@ -206,7 +218,8 @@ public class SQL{
 			e.printStackTrace();
 		}
 	}
-
+	
+	//adds column names from required database table "tableName" to ArrayList<String> 
 	public static ArrayList<String> getColumns(String tableName){
 
 		Statement stmt = null;
@@ -237,7 +250,8 @@ public class SQL{
 		}
 		return null;
 	}
-
+	
+	//if the committed columns and their values exist; new columns and their values will be added to the table "tableName" in the database
 	public static void addColumn(String tableName,ArrayList<String> columns,ArrayList<String> values){
 		if(columns==null||values==null||columns.size()!=values.size()){
 			return;
@@ -286,6 +300,7 @@ public class SQL{
 
 	}
 
+	//builds up connection to existing (in this case university) database
 	private static void initConnection(){
 		try{
 
