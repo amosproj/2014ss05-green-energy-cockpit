@@ -46,12 +46,13 @@ public class PlanningPreset {
 	private static ArrayList<Integer> allFormats = new ArrayList<Integer>();
 
 	/**
-	 * 
 	 * Initializes the PlanningPreset.java Class by setting Parameters to handle the request. 
 	 * It both initializes parameters (e.g. selected Plant, Year, ..) and sets variables that call a special case (Load Data, Save Data, Reset Grit,...).
 	 * 
 	 * Note: This method must be called before using any other method of this class.
 	 * 
+	 * @param request
+	 * @param session
 	 */
 	public static void setValues(HttpServletRequest request, HttpSession session) {
 
@@ -186,7 +187,7 @@ public class PlanningPreset {
 
 	/**
 	 * 
-	 * Checks if a certain format (by numeral ID) exists in the local and previously initialized ArrayList<ArrayList<Double>>: "loadedData".
+	 * Checks if a certain format (by numeral ID) exists in the local and previously initialized local ArrayList<ArrayList<Double>>: "loadedData".
 	 * 
 	 */
 	private static boolean checkIfFormatExistsInSave(double format) {

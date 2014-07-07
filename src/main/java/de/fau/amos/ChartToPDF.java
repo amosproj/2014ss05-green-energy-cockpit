@@ -45,6 +45,12 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 public class ChartToPDF {
 
+	/**
+	 * Converts Chart into PDF
+	 * 
+	 * @param chart JFreeChart from CharRenderer that will be displayed in the PDF file
+	 * @param fileName Name of created PDF-file
+	 */
 	public void convertChart(JFreeChart chart, String fileName) {
 	    if (chart != null) {       
 	    	

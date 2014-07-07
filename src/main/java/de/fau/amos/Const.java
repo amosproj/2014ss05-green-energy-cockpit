@@ -21,13 +21,18 @@
 package de.fau.amos;
 
 /**
- * Constans used in Parameters/Attributes
+ * Constants used in Parameters/Attributes
  *
  */
 public class Const {
 
 	public static boolean debug=false;
 	
+	/**
+	 * 
+	 * Contains URLs for forwarding.
+	 *
+	 */
 	public class URL{
 		public static final String LOGIN_JSP="/WEB-INF/login/loginjsp.jsp";
 		public static final String REGISTRATION_JSP="/WEB-INF/login/regjsp.jsp";
@@ -39,7 +44,11 @@ public class Const {
 		public static final String UPLOAD_JSP="/WEB-INF/file/upload.jsp";
 	}
 
-
+	/**
+	 * 
+	 * Contains attributes about the current session.
+	 *
+	 */
 	public static class SessionAttributs{
 
 		public static final String LOGGED_IN_USERNAME="loggedInUsername";
@@ -63,7 +72,11 @@ public class Const {
 		//		}
 
 
-
+		/**
+		 * 
+		 * Contains information about logged in User and the user's login state.
+		 *
+		 */
 		public static class LoginState{
 			public static final String NAME="loginState";
 			public static class Valeus{
@@ -76,6 +89,11 @@ public class Const {
 			}
 		}
 
+		/**
+		 * 
+		 * Contains Registration state of a user trying to log in.
+		 *
+		 */
 		public static class RegistrationState{
 			//don't change variables name, only change its value
 			public static final String NAME="registrationState";
@@ -85,10 +103,20 @@ public class Const {
 			}
 		}
 		
+		/**
+		 * 
+		 * contains User's registration name.
+		 *
+		 */
 		public static class RegistrationUsername{
 			public static final String NAME="registrationUsername";
 		}
-
+		
+		/**
+		 * 
+		 * Contains state of password change.
+		 *
+		 */
 		public static class ChangePasswordState{
 			//don't change variables name, only change its value
 			public static final String NAME="changePasswordState";
@@ -105,18 +133,11 @@ public class Const {
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+	/**
+	 * 
+	 * Contains Information about Username, Password
+	 *
+	 */
 	public static class RequestParameters{
 
 		public static final String LOGIN_USERNAME="loginUsername";
@@ -136,7 +157,11 @@ public class Const {
 
 
 
-
+	/**
+	 * 
+	 * Contains Information about Login state
+	 *
+	 */
 	public static class UserReturns{
 		public static final int FAILED=-1;
 		public static final int SUCCESS=1;

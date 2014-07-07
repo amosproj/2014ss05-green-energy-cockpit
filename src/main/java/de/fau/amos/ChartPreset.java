@@ -27,7 +27,17 @@ import javax.servlet.http.HttpServletRequest;
 
 public class ChartPreset {
 	
-
+	/**
+	 * 
+	 * Creates dynamic (javascript) section with checkboxes for plants and controlpoints that summarised in groups.
+	 * 
+	 * @param locationGroupId
+	 * @param chartType
+	 * @return
+	 * 
+	 * 
+	 * 
+	 */
 	public static String createLocationGroup(int locationGroupId,String chartType){
 				
 //		System.out.println("called group with "+groupId);
@@ -154,6 +164,13 @@ public class ChartPreset {
 		return out;
 	}
 
+	/**
+	 * 
+	 * Creates dynamic (javascript) section with checkboxes for formats that are summarised in groups.
+	 * 
+	 * @param formatGroupId
+	 * @return
+	 */
 	public static String createFormatGroup(int formatGroupId){
 		
 //		System.out.println("called group with "+groupId);
@@ -218,8 +235,13 @@ public class ChartPreset {
 		return out;
 	}
 
-
-	
+	/**
+	 * 
+	 * Creates String with parameters of location selection
+	 * 
+	 * @param request
+	 * @return
+	 */
 	public static String createLocationParameterString(HttpServletRequest request){
 		//creates sth like [groupName1'id1','id2'|groupName2'id3','id4']
 		
@@ -405,7 +427,14 @@ public class ChartPreset {
 		out=out.replace(",", "%2C");
 		return out;
 	}
-	
+
+	/**
+	 * 
+	 * 
+	 * 
+	 * @param request
+	 * @return
+	 */
 	public static String createLocationSelection(HttpServletRequest request){
 		
 //		System.out.println("called createSelection");
