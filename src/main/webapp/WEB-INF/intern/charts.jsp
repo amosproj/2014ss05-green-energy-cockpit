@@ -216,7 +216,7 @@
 							.getParameter("selectYear"));
 				} catch (NumberFormatException e) {
 					//selectedYear = Calendar.getInstance().get(Calendar.YEAR);
-					selectedYear = 2012;
+					selectedYear = 2014;
 				}
 
 				int selectedEndYear = 0;

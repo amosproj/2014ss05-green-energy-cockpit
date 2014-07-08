@@ -226,6 +226,7 @@
 			}
 			
 			//selected plant
+			int showPlantNameArrayPosition=0;
 			int selected=0;
 			try{
 				selected=Integer.parseInt(request.getParameter("selName"));
@@ -306,7 +307,7 @@
 				if(nameOK){
 					ArrayList<String>values=new ArrayList<String>();
 					values.add("");
-					values.add(""+plants.get(selected).get(0));
+					values.add(""+selected);
 					values.add(controlPointName.substring(0,3).toUpperCase());
 					values.add(controlPointName);
 					values.add("set".equals(request.getParameter("reference_point"))+"");
@@ -328,8 +329,10 @@
 							<select name="selName" onChange="this.form.submit()">
 								<option value="0" />
 								<%
-								
 								for(int i=1;i<plants.size();i++){
+									if(selected==Integer.parseInt(plants.get(i).get(0))){
+										showPlantNameArrayPosition=i;
+									}
 									out.println("<option value="+'"'+plants.get(i).get(0)+'"'+((selected==Integer.parseInt(plants.get(i).get(0)))?" selected":"")+">"+plants.get(i).get(1)+"</option>");			
 								}
 								out.println("<option value="+'"'+-1+'"'+((selected==-1)?" selected":"")+">All</option>");
@@ -361,7 +364,7 @@
 							<input type="hidden" name="selName" value="<%=selected %>">
 							<input type="checkbox" name="reference_point" value="set"> Referencecontrolpoint
 							<input type="submit"
-								value="Add control point<%out.println(((selected!=0&&plants.size()>selected&&selected>0)?" to "+plants.get(selected).get(1):"")); %>">
+								value="Add control point<%out.println(((showPlantNameArrayPosition!=0&&plants.size()>showPlantNameArrayPosition&&showPlantNameArrayPosition>0)?" to "+plants.get(showPlantNameArrayPosition).get(1):"")); %>">
 						</form>
 					</td>
 
