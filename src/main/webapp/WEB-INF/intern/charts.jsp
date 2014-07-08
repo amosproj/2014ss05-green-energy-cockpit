@@ -25,7 +25,6 @@
 <%
 	User.init(getServletConfig());
 
-System.out.println("reloaded "+request.getParameter("selectedChartType"));
 %>
 
 <!DOCTYPE html>

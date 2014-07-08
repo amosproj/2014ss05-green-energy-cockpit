@@ -330,7 +330,7 @@
 								<%
 								
 								for(int i=1;i<plants.size();i++){
-									out.println("<option value="+'"'+i+'"'+((selected==i)?" selected":"")+">"+plants.get(i).get(1)+"</option>");			
+									out.println("<option value="+'"'+plants.get(i).get(0)+'"'+((selected==Integer.parseInt(plants.get(i).get(0)))?" selected":"")+">"+plants.get(i).get(1)+"</option>");			
 								}
 								out.println("<option value="+'"'+-1+'"'+((selected==-1)?" selected":"")+">All</option>");
 								%>
