@@ -25,7 +25,6 @@
 <%
 	User.init(getServletConfig());
 
-System.out.println("reloaded "+request.getParameter("selectedChartType"));
 %>
 
 <!DOCTYPE html>
@@ -217,7 +216,7 @@ System.out.println("reloaded "+request.getParameter("selectedChartType"));
 							.getParameter("selectYear"));
 				} catch (NumberFormatException e) {
 					//selectedYear = Calendar.getInstance().get(Calendar.YEAR);
-					selectedYear = 2012;
+					selectedYear = 2014;
 				}
 
 				int selectedEndYear = 0;
