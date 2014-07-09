@@ -35,7 +35,15 @@ public class TimestampConversion {
 		return convertTimestamp(c.get(Calendar.MINUTE),c.get(Calendar.HOUR_OF_DAY),c.get(Calendar.DATE),c.get(Calendar.MONTH),c.get(Calendar.YEAR));
 	}
 	
-	//converts any committed Integer time into a String timestamp
+	/**
+	 * converts any committed Integer time into a String timestamp
+	 * @param minute
+	 * @param hour
+	 * @param day
+	 * @param month
+	 * @param year
+	 * @return
+	 */
 	public static String convertTimestamp(int minute,int hour,int day,int month,int year){
 		String strYear;
 		String strMonth;
@@ -78,12 +86,21 @@ public class TimestampConversion {
 		return strYear + "-" + strMonth + "-" + strDay + " " + strHour + ":" + strMinute + ":" + "00";
 	}
 	
-	//if the timestamp is already a String, this method builds up a new timestamp with correct character in between
+	/**
+	 * if the timestamp is already a String, this method builds up a new timestamp with correct character in between
+	 * @param Timestamp
+	 * @return
+	 */
 	public static String convertTimestamp(String Timestamp){
 		return Timestamp.substring(13,17) + "-" + getMonthInt(Timestamp.substring(8,11)) + "-" + Timestamp.substring(5,7) + " " + Timestamp.substring(18,20) + ":" + Timestamp.substring(21) + ":00";
 	}
 	
-	//converts months as a String into Integers (from "01" till "12") taking account the different forms of writing 
+	/**
+	 * converts months as a String into Integers (from "01" till "12") taking account the different forms of writing 
+	 * @param Month
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
 	private static String getMonthInt(String Month)throws IllegalArgumentException{
 		switch(Month.toLowerCase()){
 		case "jan":

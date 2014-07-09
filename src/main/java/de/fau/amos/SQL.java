@@ -35,9 +35,6 @@ import java.util.ArrayList;
  *
  */
 public class SQL{
-	
-
-
 	private static Connection c;
 	private static boolean debug=false;
 //	private static boolean debug=true;
@@ -48,7 +45,10 @@ public class SQL{
 			System.out.println(msg);
 		}
 	}
-	
+	/**
+	 * Executes Postrgresql Command without response.
+	 * @param command
+	 */
 	public static void execute(String command){
 
 		print("execute "+command);
@@ -70,7 +70,13 @@ public class SQL{
 
 	}
 
-	//shows the columns from the required table "tableName" with its ID "id"
+	/**
+	 * shows the columns from the required table "tableName" with its ID "id"
+	 * @param tableName
+	 * @param column
+	 * @param id
+	 * @return
+	 */
 	public static String getValueOfFieldWithId(String tableName,String column,String id){
 		String out="";
 		
@@ -101,7 +107,11 @@ public class SQL{
 		return out;
 	}
 	
-	//Fills up an ArrayList<ArrayList<String>> with the data of the SQL query (passed by the parameter)
+	/**
+	 * Fills up an ArrayList<ArrayList<String>> with the data of the SQL query (passed by the parameter)
+	 * @param command
+	 * @return
+	 */
 	public static ArrayList<ArrayList<String>> query(String command){
 		ArrayList<ArrayList<String>> data=new ArrayList<ArrayList<String>>();
 
@@ -159,6 +169,11 @@ public class SQL{
 		return data;
 	}
 
+	/**
+	 * Queries Postgresql command and returns result in a ResultSet Object.
+	 * @param command
+	 * @return
+	 */
 	public static ResultSet queryToResultSet(String command){
 
 		print("queryToResultSet: "+command);
@@ -190,7 +205,11 @@ public class SQL{
 
 	}
 
-	//creates a new table "tableName" with several chosen columns "String[] columns" in the database
+	/**
+	 * creates a new table "tableName" with several chosen columns "String[] columns" in the database
+	 * @param tableName
+	 * @param columns
+	 */
 	public static void createTable(String tableName,String[] columns){
 		Statement stmt = null;
 		try {
@@ -219,7 +238,11 @@ public class SQL{
 		}
 	}
 	
-	//adds column names from required database table "tableName" to ArrayList<String> 
+	/**
+	 * adds column names from required database table "tableName" to ArrayList<String> 
+	 * @param tableName
+	 * @return
+	 */
 	public static ArrayList<String> getColumns(String tableName){
 
 		Statement stmt = null;
@@ -251,7 +274,12 @@ public class SQL{
 		return null;
 	}
 	
-	//if the committed columns and their values exist; new columns and their values will be added to the table "tableName" in the database
+	/**
+	 * if the committed columns and their values exist; new columns and their values will be added to the table "tableName" in the database
+	 * @param tableName
+	 * @param columns
+	 * @param values
+	 */
 	public static void addColumn(String tableName,ArrayList<String> columns,ArrayList<String> values){
 		if(columns==null||values==null||columns.size()!=values.size()){
 			return;
@@ -300,7 +328,9 @@ public class SQL{
 
 	}
 
-	//builds up connection to existing (in this case university) database
+	/**
+	 * builds up connection to existing (in this case university) database
+	 */
 	private static void initConnection(){
 		try{
 

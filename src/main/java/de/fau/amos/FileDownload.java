@@ -89,7 +89,11 @@ public class FileDownload extends HttpServlet {
 
 	}
 
-	//Creates a .csv file containing the data of the passed "ArrayList<ArrayList<String>> data" and saves it into the "userdir.location" directory
+	/**
+	 * Creates a .csv file containing the data of the passed "ArrayList<ArrayList<String>> data" and saves it into the "userdir.location" directory
+	 * @param data
+	 * @param fileName
+	 */
 	private static void createCsvFile(ArrayList<ArrayList<String>> data, String fileName){
 		
 		try{

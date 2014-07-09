@@ -22,6 +22,11 @@ package de.fau.amos;
 
 public class Header {
 
+	/**
+	 * Returns HTML Code with menu bar.
+	 * 
+	 * @return
+	 */
 	public static String getHeaderButtons(){
 		String out="";
 				
