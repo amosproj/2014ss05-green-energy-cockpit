@@ -28,13 +28,25 @@
 </head>
 <body>
 
+
+
 <%
-	System.out.println("called publicIntern "+request.getRequestURL());
+
+// this file is a nondisplayable webpage
+// it is the main handler for this project. Every internal webpage can only be accessed
+// through this handler. It verifies if the user is logged in and gives acces to the page or doesn't
+
+
+	System.out.println("[intern.jsp]: called intern ["+request.getRequestURL()+"]");
+
+	//User is stored in the session
+
+	//compare value for "being logged in" with the value stored in the current session
 	if(Const.SessionAttributs.LoginState.Valeus.LOGGED_IN.equals(session.getAttribute(Const.SessionAttributs.LoginState.NAME))){
-		System.out.println("session valid -> want to load "+request.getPathInfo() );
+		//session valid -> give access -> forward
 		request.getRequestDispatcher("/WEB-INF/intern"+request.getPathInfo()).forward(request,response);
 	}else{
-		//session invalid -> redirect to loginPage
+		//session invalid -> set session explicit to "not being logged in" -> redirect to loginPage
 		session.setAttribute(Const.SessionAttributs.LoginState.NAME,Const.SessionAttributs.LoginState.Valeus.NOT_LOGGED_IN);
 		response.sendRedirect(request.getContextPath()+Const.URL.LOGIN_PAGE);
 	}

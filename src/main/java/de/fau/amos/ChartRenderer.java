@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2014 by Sven Huprich, Dimitry Abb, Jakob Hübler, Cindy Wiebe, Ferdinand Niedermayer, Dirk Riehle, http://dirkriehle.com
+ *
+ * This file is part of the Green Energy Cockpit for the AMOS Project.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
+
 package de.fau.amos;
 
 
@@ -10,9 +30,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 
 import javax.imageio.ImageIO;
@@ -60,6 +78,12 @@ public class ChartRenderer extends HttpServlet {
 	}
 
 	/**
+	 * 
+	 * Reads Information from request and returns respective chart (.png-type) in response
+	 * 
+	 * @param request Request from website. Contains info about what should be displayed in chart.
+	 * @param response Contains .png-file with ready-to-use chart.
+	 * 
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	@Override
@@ -140,13 +164,27 @@ public class ChartRenderer extends HttpServlet {
 
 	}
 
+	/**
+	 * calls ChartRenderer.doGet() and forwards response and request.
+	 */
 	@Override
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
 	}
 
-	//for time chart
+	/**
+	 * 
+	 * Creates TimeSeriesCollection by querying energy data from database.
+	 * 
+	 * @param granularity Accuracy of distinguishment of displayed values (Summarise data to hours, days, months, years).
+	 * @param startTime Start of queried period.
+	 * @param endTime End of queried period.
+	 * @param sumOrAvg Shall values be added or averaged.
+	 * @param groupParameters Controlpoints that are affected.
+	 * @param unit Sets Unit (kWh or kWh/TNF)
+	 * @return TimeSeriesCollection that privedes the basis for creation of a png-chart
+	 */
 	private TimeSeriesCollection createTimeCollection(String granularity, String startTime, String endTime, String sumOrAvg, String groupParameters,String unit){
 
 		//time series containing all data
@@ -238,24 +276,24 @@ public class ChartRenderer extends HttpServlet {
 									Integer.parseInt(rs.getString(2).substring(8,10)),
 									Integer.parseInt(rs.getString(2).substring(5,7)),
 									Integer.parseInt(rs.getString(2).substring(0,4))
-									), rs.getDouble(1)/1000);					
+									), rs.getDouble(1));					
 							break;
 						case "day":
 							series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
 									Integer.parseInt(rs.getString(2).substring(5,7)),
 									Integer.parseInt(rs.getString(2).substring(0,4))
-									), rs.getDouble(1)/1000);					
+									), rs.getDouble(1));					
 							break;
 
 						case "month":
 							series.add(new Month(Integer.parseInt(rs.getString(2).substring(5,7)),
 									Integer.parseInt(rs.getString(2).substring(0,4))
-									), rs.getDouble(1)/1000);					
+									), rs.getDouble(1));					
 							break;
 
 						case "year":
 							series.add(new Year(Integer.parseInt(rs.getString(2).substring(0,4))
-									), rs.getDouble(1)/1000);					
+									), rs.getDouble(1));					
 							break;
 
 							//default: day
@@ -263,7 +301,7 @@ public class ChartRenderer extends HttpServlet {
 							series.add(new Day(Integer.parseInt(rs.getString(2).substring(8,10)),
 									Integer.parseInt(rs.getString(2).substring(5,7)),
 									Integer.parseInt(rs.getString(2).substring(0,4))
-									), rs.getDouble(1)/1000);					
+									), rs.getDouble(1));					
 
 						}
 					}
@@ -281,6 +319,16 @@ public class ChartRenderer extends HttpServlet {
 		return collection;
 	}
 
+	/**
+	 * Creates Chart with TimeLine (JFreeChart object) from TimeSeriesCollection. Is used when granularity is set to hours.
+	 * Adjusts display of the chart, not the values itself.
+	 * 
+	 * @param collection TimeSeriesCollection that should be used as basis of chart.
+	 * @param timeGranularity Selected granularity. Value is similar to granularity contained in TimeSeriesCollection "collection".
+	 * @param time first element of time that is displayed. Is used for caption text and axis text.
+	 * @param unit Unit of displayed values (kWh or kWh/TNF).
+	 * @return Returns finished JFreeChart object.
+	 */
 	private JFreeChart createTimeLineChart(TimeSeriesCollection collection, String timeGranularity, String time,String unit){
 
 
@@ -320,6 +368,16 @@ public class ChartRenderer extends HttpServlet {
 		return lineChart;
 	}
 
+	/**
+	 * Creates Chart with Bars (JFreeChart object) from TimeSeriesCollection. Is used when granularity is set to days, months or years.
+	 * Adjusts display of the chart, not the values itself.
+	 * 
+	 * @param collection TimeSeriesCollection that should be used as basis of chart.
+	 * @param timeGranularity Selected granularity. Value is similar to granularity contained in TimeSeriesCollection "collection".
+	 * @param time first element of time that is displayed. Is used for caption text and axis text.
+	 * @param unit Unit of displayed values (kWh or kWh/TNF).
+	 * @return Returns finished JFreeChart object.
+	 */
 	private JFreeChart createTimeBarChart(TimeSeriesCollection collection, String timeGranularity, String time,String unit){
 
 		String xAxisLabel = null;
@@ -398,7 +456,19 @@ public class ChartRenderer extends HttpServlet {
 
 	}
 
-	//for chart 2
+	/**
+	 * 
+	 * Creates Dataset that provides the basis for a chart. Queries data from database. Is used when Chart Type "Location-Format" or "Format-Location" is selected.
+	 * 
+	 * @param startTime Start of queried period.
+	 * @param endTime End of queried period.
+	 * @param sumOrAvg Shall values be added or averaged.
+	 * @param locationGroupParameters Controlpoints that are affected by query.
+	 * @param formatGroupParameters Formats(=products) that are affected by query.
+	 * @param unit Sets Unit (kWh or kWh/TNF).
+	 * @param chartType Chart type: either "Location-Format" (2) or "Format-Location" (3).
+	 * @return Returns dataset that provides basis for a JFreeChart.
+	 */
 	private DefaultCategoryDataset createLocationFormatCollection(String startTime, String endTime, String sumOrAvg, String locationGroupParameters,String formatGroupParameters,String unit,String chartType){
 		//create collection to store data
 		DefaultCategoryDataset collection=new DefaultCategoryDataset();
@@ -579,9 +649,20 @@ public class ChartRenderer extends HttpServlet {
 		return collection;
 	}
 
+	/**
+	 * 
+	 * (Deprecated) Creates Dataset that provides the basis for a chart. Queries data from database. Was used when Chart Type  "Format-Location" had been selected.
+	 * 
+	 * @param startTime Start of queried period.
+	 * @param endTime End of queried period.
+	 * @param sumOrAvg Shall values be added or averaged.
+	 * @param locationGroupParameters Controlpoints that are affected by query.
+	 * @param formatGroupParameters Formats(=products) that are affected by query.
+	 * @param unit Sets Unit (kWh or kWh/TNF).
+	 * @return Returns dataset that provides basis for a JFreeChart.
+	 */
 	@SuppressWarnings("unused")
 	@Deprecated
-	//was for chart 3 -> added to createLocationFormatCollection
 	private DefaultCategoryDataset createFormatLocationCollection(String startTime, String endTime, String sumOrAvg, String locationGroupParameters,String formatGroupParameters,String unit){
 		DefaultCategoryDataset collection=new DefaultCategoryDataset();
 		locationGroupParameters=locationGroupParameters.replace("||", "splitHere");
@@ -648,6 +729,13 @@ public class ChartRenderer extends HttpServlet {
 		return collection;
 	}
 
+	/**
+	 * Creates chart (JFreeChart object) from dataset. Is used when Chart Type "Location-Format" or "Format-Location" is selected.
+	 * 
+	 * @param collection Collection that provides all data that should be displayed.
+	 * @param unit Unit: kWh or kWh/TNF
+	 * @return Returns finished JFreeChart object.
+	 */
 	private JFreeChart createLocationFormatChart(DefaultCategoryDataset collection,String unit){
 
 		JFreeChart barChart = ChartFactory.createBarChart("Production Consumption","",
@@ -674,6 +762,16 @@ public class ChartRenderer extends HttpServlet {
 
 	}
 
+	/**
+	 * 
+	 * Creates TimeSeriesCollection that provides the basis for a Chart. Is used for forecast.
+	 * 
+	 * @param sYear Selected year.
+	 * @param plantId Selected plant.
+	 * @param method Is not used.
+	 * @param units Is not used.
+	 * @return Returns TimeSeriesCollection that provides the basis for a Chart.
+	 */
 	private TimeSeriesCollection createForecastCollection(String sYear,String plantId,String method,String units){
 
 		int year=0;
@@ -685,9 +783,35 @@ public class ChartRenderer extends HttpServlet {
 
 		TimeSeriesCollection collection=new TimeSeriesCollection();
 
-		double[] p={100,102,105,107,108,108.5,110,110.5,109,107,106,106.5};
-
+		
+		/*
+		 * get planned tnf
+		 */
 		TimeSeries planned=new TimeSeries("Planned");
+		
+		double lastYearKwhPerTnf=0;
+		ResultSet rs=SQL.queryToResultSet(
+				"select round((select sum(value)from measures where date_trunc('year',measure_time)='"
+				+ (year-1)
+				+ "-1-1')/(select sum(amount)from productiondata "
+				+ "inner join controlpoints on productiondata.controlpoint_id=controlpoints.controlpoints_id "
+				+ "where date_trunc('year',measure_time)='"
+				+ (year-1)
+				+ "-1-1' AND plant_id='"
+				+ plantId
+				+ "'),4);"
+				);
+		
+		if(rs!=null){
+			try {
+				if(rs.next()){
+					lastYearKwhPerTnf=rs.getDouble(1);
+				}
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 		
 		String months="";
 		for(int i=1;i<=12;i++){
@@ -697,8 +821,7 @@ public class ChartRenderer extends HttpServlet {
 			}
 		}
 		
-		
-		ResultSet rs=SQL.queryToResultSet(
+		rs=SQL.queryToResultSet(
 				
 				"select "+months+" from planning_values where planning_year='"
 						+ year+"' AND plant_id='"+plantId+"';"
@@ -708,7 +831,7 @@ public class ChartRenderer extends HttpServlet {
 			try {
 				while(rs.next()){
 					for(int i=1;i<=12;i++){
-						planned.add(new Month((i),year),rs.getDouble(i));	
+						planned.add(new Month((i),year),rs.getDouble(i)/(lastYearKwhPerTnf!=0?lastYearKwhPerTnf:1));	
 					}
 					
 				}
@@ -738,7 +861,7 @@ public class ChartRenderer extends HttpServlet {
 			try {
 				while(rs.next()){
 					passedMonths++;
-					lastVal=rs.getDouble(1);
+					lastVal=rs.getDouble(1)/(lastYearKwhPerTnf!=0?lastYearKwhPerTnf:1);
 					is.add(new Month((passedMonths),year),lastVal);				
 				}
 			} catch (SQLException e) {
@@ -764,6 +887,13 @@ public class ChartRenderer extends HttpServlet {
 		return collection;
 	}
 	
+	/**
+	 * Calculates difference between actual date and date the forecast ends (end of year). Is used for forecast.
+	 * 
+	 * @param planned Timeperiod of forecast.
+	 * @param is Timeperiod until real values exist.
+	 * @return Returns number of time elements between the end of the two timeperiods.
+	 */
 	private double calculateDifferenz(TimeSeries planned,TimeSeries is){
 		double factor=0;
 		
@@ -783,6 +913,14 @@ public class ChartRenderer extends HttpServlet {
 		return factor;
 	}
 
+	/**
+	 * Creates Chart (JFreeChart object) using TimeSeriesCollection. Used for forecast only.
+	 * 
+	 * @param collection TimeSeriesCollection that provides basis for chart.
+	 * @param time Time where "real" data ends.
+	 * @param unit Unit of displayed values (kWh,TNF,kWh/TNF)
+	 * @return Returns finished JFreeChart.
+	 */
 	private JFreeChart createForecastChart(final TimeSeriesCollection collection, String time,String unit){
 
 		// Modification of X-Axis Label
@@ -850,6 +988,12 @@ public class ChartRenderer extends HttpServlet {
 		return lineChart;
 	}
 
+	/**
+	 * Returns String (word that can be used for database query) depending on transmitted (numeral String) granularity.
+	 * 
+	 * @param timeGranularity Numeral String of granularity.
+	 * @return Word String of granularity.
+	 */
 	private String timeGranularityToString(String timeGranularity){
 		if(timeGranularity==null){
 			return "minute";
@@ -873,7 +1017,12 @@ public class ChartRenderer extends HttpServlet {
 		}
 	}
 
-
+	/**
+	 * Returns String (word that can be used for database query) depending on transmitted (numeral String) countType.
+	 * 
+	 * @param countType Numeral String of countType.
+	 * @return Word String of countType.
+	 */
 	private String countTypeToString(String countType){
 		int intCountType=0;
 		try{
@@ -891,6 +1040,12 @@ public class ChartRenderer extends HttpServlet {
 		}
 	}
 
+	/**
+	 * Prepares transmitted String with group parameters to be split up into its components.
+	 * 
+	 * @param in Input String.
+	 * @return Output String.
+	 */
 	private String encodeGroupParameters(String in){
 		if(in==null){
 			return "";

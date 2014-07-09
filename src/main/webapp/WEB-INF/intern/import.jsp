@@ -35,32 +35,61 @@
 <body>
 <%
 
+// this file is a non-displayable webpage, that checks a special folder on the server
+// and imports data to the database, if the files have the right format.
+
+// files that should be imported must be assigned to a plant, therefor they get the 
+// plantId appended. They get ED or PD appended if the files contain "energy data"
+// or "production data"
+
+// filenamepatterns are: 
+// [RANDOM-SIX-DIGIT-NUMBER]_[ORIGINAL-FILENAME].csv_[ED or PD][PLANT-ID]
+// e.g.: 135790_someEnergyData.csvED1
+
+
+//location where importfiles are saved
 File impFolder=new File(System.getProperty("userdir.location"),"import");
+
+//if not exsiting, there are no files to import
 if(impFolder.exists()){
+	
+	//get all files in directory
 	File[] list=impFolder.listFiles();
+	
+	//check each file
 	for(int f=0;f<list.length;f++){
+		
+		//handle files synchronized, so no other user changes content while uploading
 		synchronized(list[f]){
 			String fileName=list[f].getName();
-			
-			out.println("found file: "+list[f].getAbsolutePath()+"  "+fileName+"<br>");	
-			System.out.println();
+		
 			System.out.println("check file "+list[f]);
 			
+			//filenames shorter than 7 characters can't be files to be imported
 			if(fileName.length()>7){
+				
+				//importfiles must have ending .csv_imp
 				if(fileName.contains(".csv_imp")){
+					
 					//is a .csv -> can import
 					
 					//get plantId to import measures to
+					//take whole ending and work on it later
 					String ending=fileName.substring(fileName.lastIndexOf('.')+1);	
 					if(ending==null||ending.length()<10||(!ending.startsWith("csv_impED")&&!ending.startsWith("csv_impPD"))){
-						//can't import file
+						
+						//can't import file -> delete it from importfolder
 						list[f].delete();
 						continue;
 					}					
 					
+					//flags for energydata or productiondata
 					boolean isImportED=false;
 					boolean isImportPD=false;
+					
 					String plantId="";
+					
+					//set flags and delete information from "plantId" -> only the real plantId remains in "plantId"
 					if(ending.startsWith("csv_impED")){
 						isImportED=true;
 						plantId=ending.replace("csv_impED","");
@@ -84,11 +113,14 @@ if(impFolder.exists()){
 						//create bufferedReader to read file(s) in import folder
 						BufferedReader br=new BufferedReader(new FileReader(list[f]));
 						
+						//before upload count lines, to be able to display progress
 						int lines=0;
 						while(br.readLine()!=null){
 							lines++;
 						}
 						br.close();
+						
+						//reset bufferedReader
 						br=new BufferedReader(new FileReader(list[f]));
 						
 						//tmpVar to step through file line by line
@@ -111,26 +143,37 @@ if(impFolder.exists()){
 						tableHeaders.add("controlpoint_id");
 						tableHeaders.add("value");
 						
-						
+						//counter for progressed lines
 						int lineCounter=0;
+
+						//flag for progressdisplaying
 						boolean printed=false;
+		
+						//variables for estimaed time calculation
 						long time=System.currentTimeMillis();
 						long duration=0;
+								
 						//step through file
 						while((line=br.readLine())!=null){
-							//System.out.println("find:"+findHeaders+" mutlid:"+multilineHeader+" read line: "+line);
+							
 							lineCounter++;
+							
+							//calculate progress as integer
 							int prozent=(int)((lineCounter/(double)lines)*100);
 	
-							
+							//display progress every 2%
 							if(prozent%2==0){
+								//display progress only once per 2%
 								if(!printed){
+									//time calculation
 									duration=duration+(System.currentTimeMillis()-time);
 									time=System.currentTimeMillis();
 									long estimated=(prozent==0?0:(100-prozent)*(duration/prozent));
 									String durationS=(duration/1000/60/60)+"h "+((duration/1000/60)%60)+"min "+((duration/1000)%60)+"s";
 									String estimatedS=(prozent==0?"?":(estimated/1000/60/60)+"h "+((estimated/1000/60)%60)+"min "+((estimated/1000)%60)+"s");
-									System.out.println("Fortschritt: "+prozent+"% ("+lineCounter+"/"+lines+") benötigte Zeit bisher: "+durationS+" geschätzt: "+estimatedS);
+									
+									//print progress and time calculation
+									System.out.println("Progress: "+prozent+"% ("+lineCounter+"/"+lines+") time taken: "+durationS+"; estimated remaining: "+estimatedS);
 									printed=true;
 								}
 							}else{
@@ -240,11 +283,14 @@ if(impFolder.exists()){
 						//create bufferedReader to read file(s) in import folder
 						BufferedReader br=new BufferedReader(new FileReader(list[f]));
 						
+						//before upload count lines, to be able to display progress
 						int lines=0;
 						while(br.readLine()!=null){
 							lines++;
 						}
 						br.close();
+						
+						//reset bufferedReader
 						br=new BufferedReader(new FileReader(list[f]));
 						
 						//tmpVar to step through file line by line
@@ -272,25 +318,37 @@ if(impFolder.exists()){
 						tableHeaders.add("amount");
 						
 						
+						//counter for progressed lines
 						int lineCounter=0;
+
+						//flag for progressdisplaying
 						boolean printed=false;
+		
+						//variables for estimaed time calculation
 						long time=System.currentTimeMillis();
 						long duration=0;
+								
 						//step through file
 						while((line=br.readLine())!=null){
-							//System.out.println("find:"+findHeaders+" mutlid:"+multilineHeader+" read line: "+line);
+							
 							lineCounter++;
+							
+							//calculate progress as integer
 							int prozent=(int)((lineCounter/(double)lines)*100);
 	
-							
+							//display progress every 2%
 							if(prozent%2==0){
+								//display progress only once per 2%
 								if(!printed){
+									//time calculation
 									duration=duration+(System.currentTimeMillis()-time);
 									time=System.currentTimeMillis();
 									long estimated=(prozent==0?0:(100-prozent)*(duration/prozent));
 									String durationS=(duration/1000/60/60)+"h "+((duration/1000/60)%60)+"min "+((duration/1000)%60)+"s";
 									String estimatedS=(prozent==0?"?":(estimated/1000/60/60)+"h "+((estimated/1000/60)%60)+"min "+((estimated/1000)%60)+"s");
-									System.out.println("Fortschritt: "+prozent+"% ("+lineCounter+"/"+lines+") benötigte Zeit bisher: "+durationS+" geschätzt: "+estimatedS);
+									
+									//print progress and time calculation
+									System.out.println("Progress: "+prozent+"% ("+lineCounter+"/"+lines+") time taken: "+durationS+"; estimated remaining: "+estimatedS);
 									printed=true;
 								}
 							}else{
@@ -416,11 +474,15 @@ if(impFolder.exists()){
 				//no filename was passed, only random number was generated
 				System.out.println("filename to short");
 			}
+			
+			//delete files that can't be imported and files that have been imported.
+			//reaching this line covers both criteria
 			list[f].delete();
 		}
 	}
 }
 
+//finishing import (-> no more files in importfolder) redirects to setup page
 response.sendRedirect(request.getContextPath()+"/intern/setup.jsp");
 
 %>

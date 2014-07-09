@@ -27,10 +27,20 @@ import javax.servlet.http.HttpServletRequest;
 
 public class ChartPreset {
 	
-
+	/**
+	 * 
+	 * Creates html-snippet containing all plants and controlpoints. Every plant can be collapsed,
+	 * also the whole group can be collapsed. The needed javascript-code is also generated.
+	 * Every item of the group gets a special groupId. Depending on "chartType" only referenceControlpoints
+	 * are displayed or not 
+	 * 
+	 * @param locationGroupId the ID the group should get
+	 * @param chartType the chartType for that this group should generate a selection
+	 * @return html-codesnippet with javascript function
+	 * 
+	 */
 	public static String createLocationGroup(int locationGroupId,String chartType){
 				
-//		System.out.println("called group with "+groupId);
 		String out = "";		
 
 		out+="<script type=\"text/javascript\">\n"
@@ -154,9 +164,17 @@ public class ChartPreset {
 		return out;
 	}
 
+	/**
+	 * 
+	 * Creates html-snippet containing all products. The the whole group can be collapsed. 
+	 * The needed javascript-code is also generated.
+	 * 
+	 * @param formatGroupId the ID the group should get
+	 * @return html-codesnippet with javascript function
+	 * 
+	 */
 	public static String createFormatGroup(int formatGroupId){
 		
-//		System.out.println("called group with "+groupId);
 		String out = "";		
 
 		out+="<script type=\"text/javascript\">\n"
@@ -218,13 +236,18 @@ public class ChartPreset {
 		return out;
 	}
 
-
-	
+	/**
+	 * Creates String containing all selected controlpoints and the groupname.
+	 * Needed to generate proper querys.
+	 * Returns something like: groupName1'id1','id2'|groupName2'id3','id4'
+	 * 
+	 * @param request
+	 * @return ENCODED(!) String containing all selected groups with their names and controlpoints
+	 * that can be sent via HTML-Request
+	 */
 	public static String createLocationParameterString(HttpServletRequest request){
-		//creates sth like [groupName1'id1','id2'|groupName2'id3','id4']
 		
 		String out="";
-//		System.out.println("called createParameterString");
 		ArrayList<String> groups=new ArrayList<String>();
 		ArrayList<String[]> groupNames=new ArrayList<String[]>();
 		ArrayList<String> plants=new ArrayList<String>();
@@ -234,7 +257,6 @@ public class ChartPreset {
 		Enumeration<String> en=request.getParameterNames();
 		while(en.hasMoreElements()){
 			String key=en.nextElement();
-//			System.out.println("found key ["+key+"]["+request.getParameter(key)+"]");
 			if(key.startsWith("locationGroup_")){
 //				groups.add(request.getParameter(key));
 			}else if(key.startsWith("locationGroupName")){
@@ -252,7 +274,6 @@ public class ChartPreset {
 		
 		//step through group names
 		for(int g=0;g<groupNames.size();g++){
-			//			System.out.println("groupName "+groupNames.get(i)[0]+" "+groupNames.get(i)[1]);
 			
 			//get groupId
 			int group=0;
@@ -315,7 +336,6 @@ public class ChartPreset {
 			}
 		}
 		
-//		System.out.println("no having "+groups.size());
 		
 		//step through points
 		for(int i=0;i<points.size();i++){
@@ -375,40 +395,24 @@ public class ChartPreset {
 					out+=",'"+usedPlants.get(g).get(p)+"'";
 				}
 			}
-	
-			
-//			System.out.println(out);
-			
-//			out+=groups.get(i).substring("group_".length());
-//			boolean added=false;
-//			for(int j=0;j<points.size();j++){
-//				if(points.get(j).startsWith("controlPointCheckBox_"+ groups.get(i).substring("group_".length()) )){
-//					System.out.println("points "+points.get(j));
-//					String last=points.get(j);
-//					points.remove(j);
-//					j--;
-//					last=last.substring(last.lastIndexOf("_")+1);
-//					if(added){
-//						out+=",";
-//					}
-//					out+="'"+last+"'";
-//					added=true;
-//				}
-//			}
-			
 			out+="||";
-//			System.out.println(out);
 		}
-//		System.out.println("generated "+out);
+
 		out=out.replace("'", "%27");
 		out=out.replace("|", "%7C");
 		out=out.replace(",", "%2C");
 		return out;
 	}
-	
+
+	/**
+	 * Generates a HTML-snippet that displays a selectionform for selecting which controlpoints/plants
+	 * should be grouped. Javacode for collapsing the groups is also included. Information about allready
+	 * made selections are taken from the request calling the webpage.
+	 * 
+	 * @param request
+	 * @return HTML-Snippet as a String containing the groupselectionfield
+	 */
 	public static String createLocationSelection(HttpServletRequest request){
-		
-//		System.out.println("called createSelection");
 		
 		String out="";
 		
@@ -490,10 +494,6 @@ public class ChartPreset {
 		}
 		
 		
-//		System.out.println("===================================");
-//		System.out.println(out);
-//		System.out.println("===================================");
-
 		for(int i=0;i<groupNames.size();i++){
 			if(groupNames.get(i)[1]!=null&&groupNames.get(i)[1].length()!=0&&!groupNames.get(i)[1].equals("Group "+groupNames.get(i)[0].substring("locationGroupName".length()))){
 				out=out.replace("name=\""+groupNames.get(i)[0]+"\"","name=\""+groupNames.get(i)[0]+"\" value=\""+groupNames.get(i)[1]+"\"");				
@@ -501,30 +501,31 @@ public class ChartPreset {
 		}
 		
 		for(int i=0;i<groups.size();i++){
-//			System.out.println("replaced one for group");
 			out=out.replace(groups.get(i)+"\">",groups.get(i)+"\" checked>");
 		}
 		
 		for(int i=0;i<plants.size();i++){
-//			System.out.println("replaced one for plant");
 			out=out.replace(plants.get(i)+"\">",plants.get(i)+"\" checked>");
 		}
 		
 		for(int i=0;i<points.size();i++){
-//			System.out.println("replaced one for point");
 			out=out.replace(points.get(i)+"\">",points.get(i)+"\" checked>");
 		}
 		
-//		System.out.println("===================================");
-//		System.out.println(out);
-//		System.out.println("===================================");
-
 		return out;
 	}
 
+	/**
+	 * Creates String containing all selected formats and the groupname.
+	 * Needed to generate proper querys.
+	 * Returns something like: groupName1'id1','id2'|groupName2'id3','id4'
+	 * 
+	 * @param request
+	 * @return ENCODED(!) String containing all selected groups with their names and formats
+	 * that can be sent via HTML-Request
+	 */
 	public static String createFormatParameterString(HttpServletRequest request){
 		String out="";
-//		System.out.println("called createParameterString");
 		ArrayList<String> groups=new ArrayList<String>();
 		ArrayList<String[]> groupNames=new ArrayList<String[]>();
 		ArrayList<String> formats=new ArrayList<String>();
@@ -608,29 +609,10 @@ public class ChartPreset {
 			}else{
 				out+="'0'";
 			}
-//			System.out.println(out);
-			
-//			out+=groups.get(i).substring("group_".length());
-//			boolean added=false;
-//			for(int j=0;j<points.size();j++){
-//				if(points.get(j).startsWith("controlPointCheckBox_"+ groups.get(i).substring("group_".length()) )){
-//					System.out.println("points "+points.get(j));
-//					String last=points.get(j);
-//					points.remove(j);
-//					j--;
-//					last=last.substring(last.lastIndexOf("_")+1);
-//					if(added){
-//						out+=",";
-//					}
-//					out+="'"+last+"'";
-//					added=true;
-//				}
-//			}
-			
+
 			out+="|";
-//			System.out.println(out);
 		}
-//		System.out.println("generated "+out);
+
 		out=out.replace("'", "%27");
 		out=out.replace("|", "%7C");
 		out=out.replace(",", "%2C");
@@ -638,9 +620,15 @@ public class ChartPreset {
 	}
 	
 
+	/**
+	 * Generates a HTML-snippet that displays a selectionform for selecting which products
+	 * should be grouped. Javacode for collapsing the groups is also included. Information about allready
+	 * made selections are taken from the request calling the webpage.
+	 * 
+	 * @param request
+	 * @return HTML-Snippet as a String containing the productselectionfield
+	 */
 	public static String createFormatSelection(HttpServletRequest request){
-		
-//		System.out.println("called createSelection");
 		
 		String out="";
 		
@@ -698,32 +686,18 @@ public class ChartPreset {
 			}
 		}
 		
-//		System.out.println("===================================");
-//		System.out.println(out);
-//		System.out.println("===================================");
-
 		//replace standardgroupname with passed groupname
 		for(int i=0;i<groupNames.size();i++){
 			if(groupNames.get(i)[1]!=null&&groupNames.get(i)[1].length()!=0&&!groupNames.get(i)[1].equals("Group "+groupNames.get(i)[0].substring("formatGroupName".length()))){
 				out=out.replace("name=\""+groupNames.get(i)[0]+"\"","name=\""+groupNames.get(i)[0]+"\" value=\""+groupNames.get(i)[1]+"\"");				
 			}
 		}
-		
-//		for(int i=0;i<groups.size();i++){
-////			System.out.println("replaced one for group");
-//			out=out.replace(groups.get(i)+"\">",groups.get(i)+"\" checked>");
-//		}
-		
+				
 		//set selected items
 		for(int i=0;i<formats.size();i++){
-//			System.out.println("replaced one for plant");
 			out=out.replace(formats.get(i)+"\">",formats.get(i)+"\" checked>");
 		}
 		
-//		System.out.println("===================================");
-//		System.out.println(out);
-//		System.out.println("===================================");
-
 		return out;
 	}
 }

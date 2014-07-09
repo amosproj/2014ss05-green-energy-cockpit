@@ -116,6 +116,7 @@
 						}
 						%>
 					</select>
+					
 					<!-- 
 					Depending on:
 					<select id="selectedMethod" name="selectedMethod" onChange="this.form.submit()">
@@ -134,7 +135,7 @@
 						}
 						%>
 					</select>
-				 -->
+				  -->
 					
 				</form>
 			</div>

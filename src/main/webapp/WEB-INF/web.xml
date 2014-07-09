@@ -49,9 +49,20 @@
   	<servlet-name>ChartRenderer</servlet-name>
   	<servlet-class>de.fau.amos.ChartRenderer</servlet-class>
   </servlet>
+  <servlet>
+  	<description>
+  	</description>
+  	<display-name>bookmark</display-name>
+  	<servlet-name>bookmark</servlet-name>
+  	<servlet-class>de.fau.amos.bookmark</servlet-class>
+  </servlet>
   <servlet-mapping>
   	<servlet-name>ChartRenderer</servlet-name>
   	<url-pattern>/ChartRenderer</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>bookmark</servlet-name>
+  	<url-pattern>/bookmark</url-pattern>
   </servlet-mapping>
  
   

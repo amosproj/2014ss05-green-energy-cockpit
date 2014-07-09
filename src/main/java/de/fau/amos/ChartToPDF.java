@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2014 by Sven Huprich, Dimitry Abb, Jakob Hübler, Cindy Wiebe, Ferdinand Niedermayer, Dirk Riehle, http://dirkriehle.com
+ *
+ * This file is part of the Green Energy Cockpit for the AMOS Project.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
+
 package de.fau.amos;
 
 import java.awt.Graphics2D;
@@ -17,14 +37,28 @@ import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
 
+/**
+ * 
+ * This class is intended for exporting any diagram shown into a PDF file using the JFreeChart and IText java library. 
+ *
+ */
+
 public class ChartToPDF {
 
+	/**
+	 * Converts Chart into PDF
+	 * 
+	 * @param chart JFreeChart from CharRenderer that will be displayed in the PDF file
+	 * @param fileName Name of created PDF-file
+	 */
 	public void convertChart(JFreeChart chart, String fileName) {
 	    if (chart != null) {       
-
+	    	
+	    			//set page size
 	            	float width = PageSize.A4.getWidth();
 	            	float height = PageSize.A4.getHeight();
 	            	
+	            	//creating a new pdf document
 		            Document document = new Document(new Rectangle(width, height)); 
 	                PdfWriter writer;
 					try {
@@ -44,9 +78,11 @@ public class ChartToPDF {
 	                PdfContentByte cb = writer.getDirectContent(); 
 	                PdfTemplate tp = cb.createTemplate(width, height); 
 	                
+	                //sets the pdf page
 	                Graphics2D g2D = new PdfGraphics2D(tp, width, height); 	        
 	                Rectangle2D r2D = new Rectangle2D.Double(0, 0, width, height); 
 	                
+	                //draws the passed JFreeChart into the PDF file
 	                chart.draw(g2D, r2D); 
 	                
 	                g2D.dispose(); 
