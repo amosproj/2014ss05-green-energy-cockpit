@@ -88,6 +88,10 @@ header h2{
 	display: inline-block;
 	width: 80px;
 }
+#startText{
+	font-size: 23pt;
+	text-align: center;
+}
 
 #regBox label{
 	display: inline-block;

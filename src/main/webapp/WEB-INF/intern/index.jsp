@@ -50,14 +50,14 @@
 
 	<div id="completeContentBox">
 		<div id="content">
-			
+			<div id = "startText">
 			<%
 		
-			out.println("Startpage");
+			out.println("<br> Welcome to the website of AMOS Project 5. <br><br><i>\"Green Energy Cockpit\"</i> <br> <br>");
 			
 			
 			%>
-			
+			</div>
 					
 		</div>
 	</div>
